@@ -11,6 +11,7 @@ import (
 	"os/exec"
 
 	"github.com/creack/pty"
+	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -168,10 +169,38 @@ func handleJumpSession(channel ssh.Channel, request <-chan *ssh.Request) {
 				req.Reply(true, nil)
 				channel.Close()
 			}
+		case "subsystem":
+			log.Printf("Subsystem request received: %v", req.Payload)
+			system := string(req.Payload[4:])
+			switch system {
+			case "sftp":
+				log.Printf("SFTP subsystem request received")
+				go handleSftp(channel)
+				req.Reply(true, nil)
+			default:
+				log.Printf("Unknown subsystem: %v", system)
+				req.Reply(false, []byte("Subsystem not supported"))
+			}
 		default:
 			log.Printf("Unknown request: %v", req.Type)
 			req.Reply(false, nil)
 		}
+	}
+}
+
+func handleSftp(channel ssh.Channel) {
+	defer channel.Close()
+	log.Printf("SFTP subsystem request received")
+
+	server, err := sftp.NewServer(channel)
+	if err != nil {
+		log.Printf("Failed to create SFTP server: %v", err)
+		return
+	}
+
+	err = server.Serve()
+	if err != nil {
+		log.Printf("SFTP server error: %v", err)
 	}
 }
 

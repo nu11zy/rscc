@@ -175,6 +175,7 @@ func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel) {
 }
 
 func (s *OperatorServer) handleReverseSSH(channel ssh.Channel, request <-chan *ssh.Request, extraData []byte) {
+	defer channel.Close()
 	lg := s.lg.Named("ssh")
 
 	var connData ExtraData
