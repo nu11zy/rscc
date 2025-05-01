@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"rscc/internal/common/logger"
 	"rscc/internal/database/ent"
+	"rscc/internal/database/ent/agent"
 
 	"entgo.io/ent/dialect"
 	_ "github.com/mattn/go-sqlite3"
@@ -82,4 +83,39 @@ func (db *Database) Close() error {
 
 func (db *Database) DeleteUserByID(ctx context.Context, id string) error {
 	return db.client.User.DeleteOneID(id).Exec(ctx)
+}
+
+func (db *Database) CreateAgent(ctx context.Context, name, os, arch, addr string, xxhash uint64, publicKey []byte) (*ent.Agent, error) {
+	agent, err := db.client.Agent.Create().
+		SetName(name).
+		SetOs(os).
+		SetArch(arch).
+		SetAddr(addr).
+		SetPublicKey(publicKey).
+		SetXxhash(xxhash).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create agent: %w", err)
+	}
+	return agent, nil
+}
+
+func (db *Database) GetAllAgents(ctx context.Context) ([]*ent.Agent, error) {
+	agents, err := db.client.Agent.Query().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all agents: %w", err)
+	}
+	return agents, nil
+}
+
+func (db *Database) GetAgentByName(ctx context.Context, name string) (*ent.Agent, error) {
+	agent, err := db.client.Agent.Query().Where(agent.Name(name)).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent: %w", err)
+	}
+	return agent, nil
+}
+
+func (db *Database) DeleteAgent(ctx context.Context, id string) error {
+	return db.client.Agent.DeleteOneID(id).Exec(ctx)
 }

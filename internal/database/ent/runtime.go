@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
 	"rscc/internal/database/ent/schema"
 	"rscc/internal/database/ent/user"
@@ -12,6 +13,36 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	agentFields := schema.Agent{}.Fields()
+	_ = agentFields
+	// agentDescName is the schema descriptor for name field.
+	agentDescName := agentFields[1].Descriptor()
+	// agent.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	agent.NameValidator = agentDescName.Validators[0].(func(string) error)
+	// agentDescOs is the schema descriptor for os field.
+	agentDescOs := agentFields[2].Descriptor()
+	// agent.OsValidator is a validator for the "os" field. It is called by the builders before save.
+	agent.OsValidator = agentDescOs.Validators[0].(func(string) error)
+	// agentDescArch is the schema descriptor for arch field.
+	agentDescArch := agentFields[3].Descriptor()
+	// agent.ArchValidator is a validator for the "arch" field. It is called by the builders before save.
+	agent.ArchValidator = agentDescArch.Validators[0].(func(string) error)
+	// agentDescAddr is the schema descriptor for addr field.
+	agentDescAddr := agentFields[4].Descriptor()
+	// agent.AddrValidator is a validator for the "addr" field. It is called by the builders before save.
+	agent.AddrValidator = agentDescAddr.Validators[0].(func(string) error)
+	// agentDescPublicKey is the schema descriptor for public_key field.
+	agentDescPublicKey := agentFields[5].Descriptor()
+	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
+	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
+	// agentDescStatus is the schema descriptor for status field.
+	agentDescStatus := agentFields[7].Descriptor()
+	// agent.DefaultStatus holds the default value on creation for the status field.
+	agent.DefaultStatus = agentDescStatus.Default.(int)
+	// agentDescID is the schema descriptor for id field.
+	agentDescID := agentFields[0].Descriptor()
+	// agent.DefaultID holds the default value on creation for the id field.
+	agent.DefaultID = agentDescID.Default.(func() string)
 	listenerFields := schema.Listener{}.Fields()
 	_ = listenerFields
 	// listenerDescName is the schema descriptor for name field.

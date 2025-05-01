@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
 	"rscc/internal/database/ent/user"
 	"sync"
@@ -74,6 +75,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			agent.Table:    agent.ValidColumn,
 			listener.Table: listener.ValidColumn,
 			user.Table:     user.ValidColumn,
 		})

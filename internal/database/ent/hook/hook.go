@@ -8,6 +8,18 @@ import (
 	"rscc/internal/database/ent"
 )
 
+// The AgentFunc type is an adapter to allow the use of ordinary
+// function as Agent mutator.
+type AgentFunc func(context.Context, *ent.AgentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentMutation", m)
+}
+
 // The ListenerFunc type is an adapter to allow the use of ordinary
 // function as Listener mutator.
 type ListenerFunc func(context.Context, *ent.ListenerMutation) (ent.Value, error)

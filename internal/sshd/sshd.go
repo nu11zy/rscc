@@ -22,3 +22,17 @@ func GeneratePrivateKey() ([]byte, error) {
 	pemBytes := pem.EncodeToMemory(pemKey)
 	return pemBytes, nil
 }
+
+func GeneratePublicKey(privateKey []byte) ([]byte, error) {
+	block, _ := pem.Decode(privateKey)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode private key")
+	}
+
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private key: %w", err)
+	}
+
+	return x509.MarshalPKIXPublicKey(key.Public())
+}

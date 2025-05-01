@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Agent is the predicate function for agent builders.
+type Agent func(*sql.Selector)
+
 // Listener is the predicate function for listener builders.
 type Listener func(*sql.Selector)
 

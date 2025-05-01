@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
+	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
+	"rscc/internal/common/pprint"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/session"
@@ -27,16 +31,11 @@ type OperatorServer struct {
 	lg        *zap.SugaredLogger
 }
 
-const (
-	OperatorListenerName = "operator"
-	OperatorListenerID   = "00000000"
-)
-
 func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
 	address := fmt.Sprintf("%s:%d", host, port)
 
-	listener, err := db.GetListener(ctx, OperatorListenerID)
+	listener, err := db.GetListener(ctx, constants.OperatorListenerID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			lg.Info("Operator listener not found, creating new one")
@@ -44,7 +43,12 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate private key: %w", err)
 			}
-			listener, err = db.CreateListenerWithID(ctx, OperatorListenerID, OperatorListenerName, privateKey)
+			listener, err = db.CreateListenerWithID(
+				ctx,
+				constants.OperatorListenerID,
+				constants.OperatorListenerName,
+				privateKey,
+			)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create operator listener: %w", err)
 			}
@@ -62,6 +66,21 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 	sshConfig.AddHostKey(signer)
+
+	// Clean agents that not found in the agent folder
+	agents, err := db.GetAllAgents(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agents: %w", err)
+	}
+	for _, agent := range agents {
+		if _, err := os.Stat(filepath.Join(constants.AgentDir, agent.ID)); os.IsNotExist(err) {
+			lg.Warnf("Agent %s not found in the agent folder, deleting from database", agent.ID)
+			err := db.DeleteAgent(ctx, agent.ID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to delete agent: %w", err)
+			}
+		}
+	}
 
 	return &OperatorServer{
 		db:        db,
@@ -128,7 +147,6 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	s.handleChannels(chans)
 
 	lg.Infof("SSH connection closed from %s (%s)", sshConn.RemoteAddr(), user)
-
 }
 
 func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel) {
@@ -276,6 +294,8 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	}
 	app.Flags().BoolP("help", "h", false, "")
 	app.Flags().MarkHidden("help")
+
+	app.SetErrPrefix(fmt.Sprintf("%s Error:", pprint.ErrorPrefix))
 	app.SetOut(terminal)
 	app.SetErr(terminal)
 

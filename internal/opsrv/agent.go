@@ -9,11 +9,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"rscc"
+	"rscc/internal/common/pprint"
 	"rscc/internal/common/utils"
+	"rscc/internal/common/validators"
+	"rscc/internal/sshd"
 	"runtime"
+	"strings"
 
+	"github.com/cespare/xxhash/v2"
 	"github.com/spf13/cobra"
 )
+
+const agentDir = "agents"
 
 // agent list, agent generate, agent remove
 func (s *OperatorServer) NewAgentCommand() *cobra.Command {
@@ -38,11 +45,11 @@ func (s *OperatorServer) NewAgentCommand() *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE:  s.agentNew,
 	}
-	agentNewCmd.Flags().StringP("name", "n", utils.GetRandomName(0), "Agent name")
-	agentNewCmd.Flags().StringP("os", "o", runtime.GOOS, "OS")
-	agentNewCmd.Flags().StringP("arch", "a", runtime.GOARCH, "Architecture")
-	agentNewCmd.Flags().String("addr", "", "Address")
-	// agentNewCmd.MarkFlagRequired("addr")
+	agentNewCmd.Flags().StringP("name", "n", utils.GetRandomName(), "Agent name (without extension)")
+	agentNewCmd.Flags().StringP("os", "o", runtime.GOOS, "OS (windows, linux, darwin)")
+	agentNewCmd.Flags().StringP("arch", "a", runtime.GOARCH, "Architecture (amd64, arm64)")
+	agentNewCmd.Flags().String("addr", "", "Server address (e.g. 127.0.0.1:8080)")
+	agentNewCmd.MarkFlagRequired("addr")
 
 	// Remove agent
 	agentRemoveCmd := &cobra.Command{
@@ -60,6 +67,23 @@ func (s *OperatorServer) NewAgentCommand() *cobra.Command {
 }
 
 func (s *OperatorServer) agentList(cmd *cobra.Command, args []string) error {
+	agents, err := s.db.GetAllAgents(cmd.Context())
+	if err != nil {
+		return fmt.Errorf("failed to get agents: %w", err)
+	}
+
+	if len(agents) == 0 {
+		cmd.Println(pprint.Info("No agents found"))
+		return nil
+	}
+
+	rows := make([][]string, len(agents))
+	for i, agent := range agents {
+		rows[i] = []string{agent.ID, agent.Name, agent.Os, agent.Arch, agent.Addr}
+	}
+
+	cmd.Println(pprint.Table([]string{"ID", "Name", "OS", "Arch", "Addr"}, rows))
+
 	return nil
 }
 
@@ -73,11 +97,11 @@ func (s *OperatorServer) agentNew(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	operationSystem, err := cmd.Flags().GetString("os")
+	goos, err := cmd.Flags().GetString("os")
 	if err != nil {
 		return err
 	}
-	arch, err := cmd.Flags().GetString("arch")
+	goarch, err := cmd.Flags().GetString("arch")
 	if err != nil {
 		return err
 	}
@@ -86,22 +110,73 @@ func (s *OperatorServer) agentNew(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	s.lg.Infof("Generating agent `%s` for %s/%s (addr: %s)", name, operationSystem, arch, addr)
+	// Validate arguments
+	if !validators.ValidateGOOS(goos) {
+		return fmt.Errorf("invalid os: %s", goos)
+	}
+	if !validators.ValidateGOARCH(goarch) {
+		return fmt.Errorf("invalid arch: %s", goarch)
+	}
+	if !validators.ValidateAddr(addr) {
+		return fmt.Errorf("invalid addr: %s", addr)
+	}
+
+	// Check if agent with same name already exists
+	name = strings.ReplaceAll(name, " ", "-")
+
+	// Check db
+	agent, err := s.db.GetAgentByName(cmd.Context(), name)
+	if err == nil && agent != nil {
+		s.lg.Warnf("Agent `%s` [id: %s] already exists", name, agent.ID)
+		return fmt.Errorf("agent `%s` [id: %s] already exists", name, agent.ID)
+	}
+
+	// Check if agent with same name already exists
+	if _, err := os.Stat(filepath.Join(agentDir, name)); !os.IsNotExist(err) {
+		s.lg.Warnf("Agent with name `%s` not found in database. Replacing file `%s`", name, filepath.Join(agentDir, name))
+		cmd.Println(pprint.Warn("Agent with name `%s` not found in database. Replacing file `%s`", name, filepath.Join(agentDir, name)))
+	}
+	s.lg.Infof("Generating agent `%s` for %s/%s (listener: %s)", name, goos, goarch, addr)
+	cmd.Println(pprint.Info("Generating agent `%s` for %s/%s (listener: %s)", name, goos, goarch, addr))
+
+	// Generate keys
+	privKey, err := sshd.GeneratePrivateKey()
+	if err != nil {
+		return fmt.Errorf("failed to generate private key: %w", err)
+	}
+	pubKey, err := sshd.GeneratePublicKey(privKey)
+	if err != nil {
+		return fmt.Errorf("failed to generate public key: %w", err)
+	}
 
 	// Unzip agent
-	agentDir, err := s.unzipAgent()
+	tmpDir, err := s.unzipAgent()
 	if err != nil {
-		return fmt.Errorf("unzip agent: %w", err)
+		return fmt.Errorf("failed to unzip agent: %w", err)
 	}
-	// defer os.RemoveAll(agentDir)
+	defer os.RemoveAll(tmpDir)
 
 	// Build agent
 	s.lg.Infof("Building agent")
-	err = s.buildAgent(agentDir)
+	err = s.buildAgent(tmpDir, name, goos, goarch, addr, privKey, pubKey)
 	if err != nil {
-		return fmt.Errorf("build agent: %w", err)
+		return fmt.Errorf("failed to build agent: %w", err)
 	}
 
+	// Get agent hash
+	agentBytes, err := os.ReadFile(filepath.Join(agentDir, name))
+	if err != nil {
+		return fmt.Errorf("failed to read agent: %w", err)
+	}
+	agentHash := xxhash.Sum64(agentBytes)
+
+	// Add agent to db
+	agent, err = s.db.CreateAgent(cmd.Context(), name, goos, goarch, addr, agentHash, pubKey)
+	if err != nil {
+		return fmt.Errorf("failed to add agent to db: %w", err)
+	}
+
+	cmd.Println(pprint.Success("Agent `%s` [id: %s] generated (%s)", agent.Name, agent.ID, filepath.Join("./agents", name)))
 	return nil
 }
 
@@ -149,21 +224,49 @@ func (s *OperatorServer) unzipAgent() (string, error) {
 	return agentDir, nil
 }
 
-func (s *OperatorServer) buildAgent(agentDir string) error {
+func (s *OperatorServer) buildAgent(agentDir, name, goos, goarch, addr string, privKey, pubKey []byte) error {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get current dir: %w", err)
 	}
 
-	s.lg.Debugf("Building %s", filepath.Join(agentDir, "cmd/agent/main.go"))
-	s.lg.Debugf("Agent output dir %s", filepath.Join(currentDir, "agent"))
+	// Set ldflags
+	ldflags := "-s -w"
+	if goos == "windows" {
+		ldflags = fmt.Sprintf("%s -H windowsgui", ldflags)
+	}
+	ldflags = fmt.Sprintf("%s -X main.serverAddress=%s", ldflags, addr)
+	ldflags = fmt.Sprintf("%s -buildid=", ldflags)
 
-	cmd := exec.Command("go", "build", "-C", agentDir, "-o", filepath.Join(currentDir, "agent"), "-mod=vendor", "cmd/agent/main.go")
+	// Build agent
+	cmd := exec.Command(
+		"go",
+		"build",
+		"-C",
+		agentDir,
+		"-o",
+		filepath.Join(currentDir, "agents", name),
+		"-mod=vendor",
+		"-trimpath",
+		fmt.Sprintf("-ldflags=%s", ldflags),
+		"cmd/agent/main.go",
+	)
+	// Set environment variables
+	cmd.Env = append(os.Environ(), "GOOS="+goos, "GOARCH="+goarch)
+
+	// Build agent
+	s.lg.Debugf("Running command: %s", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to run build: %w (%s)", err, string(output))
+		err = fmt.Errorf("failed to run build: %w", err)
+		if len(output) > 0 {
+			err = fmt.Errorf("%w:\n%s", err, string(output))
+		}
+		return err
 	}
-	s.lg.Debugf("Build output: %s", string(output))
+	if len(output) > 0 {
+		s.lg.Infof("Build output: %s", string(output))
+	}
 
 	return nil
 }

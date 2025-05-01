@@ -2,7 +2,6 @@ package utils
 
 import (
 	"math/rand"
-	"strconv"
 )
 
 var (
@@ -228,10 +227,6 @@ var (
 	}
 )
 
-func GetRandomName(retry int) string {
-	name := left[rand.Intn(len(left))] + "-" + right[rand.Intn(len(right))]
-	if retry > 0 {
-		name += strconv.Itoa(rand.Intn(10))
-	}
-	return name
+func GetRandomName() string {
+	return left[rand.Intn(len(left))] + "-" + right[rand.Intn(len(right))]
 }

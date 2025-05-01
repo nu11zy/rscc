@@ -8,6 +8,23 @@ import (
 )
 
 var (
+	// AgentsColumns holds the columns for the "agents" table.
+	AgentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "os", Type: field.TypeString},
+		{Name: "arch", Type: field.TypeString},
+		{Name: "addr", Type: field.TypeString},
+		{Name: "public_key", Type: field.TypeBytes},
+		{Name: "xxhash", Type: field.TypeUint64},
+		{Name: "status", Type: field.TypeInt, Default: 0},
+	}
+	// AgentsTable holds the schema information for the "agents" table.
+	AgentsTable = &schema.Table{
+		Name:       "agents",
+		Columns:    AgentsColumns,
+		PrimaryKey: []*schema.Column{AgentsColumns[0]},
+	}
 	// ListenersColumns holds the columns for the "listeners" table.
 	ListenersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
@@ -36,6 +53,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AgentsTable,
 		ListenersTable,
 		UsersTable,
 	}
