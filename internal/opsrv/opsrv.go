@@ -32,6 +32,10 @@ type OperatorServer struct {
 	lg        *zap.SugaredLogger
 }
 
+type ExitStatus struct {
+	Status uint32
+}
+
 func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
 	address := fmt.Sprintf("%s:%d", host, port)
@@ -226,11 +230,31 @@ func (s *OperatorServer) handleSession(channel ssh.Channel, request <-chan *ssh.
 				req.Reply(true, nil)
 				channel.Close()
 			}
+		case "exec":
+			go s.handleExec(channel, string(req.Payload[4:]))
+			req.Reply(true, nil)
 		default:
 			lg.Warnf("Unsupported session request: %s", req.Type)
 			req.Reply(false, nil)
 		}
 	}
+}
+
+func (s *OperatorServer) handleExec(channel ssh.Channel, command string) {
+	defer channel.Close()
+
+	lg := s.lg.Named("exec")
+	lg.Infof("Executing command: %s", command)
+
+	terminal := term.NewTerminal(channel, "")
+	app := s.newCli(terminal)
+	app.SetArgs(strings.Fields(command))
+
+	var exitStatus uint32 = 0
+	if err := app.Execute(); err != nil {
+		exitStatus = 1
+	}
+	channel.SendRequest("exit-status", false, ssh.Marshal(&ExitStatus{Status: exitStatus}))
 }
 
 func (s *OperatorServer) handleShell(channel ssh.Channel) {
