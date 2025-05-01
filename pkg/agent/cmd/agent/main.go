@@ -28,9 +28,20 @@ func main() {
 		return
 	}
 
+	decodedPrivKey, err := base64.StdEncoding.DecodeString(privKey)
+	if err != nil {
+		log.Printf("Failed to decode private key: %v", err)
+		return
+	}
+	signer, err := ssh.ParsePrivateKey(decodedPrivKey)
+	if err != nil {
+		log.Printf("Failed to create signer: %v", err)
+		return
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User:            metadata,
-		Auth:            []ssh.AuthMethod{}, // TODO: Add authentication with key
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 		ClientVersion:   sshClientVersion,
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // TODO: Check host key
 	}

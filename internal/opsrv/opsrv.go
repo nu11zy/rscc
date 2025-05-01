@@ -32,6 +32,13 @@ type OperatorServer struct {
 	lg        *zap.SugaredLogger
 }
 
+type ExtraData struct {
+	Host           string
+	Port           uint32
+	OriginatorIP   string
+	OriginatorPort uint32
+}
+
 type ExitStatus struct {
 	Status uint32
 }
@@ -165,13 +172,6 @@ func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel) {
 			newChannel.Reject(ssh.UnknownChannelType, "unsupported channel type")
 		}
 	}
-}
-
-type ExtraData struct {
-	Host           string
-	Port           uint32
-	OriginatorIP   string
-	OriginatorPort uint32
 }
 
 func (s *OperatorServer) handleReverseSSH(channel ssh.Channel, request <-chan *ssh.Request, extraData []byte) {

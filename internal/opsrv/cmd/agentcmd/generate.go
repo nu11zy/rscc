@@ -21,6 +21,7 @@ import (
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
 )
 
 func (a *AgentCmd) newCmdGenerate() *cobra.Command {
@@ -111,10 +112,11 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to generate private key: %w", err)
 	}
-	pubKey, err := sshd.GeneratePublicKey(privKey)
+	signer, err := ssh.ParsePrivateKey(privKey)
 	if err != nil {
 		return fmt.Errorf("failed to generate public key: %w", err)
 	}
+	pubKey := signer.PublicKey().Marshal()
 
 	// Unzip agent
 	tmpDir, err := unzipAgent()

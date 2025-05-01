@@ -1,6 +1,7 @@
 package listener
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -49,8 +50,16 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 		}
 	}
 
+	agentListener := &AgentListener{
+		sm:      sm,
+		db:      db,
+		address: address,
+		lg:      lg,
+	}
+
 	sshConfig := &ssh.ServerConfig{
-		NoClientAuth: true,
+		NoClientAuth:      false,
+		PublicKeyCallback: agentListener.publicKeyCallback,
 	}
 
 	signer, err := ssh.ParsePrivateKey(listener.PrivateKey)
@@ -59,13 +68,8 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 	}
 	sshConfig.AddHostKey(signer)
 
-	return &AgentListener{
-		sm:        sm,
-		db:        db,
-		address:   address,
-		sshConfig: sshConfig,
-		lg:        lg,
-	}, nil
+	agentListener.sshConfig = sshConfig
+	return agentListener, nil
 }
 
 func (l *AgentListener) Start(ctx context.Context) error {
@@ -168,4 +172,26 @@ func (l *AgentListener) handleSession(channel ssh.Channel, request <-chan *ssh.R
 			req.Reply(false, nil)
 		}
 	}
+}
+
+func (l *AgentListener) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
+	lg := l.lg.Named("ssh")
+	lg.Debugf("Public key callback for %s", conn.RemoteAddr())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Check if public key matches any of the agents public keys
+	agents, err := l.db.GetAllAgents(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all agents: %w", err)
+	}
+	for _, agent := range agents {
+		if bytes.Equal(key.Marshal(), agent.PublicKey) {
+			lg.Infof("Public key matches agent `%s` [id: %s]", agent.Name, agent.ID)
+			return &ssh.Permissions{}, nil
+		}
+	}
+
+	return nil, fmt.Errorf("public key does not match any agent")
 }
