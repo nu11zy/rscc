@@ -16,8 +16,7 @@ var (
 		{Name: "arch", Type: field.TypeString},
 		{Name: "addr", Type: field.TypeString},
 		{Name: "public_key", Type: field.TypeBytes},
-		{Name: "xxhash", Type: field.TypeUint64},
-		{Name: "status", Type: field.TypeInt, Default: 0},
+		{Name: "xxhash", Type: field.TypeString},
 	}
 	// AgentsTable holds the schema information for the "agents" table.
 	AgentsTable = &schema.Table{

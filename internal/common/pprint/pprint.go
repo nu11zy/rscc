@@ -8,15 +8,15 @@ import (
 )
 
 var (
-	successColor = color.New(color.FgGreen)
-	infoColor    = color.New(color.FgBlue)
-	warnColor    = color.New(color.FgYellow)
-	errorColor   = color.New(color.FgRed)
+	SuccessColor = color.New(color.FgGreen)
+	InfoColor    = color.New(color.FgBlue)
+	WarnColor    = color.New(color.FgYellow)
+	ErrorColor   = color.New(color.FgRed)
 
-	SuccessPrefix = successColor.Sprintf("[+]")
-	InfoPrefix    = infoColor.Sprintf("[i]")
-	WarnPrefix    = warnColor.Sprintf("[*]")
-	ErrorPrefix   = errorColor.Sprintf("[-]")
+	SuccessPrefix = SuccessColor.Sprintf("[+]")
+	InfoPrefix    = InfoColor.Sprintf("[i]")
+	WarnPrefix    = WarnColor.Sprintf("[*]")
+	ErrorPrefix   = ErrorColor.Sprintf("[-]")
 )
 
 func Error(format string, a ...any) string {
@@ -41,7 +41,7 @@ func Table(headers []string, rows [][]string) string {
 	// Headers
 	headerRow := make(table.Row, len(headers))
 	for i, h := range headers {
-		headerRow[i] = infoColor.Sprint(h)
+		headerRow[i] = InfoColor.Sprint(h)
 	}
 	t.AppendHeader(headerRow)
 

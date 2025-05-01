@@ -27,27 +27,6 @@ func (au *AgentUpdate) Where(ps ...predicate.Agent) *AgentUpdate {
 	return au
 }
 
-// SetStatus sets the "status" field.
-func (au *AgentUpdate) SetStatus(i int) *AgentUpdate {
-	au.mutation.ResetStatus()
-	au.mutation.SetStatus(i)
-	return au
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableStatus(i *int) *AgentUpdate {
-	if i != nil {
-		au.SetStatus(*i)
-	}
-	return au
-}
-
-// AddStatus adds i to the "status" field.
-func (au *AgentUpdate) AddStatus(i int) *AgentUpdate {
-	au.mutation.AddStatus(i)
-	return au
-}
-
 // Mutation returns the AgentMutation object of the builder.
 func (au *AgentUpdate) Mutation() *AgentMutation {
 	return au.mutation
@@ -89,12 +68,6 @@ func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := au.mutation.Status(); ok {
-		_spec.SetField(agent.FieldStatus, field.TypeInt, value)
-	}
-	if value, ok := au.mutation.AddedStatus(); ok {
-		_spec.AddField(agent.FieldStatus, field.TypeInt, value)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agent.Label}
@@ -113,27 +86,6 @@ type AgentUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AgentMutation
-}
-
-// SetStatus sets the "status" field.
-func (auo *AgentUpdateOne) SetStatus(i int) *AgentUpdateOne {
-	auo.mutation.ResetStatus()
-	auo.mutation.SetStatus(i)
-	return auo
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableStatus(i *int) *AgentUpdateOne {
-	if i != nil {
-		auo.SetStatus(*i)
-	}
-	return auo
-}
-
-// AddStatus adds i to the "status" field.
-func (auo *AgentUpdateOne) AddStatus(i int) *AgentUpdateOne {
-	auo.mutation.AddStatus(i)
-	return auo
 }
 
 // Mutation returns the AgentMutation object of the builder.
@@ -206,12 +158,6 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := auo.mutation.Status(); ok {
-		_spec.SetField(agent.FieldStatus, field.TypeInt, value)
-	}
-	if value, ok := auo.mutation.AddedStatus(); ok {
-		_spec.AddField(agent.FieldStatus, field.TypeInt, value)
 	}
 	_node = &Agent{config: auo.config}
 	_spec.Assign = _node.assignValues

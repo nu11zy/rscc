@@ -27,9 +27,7 @@ type Agent struct {
 	// PublicKey holds the value of the "public_key" field.
 	PublicKey []byte `json:"public_key,omitempty"`
 	// Xxhash holds the value of the "xxhash" field.
-	Xxhash uint64 `json:"xxhash,omitempty"`
-	// Status holds the value of the "status" field.
-	Status       int `json:"status,omitempty"`
+	Xxhash       string `json:"xxhash,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -40,9 +38,7 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agent.FieldPublicKey:
 			values[i] = new([]byte)
-		case agent.FieldXxhash, agent.FieldStatus:
-			values[i] = new(sql.NullInt64)
-		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldAddr:
+		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldAddr, agent.FieldXxhash:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -96,16 +92,10 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 				a.PublicKey = *value
 			}
 		case agent.FieldXxhash:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field xxhash", values[i])
 			} else if value.Valid {
-				a.Xxhash = uint64(value.Int64)
-			}
-		case agent.FieldStatus:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				a.Status = int(value.Int64)
+				a.Xxhash = value.String
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -159,10 +149,7 @@ func (a *Agent) String() string {
 	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
 	builder.WriteString(", ")
 	builder.WriteString("xxhash=")
-	builder.WriteString(fmt.Sprintf("%v", a.Xxhash))
-	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", a.Status))
+	builder.WriteString(a.Xxhash)
 	builder.WriteByte(')')
 	return builder.String()
 }

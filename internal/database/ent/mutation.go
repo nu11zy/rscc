@@ -42,10 +42,7 @@ type AgentMutation struct {
 	arch          *string
 	addr          *string
 	public_key    *[]byte
-	xxhash        *uint64
-	addxxhash     *int64
-	status        *int
-	addstatus     *int
+	xxhash        *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Agent, error)
@@ -337,13 +334,12 @@ func (m *AgentMutation) ResetPublicKey() {
 }
 
 // SetXxhash sets the "xxhash" field.
-func (m *AgentMutation) SetXxhash(u uint64) {
-	m.xxhash = &u
-	m.addxxhash = nil
+func (m *AgentMutation) SetXxhash(s string) {
+	m.xxhash = &s
 }
 
 // Xxhash returns the value of the "xxhash" field in the mutation.
-func (m *AgentMutation) Xxhash() (r uint64, exists bool) {
+func (m *AgentMutation) Xxhash() (r string, exists bool) {
 	v := m.xxhash
 	if v == nil {
 		return
@@ -354,7 +350,7 @@ func (m *AgentMutation) Xxhash() (r uint64, exists bool) {
 // OldXxhash returns the old "xxhash" field's value of the Agent entity.
 // If the Agent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldXxhash(ctx context.Context) (v uint64, err error) {
+func (m *AgentMutation) OldXxhash(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldXxhash is only allowed on UpdateOne operations")
 	}
@@ -368,84 +364,9 @@ func (m *AgentMutation) OldXxhash(ctx context.Context) (v uint64, err error) {
 	return oldValue.Xxhash, nil
 }
 
-// AddXxhash adds u to the "xxhash" field.
-func (m *AgentMutation) AddXxhash(u int64) {
-	if m.addxxhash != nil {
-		*m.addxxhash += u
-	} else {
-		m.addxxhash = &u
-	}
-}
-
-// AddedXxhash returns the value that was added to the "xxhash" field in this mutation.
-func (m *AgentMutation) AddedXxhash() (r int64, exists bool) {
-	v := m.addxxhash
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetXxhash resets all changes to the "xxhash" field.
 func (m *AgentMutation) ResetXxhash() {
 	m.xxhash = nil
-	m.addxxhash = nil
-}
-
-// SetStatus sets the "status" field.
-func (m *AgentMutation) SetStatus(i int) {
-	m.status = &i
-	m.addstatus = nil
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *AgentMutation) Status() (r int, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the Agent entity.
-// If the Agent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldStatus(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// AddStatus adds i to the "status" field.
-func (m *AgentMutation) AddStatus(i int) {
-	if m.addstatus != nil {
-		*m.addstatus += i
-	} else {
-		m.addstatus = &i
-	}
-}
-
-// AddedStatus returns the value that was added to the "status" field in this mutation.
-func (m *AgentMutation) AddedStatus() (r int, exists bool) {
-	v := m.addstatus
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *AgentMutation) ResetStatus() {
-	m.status = nil
-	m.addstatus = nil
 }
 
 // Where appends a list predicates to the AgentMutation builder.
@@ -482,7 +403,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, agent.FieldName)
 	}
@@ -500,9 +421,6 @@ func (m *AgentMutation) Fields() []string {
 	}
 	if m.xxhash != nil {
 		fields = append(fields, agent.FieldXxhash)
-	}
-	if m.status != nil {
-		fields = append(fields, agent.FieldStatus)
 	}
 	return fields
 }
@@ -524,8 +442,6 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.PublicKey()
 	case agent.FieldXxhash:
 		return m.Xxhash()
-	case agent.FieldStatus:
-		return m.Status()
 	}
 	return nil, false
 }
@@ -547,8 +463,6 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldPublicKey(ctx)
 	case agent.FieldXxhash:
 		return m.OldXxhash(ctx)
-	case agent.FieldStatus:
-		return m.OldStatus(ctx)
 	}
 	return nil, fmt.Errorf("unknown Agent field %s", name)
 }
@@ -594,18 +508,11 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 		m.SetPublicKey(v)
 		return nil
 	case agent.FieldXxhash:
-		v, ok := value.(uint64)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetXxhash(v)
-		return nil
-	case agent.FieldStatus:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Agent field %s", name)
@@ -614,26 +521,13 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *AgentMutation) AddedFields() []string {
-	var fields []string
-	if m.addxxhash != nil {
-		fields = append(fields, agent.FieldXxhash)
-	}
-	if m.addstatus != nil {
-		fields = append(fields, agent.FieldStatus)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *AgentMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case agent.FieldXxhash:
-		return m.AddedXxhash()
-	case agent.FieldStatus:
-		return m.AddedStatus()
-	}
 	return nil, false
 }
 
@@ -642,20 +536,6 @@ func (m *AgentMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *AgentMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case agent.FieldXxhash:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddXxhash(v)
-		return nil
-	case agent.FieldStatus:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddStatus(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Agent numeric field %s", name)
 }
@@ -700,9 +580,6 @@ func (m *AgentMutation) ResetField(name string) error {
 		return nil
 	case agent.FieldXxhash:
 		m.ResetXxhash()
-		return nil
-	case agent.FieldStatus:
-		m.ResetStatus()
 		return nil
 	}
 	return fmt.Errorf("unknown Agent field %s", name)

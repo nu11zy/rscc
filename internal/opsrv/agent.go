@@ -9,11 +9,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"rscc"
+	"rscc/internal/common/constants"
 	"rscc/internal/common/pprint"
 	"rscc/internal/common/utils"
 	"rscc/internal/common/validators"
 	"rscc/internal/sshd"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/cespare/xxhash/v2"
@@ -67,11 +69,11 @@ func (s *OperatorServer) NewAgentCommand() *cobra.Command {
 }
 
 func (s *OperatorServer) agentList(cmd *cobra.Command, args []string) error {
+	// Get agents
 	agents, err := s.db.GetAllAgents(cmd.Context())
 	if err != nil {
 		return fmt.Errorf("failed to get agents: %w", err)
 	}
-
 	if len(agents) == 0 {
 		cmd.Println(pprint.Info("No agents found"))
 		return nil
@@ -79,11 +81,28 @@ func (s *OperatorServer) agentList(cmd *cobra.Command, args []string) error {
 
 	rows := make([][]string, len(agents))
 	for i, agent := range agents {
-		rows[i] = []string{agent.ID, agent.Name, agent.Os, agent.Arch, agent.Addr}
+		// Check if agent file exists
+		agentBytes, err := os.ReadFile(filepath.Join(constants.AgentDir, agent.Name))
+		if err != nil {
+			if os.IsNotExist(err) {
+				rows[i] = []string{agent.ID, pprint.ErrorColor.Sprint(agent.Name), agent.Os, agent.Arch, agent.Addr}
+				continue
+			} else {
+				return fmt.Errorf("failed to read agent file %s: %w", agent.ID, err)
+			}
+		}
+
+		// Check if agent file is modified
+		agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
+		if agentHash != agent.Xxhash {
+			rows[i] = []string{agent.ID, pprint.WarnColor.Sprint(agent.Name), agent.Os, agent.Arch, agent.Addr}
+		} else {
+			rows[i] = []string{agent.ID, agent.Name, agent.Os, agent.Arch, agent.Addr}
+		}
 	}
 
 	cmd.Println(pprint.Table([]string{"ID", "Name", "OS", "Arch", "Addr"}, rows))
-
+	cmd.Printf("[%s] - deleted; [%s] - modified\n", pprint.ErrorColor.Sprint("*"), pprint.WarnColor.Sprint("*"))
 	return nil
 }
 
@@ -168,7 +187,7 @@ func (s *OperatorServer) agentNew(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read agent: %w", err)
 	}
-	agentHash := xxhash.Sum64(agentBytes)
+	agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 
 	// Add agent to db
 	agent, err = s.db.CreateAgent(cmd.Context(), name, goos, goarch, addr, agentHash, pubKey)

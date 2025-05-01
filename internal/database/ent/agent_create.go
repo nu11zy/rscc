@@ -50,22 +50,8 @@ func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
 }
 
 // SetXxhash sets the "xxhash" field.
-func (ac *AgentCreate) SetXxhash(u uint64) *AgentCreate {
-	ac.mutation.SetXxhash(u)
-	return ac
-}
-
-// SetStatus sets the "status" field.
-func (ac *AgentCreate) SetStatus(i int) *AgentCreate {
-	ac.mutation.SetStatus(i)
-	return ac
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableStatus(i *int) *AgentCreate {
-	if i != nil {
-		ac.SetStatus(*i)
-	}
+func (ac *AgentCreate) SetXxhash(s string) *AgentCreate {
+	ac.mutation.SetXxhash(s)
 	return ac
 }
 
@@ -118,10 +104,6 @@ func (ac *AgentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *AgentCreate) defaults() {
-	if _, ok := ac.mutation.Status(); !ok {
-		v := agent.DefaultStatus
-		ac.mutation.SetStatus(v)
-	}
 	if _, ok := ac.mutation.ID(); !ok {
 		v := agent.DefaultID()
 		ac.mutation.SetID(v)
@@ -173,8 +155,10 @@ func (ac *AgentCreate) check() error {
 	if _, ok := ac.mutation.Xxhash(); !ok {
 		return &ValidationError{Name: "xxhash", err: errors.New(`ent: missing required field "Agent.xxhash"`)}
 	}
-	if _, ok := ac.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Agent.status"`)}
+	if v, ok := ac.mutation.Xxhash(); ok {
+		if err := agent.XxhashValidator(v); err != nil {
+			return &ValidationError{Name: "xxhash", err: fmt.Errorf(`ent: validator failed for field "Agent.xxhash": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -232,12 +216,8 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_node.PublicKey = value
 	}
 	if value, ok := ac.mutation.Xxhash(); ok {
-		_spec.SetField(agent.FieldXxhash, field.TypeUint64, value)
+		_spec.SetField(agent.FieldXxhash, field.TypeString, value)
 		_node.Xxhash = value
-	}
-	if value, ok := ac.mutation.Status(); ok {
-		_spec.SetField(agent.FieldStatus, field.TypeInt, value)
-		_node.Status = value
 	}
 	return _node, _spec
 }

@@ -21,8 +21,7 @@ func (Agent) Fields() []ent.Field {
 		field.String("arch").Immutable().NotEmpty(),
 		field.String("addr").Immutable().NotEmpty(),
 		field.Bytes("public_key").Immutable().NotEmpty(),
-		field.Uint64("xxhash").Immutable(),
-		field.Int("status").Default(0), // 0: default, 1: modified, 2: deleted
+		field.String("xxhash").Immutable().NotEmpty(),
 	}
 }
 

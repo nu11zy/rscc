@@ -89,13 +89,8 @@ func PublicKey(v []byte) predicate.Agent {
 }
 
 // Xxhash applies equality check predicate on the "xxhash" field. It's identical to XxhashEQ.
-func Xxhash(v uint64) predicate.Agent {
+func Xxhash(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldXxhash, v))
-}
-
-// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
-func Status(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldStatus, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -399,83 +394,68 @@ func PublicKeyLTE(v []byte) predicate.Agent {
 }
 
 // XxhashEQ applies the EQ predicate on the "xxhash" field.
-func XxhashEQ(v uint64) predicate.Agent {
+func XxhashEQ(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldXxhash, v))
 }
 
 // XxhashNEQ applies the NEQ predicate on the "xxhash" field.
-func XxhashNEQ(v uint64) predicate.Agent {
+func XxhashNEQ(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldNEQ(FieldXxhash, v))
 }
 
 // XxhashIn applies the In predicate on the "xxhash" field.
-func XxhashIn(vs ...uint64) predicate.Agent {
+func XxhashIn(vs ...string) predicate.Agent {
 	return predicate.Agent(sql.FieldIn(FieldXxhash, vs...))
 }
 
 // XxhashNotIn applies the NotIn predicate on the "xxhash" field.
-func XxhashNotIn(vs ...uint64) predicate.Agent {
+func XxhashNotIn(vs ...string) predicate.Agent {
 	return predicate.Agent(sql.FieldNotIn(FieldXxhash, vs...))
 }
 
 // XxhashGT applies the GT predicate on the "xxhash" field.
-func XxhashGT(v uint64) predicate.Agent {
+func XxhashGT(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldGT(FieldXxhash, v))
 }
 
 // XxhashGTE applies the GTE predicate on the "xxhash" field.
-func XxhashGTE(v uint64) predicate.Agent {
+func XxhashGTE(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldGTE(FieldXxhash, v))
 }
 
 // XxhashLT applies the LT predicate on the "xxhash" field.
-func XxhashLT(v uint64) predicate.Agent {
+func XxhashLT(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldLT(FieldXxhash, v))
 }
 
 // XxhashLTE applies the LTE predicate on the "xxhash" field.
-func XxhashLTE(v uint64) predicate.Agent {
+func XxhashLTE(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldLTE(FieldXxhash, v))
 }
 
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldStatus, v))
+// XxhashContains applies the Contains predicate on the "xxhash" field.
+func XxhashContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldXxhash, v))
 }
 
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldNEQ(FieldStatus, v))
+// XxhashHasPrefix applies the HasPrefix predicate on the "xxhash" field.
+func XxhashHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldXxhash, v))
 }
 
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...int) predicate.Agent {
-	return predicate.Agent(sql.FieldIn(FieldStatus, vs...))
+// XxhashHasSuffix applies the HasSuffix predicate on the "xxhash" field.
+func XxhashHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldXxhash, v))
 }
 
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...int) predicate.Agent {
-	return predicate.Agent(sql.FieldNotIn(FieldStatus, vs...))
+// XxhashEqualFold applies the EqualFold predicate on the "xxhash" field.
+func XxhashEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldXxhash, v))
 }
 
-// StatusGT applies the GT predicate on the "status" field.
-func StatusGT(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldGT(FieldStatus, v))
-}
-
-// StatusGTE applies the GTE predicate on the "status" field.
-func StatusGTE(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldGTE(FieldStatus, v))
-}
-
-// StatusLT applies the LT predicate on the "status" field.
-func StatusLT(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldLT(FieldStatus, v))
-}
-
-// StatusLTE applies the LTE predicate on the "status" field.
-func StatusLTE(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldLTE(FieldStatus, v))
+// XxhashContainsFold applies the ContainsFold predicate on the "xxhash" field.
+func XxhashContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldXxhash, v))
 }
 
 // And groups predicates with the AND operator between them.

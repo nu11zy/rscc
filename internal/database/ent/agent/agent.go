@@ -23,8 +23,6 @@ const (
 	FieldPublicKey = "public_key"
 	// FieldXxhash holds the string denoting the xxhash field in the database.
 	FieldXxhash = "xxhash"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
 	// Table holds the table name of the agent in the database.
 	Table = "agents"
 )
@@ -38,7 +36,6 @@ var Columns = []string{
 	FieldAddr,
 	FieldPublicKey,
 	FieldXxhash,
-	FieldStatus,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -62,8 +59,8 @@ var (
 	AddrValidator func(string) error
 	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	PublicKeyValidator func([]byte) error
-	// DefaultStatus holds the default value on creation for the "status" field.
-	DefaultStatus int
+	// XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
+	XxhashValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -99,9 +96,4 @@ func ByAddr(opts ...sql.OrderTermOption) OrderOption {
 // ByXxhash orders the results by the xxhash field.
 func ByXxhash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldXxhash, opts...).ToFunc()
-}
-
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }

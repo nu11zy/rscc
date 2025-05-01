@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
-	"path/filepath"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/pprint"
@@ -66,21 +64,6 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 	sshConfig.AddHostKey(signer)
-
-	// Clean agents that not found in the agent folder
-	agents, err := db.GetAllAgents(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get agents: %w", err)
-	}
-	for _, agent := range agents {
-		if _, err := os.Stat(filepath.Join(constants.AgentDir, agent.ID)); os.IsNotExist(err) {
-			lg.Warnf("Agent %s not found in the agent folder, deleting from database", agent.ID)
-			err := db.DeleteAgent(ctx, agent.ID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to delete agent: %w", err)
-			}
-		}
-	}
 
 	return &OperatorServer{
 		db:        db,
