@@ -78,9 +78,24 @@ func Arch(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldArch, v))
 }
 
-// Addr applies equality check predicate on the "addr" field. It's identical to AddrEQ.
-func Addr(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldAddr, v))
+// Server applies equality check predicate on the "server" field. It's identical to ServerEQ.
+func Server(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldServer, v))
+}
+
+// Shared applies equality check predicate on the "shared" field. It's identical to SharedEQ.
+func Shared(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldShared, v))
+}
+
+// Pie applies equality check predicate on the "pie" field. It's identical to PieEQ.
+func Pie(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldPie, v))
+}
+
+// Garble applies equality check predicate on the "garble" field. It's identical to GarbleEQ.
+func Garble(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldGarble, v))
 }
 
 // PublicKey applies equality check predicate on the "public_key" field. It's identical to PublicKeyEQ.
@@ -288,69 +303,99 @@ func ArchContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldArch, v))
 }
 
-// AddrEQ applies the EQ predicate on the "addr" field.
-func AddrEQ(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldAddr, v))
+// ServerEQ applies the EQ predicate on the "server" field.
+func ServerEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldServer, v))
 }
 
-// AddrNEQ applies the NEQ predicate on the "addr" field.
-func AddrNEQ(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldNEQ(FieldAddr, v))
+// ServerNEQ applies the NEQ predicate on the "server" field.
+func ServerNEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldServer, v))
 }
 
-// AddrIn applies the In predicate on the "addr" field.
-func AddrIn(vs ...string) predicate.Agent {
-	return predicate.Agent(sql.FieldIn(FieldAddr, vs...))
+// ServerIn applies the In predicate on the "server" field.
+func ServerIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldServer, vs...))
 }
 
-// AddrNotIn applies the NotIn predicate on the "addr" field.
-func AddrNotIn(vs ...string) predicate.Agent {
-	return predicate.Agent(sql.FieldNotIn(FieldAddr, vs...))
+// ServerNotIn applies the NotIn predicate on the "server" field.
+func ServerNotIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldServer, vs...))
 }
 
-// AddrGT applies the GT predicate on the "addr" field.
-func AddrGT(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldGT(FieldAddr, v))
+// ServerGT applies the GT predicate on the "server" field.
+func ServerGT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldServer, v))
 }
 
-// AddrGTE applies the GTE predicate on the "addr" field.
-func AddrGTE(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldGTE(FieldAddr, v))
+// ServerGTE applies the GTE predicate on the "server" field.
+func ServerGTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldServer, v))
 }
 
-// AddrLT applies the LT predicate on the "addr" field.
-func AddrLT(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldLT(FieldAddr, v))
+// ServerLT applies the LT predicate on the "server" field.
+func ServerLT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldServer, v))
 }
 
-// AddrLTE applies the LTE predicate on the "addr" field.
-func AddrLTE(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldLTE(FieldAddr, v))
+// ServerLTE applies the LTE predicate on the "server" field.
+func ServerLTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldServer, v))
 }
 
-// AddrContains applies the Contains predicate on the "addr" field.
-func AddrContains(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldContains(FieldAddr, v))
+// ServerContains applies the Contains predicate on the "server" field.
+func ServerContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldServer, v))
 }
 
-// AddrHasPrefix applies the HasPrefix predicate on the "addr" field.
-func AddrHasPrefix(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldHasPrefix(FieldAddr, v))
+// ServerHasPrefix applies the HasPrefix predicate on the "server" field.
+func ServerHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldServer, v))
 }
 
-// AddrHasSuffix applies the HasSuffix predicate on the "addr" field.
-func AddrHasSuffix(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldHasSuffix(FieldAddr, v))
+// ServerHasSuffix applies the HasSuffix predicate on the "server" field.
+func ServerHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldServer, v))
 }
 
-// AddrEqualFold applies the EqualFold predicate on the "addr" field.
-func AddrEqualFold(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldEqualFold(FieldAddr, v))
+// ServerEqualFold applies the EqualFold predicate on the "server" field.
+func ServerEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldServer, v))
 }
 
-// AddrContainsFold applies the ContainsFold predicate on the "addr" field.
-func AddrContainsFold(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldContainsFold(FieldAddr, v))
+// ServerContainsFold applies the ContainsFold predicate on the "server" field.
+func ServerContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldServer, v))
+}
+
+// SharedEQ applies the EQ predicate on the "shared" field.
+func SharedEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldShared, v))
+}
+
+// SharedNEQ applies the NEQ predicate on the "shared" field.
+func SharedNEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldShared, v))
+}
+
+// PieEQ applies the EQ predicate on the "pie" field.
+func PieEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldPie, v))
+}
+
+// PieNEQ applies the NEQ predicate on the "pie" field.
+func PieNEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldPie, v))
+}
+
+// GarbleEQ applies the EQ predicate on the "garble" field.
+func GarbleEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldGarble, v))
+}
+
+// GarbleNEQ applies the NEQ predicate on the "garble" field.
+func GarbleNEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldGarble, v))
 }
 
 // PublicKeyEQ applies the EQ predicate on the "public_key" field.

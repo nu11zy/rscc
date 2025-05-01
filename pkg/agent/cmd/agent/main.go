@@ -3,7 +3,7 @@ package main
 
 import (
 	"agent/internal/metadata"
-	"agent/internal/sshd"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var privKey = ""
 var serverAddress = "127.0.0.1:5522"
 var sshClientVersion = "SSH-2.0-OpenSSH_9.9"
 
@@ -80,12 +81,12 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 		NoClientAuth: true,
 	}
 
-	privKey, err := sshd.GeneratePrivateKey()
+	decodedPrivKey, err := base64.StdEncoding.DecodeString(privKey)
 	if err != nil {
-		log.Printf("Failed to generate private key: %v", err)
+		log.Printf("Failed to decode private key: %v", err)
 		return
 	}
-	signer, err := ssh.ParsePrivateKey(privKey)
+	signer, err := ssh.ParsePrivateKey(decodedPrivKey)
 	if err != nil {
 		log.Printf("Failed to create signer: %v", err)
 		return

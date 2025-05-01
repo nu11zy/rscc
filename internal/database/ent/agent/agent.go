@@ -17,8 +17,16 @@ const (
 	FieldOs = "os"
 	// FieldArch holds the string denoting the arch field in the database.
 	FieldArch = "arch"
-	// FieldAddr holds the string denoting the addr field in the database.
-	FieldAddr = "addr"
+	// FieldServer holds the string denoting the server field in the database.
+	FieldServer = "server"
+	// FieldShared holds the string denoting the shared field in the database.
+	FieldShared = "shared"
+	// FieldPie holds the string denoting the pie field in the database.
+	FieldPie = "pie"
+	// FieldGarble holds the string denoting the garble field in the database.
+	FieldGarble = "garble"
+	// FieldSubsystems holds the string denoting the subsystems field in the database.
+	FieldSubsystems = "subsystems"
 	// FieldPublicKey holds the string denoting the public_key field in the database.
 	FieldPublicKey = "public_key"
 	// FieldXxhash holds the string denoting the xxhash field in the database.
@@ -33,7 +41,11 @@ var Columns = []string{
 	FieldName,
 	FieldOs,
 	FieldArch,
-	FieldAddr,
+	FieldServer,
+	FieldShared,
+	FieldPie,
+	FieldGarble,
+	FieldSubsystems,
 	FieldPublicKey,
 	FieldXxhash,
 }
@@ -55,8 +67,16 @@ var (
 	OsValidator func(string) error
 	// ArchValidator is a validator for the "arch" field. It is called by the builders before save.
 	ArchValidator func(string) error
-	// AddrValidator is a validator for the "addr" field. It is called by the builders before save.
-	AddrValidator func(string) error
+	// ServerValidator is a validator for the "server" field. It is called by the builders before save.
+	ServerValidator func(string) error
+	// DefaultShared holds the default value on creation for the "shared" field.
+	DefaultShared bool
+	// DefaultPie holds the default value on creation for the "pie" field.
+	DefaultPie bool
+	// DefaultGarble holds the default value on creation for the "garble" field.
+	DefaultGarble bool
+	// DefaultSubsystems holds the default value on creation for the "subsystems" field.
+	DefaultSubsystems []string
 	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	PublicKeyValidator func([]byte) error
 	// XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
@@ -88,9 +108,24 @@ func ByArch(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArch, opts...).ToFunc()
 }
 
-// ByAddr orders the results by the addr field.
-func ByAddr(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAddr, opts...).ToFunc()
+// ByServer orders the results by the server field.
+func ByServer(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldServer, opts...).ToFunc()
+}
+
+// ByShared orders the results by the shared field.
+func ByShared(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldShared, opts...).ToFunc()
+}
+
+// ByPie orders the results by the pie field.
+func ByPie(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPie, opts...).ToFunc()
+}
+
+// ByGarble orders the results by the garble field.
+func ByGarble(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGarble, opts...).ToFunc()
 }
 
 // ByXxhash orders the results by the xxhash field.

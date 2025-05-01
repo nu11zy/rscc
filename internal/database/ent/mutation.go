@@ -34,19 +34,24 @@ const (
 // AgentMutation represents an operation that mutates the Agent nodes in the graph.
 type AgentMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *string
-	name          *string
-	os            *string
-	arch          *string
-	addr          *string
-	public_key    *[]byte
-	xxhash        *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Agent, error)
-	predicates    []predicate.Agent
+	op               Op
+	typ              string
+	id               *string
+	name             *string
+	os               *string
+	arch             *string
+	server           *string
+	shared           *bool
+	pie              *bool
+	garble           *bool
+	subsystems       *[]string
+	appendsubsystems []string
+	public_key       *[]byte
+	xxhash           *string
+	clearedFields    map[string]struct{}
+	done             bool
+	oldValue         func(context.Context) (*Agent, error)
+	predicates       []predicate.Agent
 }
 
 var _ ent.Mutation = (*AgentMutation)(nil)
@@ -261,40 +266,199 @@ func (m *AgentMutation) ResetArch() {
 	m.arch = nil
 }
 
-// SetAddr sets the "addr" field.
-func (m *AgentMutation) SetAddr(s string) {
-	m.addr = &s
+// SetServer sets the "server" field.
+func (m *AgentMutation) SetServer(s string) {
+	m.server = &s
 }
 
-// Addr returns the value of the "addr" field in the mutation.
-func (m *AgentMutation) Addr() (r string, exists bool) {
-	v := m.addr
+// Server returns the value of the "server" field in the mutation.
+func (m *AgentMutation) Server() (r string, exists bool) {
+	v := m.server
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAddr returns the old "addr" field's value of the Agent entity.
+// OldServer returns the old "server" field's value of the Agent entity.
 // If the Agent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldAddr(ctx context.Context) (v string, err error) {
+func (m *AgentMutation) OldServer(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAddr is only allowed on UpdateOne operations")
+		return v, errors.New("OldServer is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAddr requires an ID field in the mutation")
+		return v, errors.New("OldServer requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAddr: %w", err)
+		return v, fmt.Errorf("querying old value for OldServer: %w", err)
 	}
-	return oldValue.Addr, nil
+	return oldValue.Server, nil
 }
 
-// ResetAddr resets all changes to the "addr" field.
-func (m *AgentMutation) ResetAddr() {
-	m.addr = nil
+// ResetServer resets all changes to the "server" field.
+func (m *AgentMutation) ResetServer() {
+	m.server = nil
+}
+
+// SetShared sets the "shared" field.
+func (m *AgentMutation) SetShared(b bool) {
+	m.shared = &b
+}
+
+// Shared returns the value of the "shared" field in the mutation.
+func (m *AgentMutation) Shared() (r bool, exists bool) {
+	v := m.shared
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShared returns the old "shared" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldShared(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShared is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShared requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShared: %w", err)
+	}
+	return oldValue.Shared, nil
+}
+
+// ResetShared resets all changes to the "shared" field.
+func (m *AgentMutation) ResetShared() {
+	m.shared = nil
+}
+
+// SetPie sets the "pie" field.
+func (m *AgentMutation) SetPie(b bool) {
+	m.pie = &b
+}
+
+// Pie returns the value of the "pie" field in the mutation.
+func (m *AgentMutation) Pie() (r bool, exists bool) {
+	v := m.pie
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPie returns the old "pie" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldPie(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPie is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPie requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPie: %w", err)
+	}
+	return oldValue.Pie, nil
+}
+
+// ResetPie resets all changes to the "pie" field.
+func (m *AgentMutation) ResetPie() {
+	m.pie = nil
+}
+
+// SetGarble sets the "garble" field.
+func (m *AgentMutation) SetGarble(b bool) {
+	m.garble = &b
+}
+
+// Garble returns the value of the "garble" field in the mutation.
+func (m *AgentMutation) Garble() (r bool, exists bool) {
+	v := m.garble
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGarble returns the old "garble" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldGarble(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGarble is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGarble requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGarble: %w", err)
+	}
+	return oldValue.Garble, nil
+}
+
+// ResetGarble resets all changes to the "garble" field.
+func (m *AgentMutation) ResetGarble() {
+	m.garble = nil
+}
+
+// SetSubsystems sets the "subsystems" field.
+func (m *AgentMutation) SetSubsystems(s []string) {
+	m.subsystems = &s
+	m.appendsubsystems = nil
+}
+
+// Subsystems returns the value of the "subsystems" field in the mutation.
+func (m *AgentMutation) Subsystems() (r []string, exists bool) {
+	v := m.subsystems
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubsystems returns the old "subsystems" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldSubsystems(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSubsystems is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSubsystems requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubsystems: %w", err)
+	}
+	return oldValue.Subsystems, nil
+}
+
+// AppendSubsystems adds s to the "subsystems" field.
+func (m *AgentMutation) AppendSubsystems(s []string) {
+	m.appendsubsystems = append(m.appendsubsystems, s...)
+}
+
+// AppendedSubsystems returns the list of values that were appended to the "subsystems" field in this mutation.
+func (m *AgentMutation) AppendedSubsystems() ([]string, bool) {
+	if len(m.appendsubsystems) == 0 {
+		return nil, false
+	}
+	return m.appendsubsystems, true
+}
+
+// ResetSubsystems resets all changes to the "subsystems" field.
+func (m *AgentMutation) ResetSubsystems() {
+	m.subsystems = nil
+	m.appendsubsystems = nil
 }
 
 // SetPublicKey sets the "public_key" field.
@@ -403,7 +567,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 10)
 	if m.name != nil {
 		fields = append(fields, agent.FieldName)
 	}
@@ -413,8 +577,20 @@ func (m *AgentMutation) Fields() []string {
 	if m.arch != nil {
 		fields = append(fields, agent.FieldArch)
 	}
-	if m.addr != nil {
-		fields = append(fields, agent.FieldAddr)
+	if m.server != nil {
+		fields = append(fields, agent.FieldServer)
+	}
+	if m.shared != nil {
+		fields = append(fields, agent.FieldShared)
+	}
+	if m.pie != nil {
+		fields = append(fields, agent.FieldPie)
+	}
+	if m.garble != nil {
+		fields = append(fields, agent.FieldGarble)
+	}
+	if m.subsystems != nil {
+		fields = append(fields, agent.FieldSubsystems)
 	}
 	if m.public_key != nil {
 		fields = append(fields, agent.FieldPublicKey)
@@ -436,8 +612,16 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Os()
 	case agent.FieldArch:
 		return m.Arch()
-	case agent.FieldAddr:
-		return m.Addr()
+	case agent.FieldServer:
+		return m.Server()
+	case agent.FieldShared:
+		return m.Shared()
+	case agent.FieldPie:
+		return m.Pie()
+	case agent.FieldGarble:
+		return m.Garble()
+	case agent.FieldSubsystems:
+		return m.Subsystems()
 	case agent.FieldPublicKey:
 		return m.PublicKey()
 	case agent.FieldXxhash:
@@ -457,8 +641,16 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldOs(ctx)
 	case agent.FieldArch:
 		return m.OldArch(ctx)
-	case agent.FieldAddr:
-		return m.OldAddr(ctx)
+	case agent.FieldServer:
+		return m.OldServer(ctx)
+	case agent.FieldShared:
+		return m.OldShared(ctx)
+	case agent.FieldPie:
+		return m.OldPie(ctx)
+	case agent.FieldGarble:
+		return m.OldGarble(ctx)
+	case agent.FieldSubsystems:
+		return m.OldSubsystems(ctx)
 	case agent.FieldPublicKey:
 		return m.OldPublicKey(ctx)
 	case agent.FieldXxhash:
@@ -493,12 +685,40 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetArch(v)
 		return nil
-	case agent.FieldAddr:
+	case agent.FieldServer:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetAddr(v)
+		m.SetServer(v)
+		return nil
+	case agent.FieldShared:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShared(v)
+		return nil
+	case agent.FieldPie:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPie(v)
+		return nil
+	case agent.FieldGarble:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGarble(v)
+		return nil
+	case agent.FieldSubsystems:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubsystems(v)
 		return nil
 	case agent.FieldPublicKey:
 		v, ok := value.([]byte)
@@ -572,8 +792,20 @@ func (m *AgentMutation) ResetField(name string) error {
 	case agent.FieldArch:
 		m.ResetArch()
 		return nil
-	case agent.FieldAddr:
-		m.ResetAddr()
+	case agent.FieldServer:
+		m.ResetServer()
+		return nil
+	case agent.FieldShared:
+		m.ResetShared()
+		return nil
+	case agent.FieldPie:
+		m.ResetPie()
+		return nil
+	case agent.FieldGarble:
+		m.ResetGarble()
+		return nil
+	case agent.FieldSubsystems:
+		m.ResetSubsystems()
 		return nil
 	case agent.FieldPublicKey:
 		m.ResetPublicKey()

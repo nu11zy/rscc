@@ -62,3 +62,18 @@ func ValidateGOARCH(goarch string) bool {
 	var validGOARCH = []string{"amd64", "arm64"}
 	return slices.Contains(validGOARCH, goarch)
 }
+
+func ValidateSybsystem(ss []string) bool {
+	var validSS = []string{
+		"execute-assembly",
+		"inject",
+		"sleep",
+	}
+
+	for _, s := range ss {
+		if !slices.Contains(validSS, s) {
+			return false
+		}
+	}
+	return true
+}

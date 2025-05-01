@@ -85,14 +85,18 @@ func (db *Database) DeleteUserByID(ctx context.Context, id string) error {
 	return db.client.User.DeleteOneID(id).Exec(ctx)
 }
 
-func (db *Database) CreateAgent(ctx context.Context, name, os, arch, addr, xxhash string, publicKey []byte) (*ent.Agent, error) {
+func (db *Database) CreateAgent(ctx context.Context, name, os, arch, server string, shared, pie, garble bool, subsystems []string, publicKey []byte, xxhash string) (*ent.Agent, error) {
 	agent, err := db.client.Agent.Create().
 		SetName(name).
 		SetOs(os).
 		SetArch(arch).
-		SetAddr(addr).
-		SetXxhash(xxhash).
+		SetServer(server).
+		SetShared(shared).
+		SetPie(pie).
+		SetGarble(garble).
+		SetSubsystems(subsystems).
 		SetPublicKey(publicKey).
+		SetXxhash(xxhash).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create agent: %w", err)

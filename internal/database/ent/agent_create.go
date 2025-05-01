@@ -37,9 +37,57 @@ func (ac *AgentCreate) SetArch(s string) *AgentCreate {
 	return ac
 }
 
-// SetAddr sets the "addr" field.
-func (ac *AgentCreate) SetAddr(s string) *AgentCreate {
-	ac.mutation.SetAddr(s)
+// SetServer sets the "server" field.
+func (ac *AgentCreate) SetServer(s string) *AgentCreate {
+	ac.mutation.SetServer(s)
+	return ac
+}
+
+// SetShared sets the "shared" field.
+func (ac *AgentCreate) SetShared(b bool) *AgentCreate {
+	ac.mutation.SetShared(b)
+	return ac
+}
+
+// SetNillableShared sets the "shared" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableShared(b *bool) *AgentCreate {
+	if b != nil {
+		ac.SetShared(*b)
+	}
+	return ac
+}
+
+// SetPie sets the "pie" field.
+func (ac *AgentCreate) SetPie(b bool) *AgentCreate {
+	ac.mutation.SetPie(b)
+	return ac
+}
+
+// SetNillablePie sets the "pie" field if the given value is not nil.
+func (ac *AgentCreate) SetNillablePie(b *bool) *AgentCreate {
+	if b != nil {
+		ac.SetPie(*b)
+	}
+	return ac
+}
+
+// SetGarble sets the "garble" field.
+func (ac *AgentCreate) SetGarble(b bool) *AgentCreate {
+	ac.mutation.SetGarble(b)
+	return ac
+}
+
+// SetNillableGarble sets the "garble" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableGarble(b *bool) *AgentCreate {
+	if b != nil {
+		ac.SetGarble(*b)
+	}
+	return ac
+}
+
+// SetSubsystems sets the "subsystems" field.
+func (ac *AgentCreate) SetSubsystems(s []string) *AgentCreate {
+	ac.mutation.SetSubsystems(s)
 	return ac
 }
 
@@ -104,6 +152,22 @@ func (ac *AgentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *AgentCreate) defaults() {
+	if _, ok := ac.mutation.Shared(); !ok {
+		v := agent.DefaultShared
+		ac.mutation.SetShared(v)
+	}
+	if _, ok := ac.mutation.Pie(); !ok {
+		v := agent.DefaultPie
+		ac.mutation.SetPie(v)
+	}
+	if _, ok := ac.mutation.Garble(); !ok {
+		v := agent.DefaultGarble
+		ac.mutation.SetGarble(v)
+	}
+	if _, ok := ac.mutation.Subsystems(); !ok {
+		v := agent.DefaultSubsystems
+		ac.mutation.SetSubsystems(v)
+	}
 	if _, ok := ac.mutation.ID(); !ok {
 		v := agent.DefaultID()
 		ac.mutation.SetID(v)
@@ -136,13 +200,25 @@ func (ac *AgentCreate) check() error {
 			return &ValidationError{Name: "arch", err: fmt.Errorf(`ent: validator failed for field "Agent.arch": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Addr(); !ok {
-		return &ValidationError{Name: "addr", err: errors.New(`ent: missing required field "Agent.addr"`)}
+	if _, ok := ac.mutation.Server(); !ok {
+		return &ValidationError{Name: "server", err: errors.New(`ent: missing required field "Agent.server"`)}
 	}
-	if v, ok := ac.mutation.Addr(); ok {
-		if err := agent.AddrValidator(v); err != nil {
-			return &ValidationError{Name: "addr", err: fmt.Errorf(`ent: validator failed for field "Agent.addr": %w`, err)}
+	if v, ok := ac.mutation.Server(); ok {
+		if err := agent.ServerValidator(v); err != nil {
+			return &ValidationError{Name: "server", err: fmt.Errorf(`ent: validator failed for field "Agent.server": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.Shared(); !ok {
+		return &ValidationError{Name: "shared", err: errors.New(`ent: missing required field "Agent.shared"`)}
+	}
+	if _, ok := ac.mutation.Pie(); !ok {
+		return &ValidationError{Name: "pie", err: errors.New(`ent: missing required field "Agent.pie"`)}
+	}
+	if _, ok := ac.mutation.Garble(); !ok {
+		return &ValidationError{Name: "garble", err: errors.New(`ent: missing required field "Agent.garble"`)}
+	}
+	if _, ok := ac.mutation.Subsystems(); !ok {
+		return &ValidationError{Name: "subsystems", err: errors.New(`ent: missing required field "Agent.subsystems"`)}
 	}
 	if _, ok := ac.mutation.PublicKey(); !ok {
 		return &ValidationError{Name: "public_key", err: errors.New(`ent: missing required field "Agent.public_key"`)}
@@ -207,9 +283,25 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_spec.SetField(agent.FieldArch, field.TypeString, value)
 		_node.Arch = value
 	}
-	if value, ok := ac.mutation.Addr(); ok {
-		_spec.SetField(agent.FieldAddr, field.TypeString, value)
-		_node.Addr = value
+	if value, ok := ac.mutation.Server(); ok {
+		_spec.SetField(agent.FieldServer, field.TypeString, value)
+		_node.Server = value
+	}
+	if value, ok := ac.mutation.Shared(); ok {
+		_spec.SetField(agent.FieldShared, field.TypeBool, value)
+		_node.Shared = value
+	}
+	if value, ok := ac.mutation.Pie(); ok {
+		_spec.SetField(agent.FieldPie, field.TypeBool, value)
+		_node.Pie = value
+	}
+	if value, ok := ac.mutation.Garble(); ok {
+		_spec.SetField(agent.FieldGarble, field.TypeBool, value)
+		_node.Garble = value
+	}
+	if value, ok := ac.mutation.Subsystems(); ok {
+		_spec.SetField(agent.FieldSubsystems, field.TypeJSON, value)
+		_node.Subsystems = value
 	}
 	if value, ok := ac.mutation.PublicKey(); ok {
 		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)

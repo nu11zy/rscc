@@ -10,6 +10,8 @@ import (
 	"rscc/internal/common/pprint"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
+	"rscc/internal/opsrv/cmd/agentcmd"
+	"rscc/internal/opsrv/cmd/sessioncmd"
 	"rscc/internal/session"
 	"rscc/internal/sshd"
 	"strings"
@@ -26,6 +28,7 @@ type OperatorServer struct {
 	sm        *session.SessionManager
 	address   string
 	sshConfig *ssh.ServerConfig
+	publicKey ssh.PublicKey
 	lg        *zap.SugaredLogger
 }
 
@@ -70,6 +73,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		sm:        sm,
 		address:   address,
 		sshConfig: sshConfig,
+		publicKey: signer.PublicKey(),
 		lg:        lg,
 	}, nil
 }
@@ -282,7 +286,7 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.SetOut(terminal)
 	app.SetErr(terminal)
 
-	app.AddCommand(s.NewSessionCommand())
-	app.AddCommand(s.NewAgentCommand())
+	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
+	app.AddCommand(agentcmd.NewAgentCmd(s.publicKey, s.db).Command)
 	return app
 }

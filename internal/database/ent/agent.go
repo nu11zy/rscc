@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"rscc/internal/database/ent/agent"
 	"strings"
@@ -22,8 +23,16 @@ type Agent struct {
 	Os string `json:"os,omitempty"`
 	// Arch holds the value of the "arch" field.
 	Arch string `json:"arch,omitempty"`
-	// Addr holds the value of the "addr" field.
-	Addr string `json:"addr,omitempty"`
+	// Server holds the value of the "server" field.
+	Server string `json:"server,omitempty"`
+	// Shared holds the value of the "shared" field.
+	Shared bool `json:"shared,omitempty"`
+	// Pie holds the value of the "pie" field.
+	Pie bool `json:"pie,omitempty"`
+	// Garble holds the value of the "garble" field.
+	Garble bool `json:"garble,omitempty"`
+	// Subsystems holds the value of the "subsystems" field.
+	Subsystems []string `json:"subsystems,omitempty"`
 	// PublicKey holds the value of the "public_key" field.
 	PublicKey []byte `json:"public_key,omitempty"`
 	// Xxhash holds the value of the "xxhash" field.
@@ -36,9 +45,11 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agent.FieldPublicKey:
+		case agent.FieldSubsystems, agent.FieldPublicKey:
 			values[i] = new([]byte)
-		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldAddr, agent.FieldXxhash:
+		case agent.FieldShared, agent.FieldPie, agent.FieldGarble:
+			values[i] = new(sql.NullBool)
+		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldServer, agent.FieldXxhash:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -79,11 +90,37 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Arch = value.String
 			}
-		case agent.FieldAddr:
+		case agent.FieldServer:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field addr", values[i])
+				return fmt.Errorf("unexpected type %T for field server", values[i])
 			} else if value.Valid {
-				a.Addr = value.String
+				a.Server = value.String
+			}
+		case agent.FieldShared:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field shared", values[i])
+			} else if value.Valid {
+				a.Shared = value.Bool
+			}
+		case agent.FieldPie:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field pie", values[i])
+			} else if value.Valid {
+				a.Pie = value.Bool
+			}
+		case agent.FieldGarble:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field garble", values[i])
+			} else if value.Valid {
+				a.Garble = value.Bool
+			}
+		case agent.FieldSubsystems:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field subsystems", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &a.Subsystems); err != nil {
+					return fmt.Errorf("unmarshal field subsystems: %w", err)
+				}
 			}
 		case agent.FieldPublicKey:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -142,8 +179,20 @@ func (a *Agent) String() string {
 	builder.WriteString("arch=")
 	builder.WriteString(a.Arch)
 	builder.WriteString(", ")
-	builder.WriteString("addr=")
-	builder.WriteString(a.Addr)
+	builder.WriteString("server=")
+	builder.WriteString(a.Server)
+	builder.WriteString(", ")
+	builder.WriteString("shared=")
+	builder.WriteString(fmt.Sprintf("%v", a.Shared))
+	builder.WriteString(", ")
+	builder.WriteString("pie=")
+	builder.WriteString(fmt.Sprintf("%v", a.Pie))
+	builder.WriteString(", ")
+	builder.WriteString("garble=")
+	builder.WriteString(fmt.Sprintf("%v", a.Garble))
+	builder.WriteString(", ")
+	builder.WriteString("subsystems=")
+	builder.WriteString(fmt.Sprintf("%v", a.Subsystems))
 	builder.WriteString(", ")
 	builder.WriteString("public_key=")
 	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))

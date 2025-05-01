@@ -27,16 +27,32 @@ func init() {
 	agentDescArch := agentFields[3].Descriptor()
 	// agent.ArchValidator is a validator for the "arch" field. It is called by the builders before save.
 	agent.ArchValidator = agentDescArch.Validators[0].(func(string) error)
-	// agentDescAddr is the schema descriptor for addr field.
-	agentDescAddr := agentFields[4].Descriptor()
-	// agent.AddrValidator is a validator for the "addr" field. It is called by the builders before save.
-	agent.AddrValidator = agentDescAddr.Validators[0].(func(string) error)
+	// agentDescServer is the schema descriptor for server field.
+	agentDescServer := agentFields[4].Descriptor()
+	// agent.ServerValidator is a validator for the "server" field. It is called by the builders before save.
+	agent.ServerValidator = agentDescServer.Validators[0].(func(string) error)
+	// agentDescShared is the schema descriptor for shared field.
+	agentDescShared := agentFields[5].Descriptor()
+	// agent.DefaultShared holds the default value on creation for the shared field.
+	agent.DefaultShared = agentDescShared.Default.(bool)
+	// agentDescPie is the schema descriptor for pie field.
+	agentDescPie := agentFields[6].Descriptor()
+	// agent.DefaultPie holds the default value on creation for the pie field.
+	agent.DefaultPie = agentDescPie.Default.(bool)
+	// agentDescGarble is the schema descriptor for garble field.
+	agentDescGarble := agentFields[7].Descriptor()
+	// agent.DefaultGarble holds the default value on creation for the garble field.
+	agent.DefaultGarble = agentDescGarble.Default.(bool)
+	// agentDescSubsystems is the schema descriptor for subsystems field.
+	agentDescSubsystems := agentFields[8].Descriptor()
+	// agent.DefaultSubsystems holds the default value on creation for the subsystems field.
+	agent.DefaultSubsystems = agentDescSubsystems.Default.([]string)
 	// agentDescPublicKey is the schema descriptor for public_key field.
-	agentDescPublicKey := agentFields[5].Descriptor()
+	agentDescPublicKey := agentFields[9].Descriptor()
 	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
 	// agentDescXxhash is the schema descriptor for xxhash field.
-	agentDescXxhash := agentFields[6].Descriptor()
+	agentDescXxhash := agentFields[10].Descriptor()
 	// agent.XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
 	agent.XxhashValidator = agentDescXxhash.Validators[0].(func(string) error)
 	// agentDescID is the schema descriptor for id field.
