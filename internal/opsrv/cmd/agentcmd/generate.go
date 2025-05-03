@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,11 +19,16 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
+
+type BuilderConfig struct {
+	IsDebug bool
+}
 
 func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd := &cobra.Command{
@@ -125,6 +131,11 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 	defer os.RemoveAll(tmpDir)
 
+	// template agent
+	if err := templateAgent(tmpDir); err != nil {
+		return fmt.Errorf("failed to template agent: %s", err.Error())
+	}
+
 	// Build agent
 	cmd.Println(pprint.Info("Building agent `%s` for %s/%s (server: %s)", name, goos, goarch, server))
 	name, err = buildAgent(tmpDir, name, goos, goarch, server, privKey, shared, pie, garble)
@@ -194,6 +205,57 @@ func unzipAgent() (string, error) {
 	}
 
 	return tempDir, nil
+}
+
+// templateAgent templates agent source code
+func templateAgent(dir string) error {
+	return filepath.WalkDir(dir, func(fsPath string, f fs.DirEntry, err error) error {
+		if f.IsDir() {
+			// ignore directory
+			return nil
+		}
+
+		// TODO: ignore vendor directory
+		if strings.Contains(fsPath, "vendor") {
+			return nil
+		}
+
+		// TODO: check extension in the better way
+		if !strings.Contains(fsPath, ".go") {
+			return nil
+		}
+
+		// get raw code
+		rawCode, err := os.ReadFile(fsPath)
+		if err != nil {
+			return err
+		}
+
+		// create template
+		code := template.New("rscc")
+		code, err = code.Parse(string(rawCode))
+		if err != nil {
+			return err
+		}
+
+		// generate code
+		buf := bytes.NewBuffer([]byte{})
+		if err := code.Execute(buf, struct {
+			Config *BuilderConfig
+		}{
+			Config: &BuilderConfig{
+				IsDebug: true,
+			},
+		}); err != nil {
+			return err
+		}
+
+		// write code
+		if err := os.WriteFile(fsPath, buf.Bytes(), os.ModePerm); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func buildAgent(tmpDir, name, goos, goarch, server string, privKey []byte, shared, pie, garble bool) (string, error) {
