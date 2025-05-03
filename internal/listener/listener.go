@@ -121,8 +121,10 @@ func (l *AgentListener) Start(ctx context.Context) error {
 
 	g.Go(func() error {
 		<-ctx.Done()
-		l.CloseListener()
-		l.lg.Info("Stop agent listener serving")
+		if err := l.CloseListener(); err != nil {
+			l.lg.Warn("close listener", zap.Error(err))
+		}
+		l.lg.Info("stop listener")
 		return nil
 	})
 

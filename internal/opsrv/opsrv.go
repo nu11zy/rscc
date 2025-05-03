@@ -137,8 +137,10 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 
 	g.Go(func() error {
 		<-ctx.Done()
-		s.CloseListener()
-		s.lg.Info("Stop operator listener serving")
+		if err := s.CloseListener(); err != nil {
+			s.lg.Warn("close listener", zap.Error(err))
+		}
+		s.lg.Info("stop listener")
 		return nil
 	})
 
