@@ -32,7 +32,7 @@ func NewLogger() (*zap.SugaredLogger, error) {
 	cfg.DisableStacktrace = true
 	cfg.EncoderConfig.ConsoleSeparator = " "
 	cfg.EncoderConfig.EncodeLevel = consoleColorLevelEncoder
-	cfg.EncoderConfig.EncodeTime = consoleDeltaEncoder()
+	cfg.EncoderConfig.EncodeTime = consoleTimeAbsEncoder()
 	cfg.EncoderConfig.EncodeName = func(s string, encoder zapcore.PrimitiveArrayEncoder) {
 		encoder.AppendString(nameColor.Sprint(s))
 	}
@@ -80,7 +80,15 @@ func consoleColorLevelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder
 	}
 }
 
-func consoleDeltaEncoder() zapcore.TimeEncoder {
+func consoleTimeAbsEncoder() zapcore.TimeEncoder {
+	return func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		timeColor := color.New(color.Faint)
+		enc.AppendString(timeColor.Sprintf("%s", time.Now().Format("02/01/2006 15:04:05")))
+	}
+}
+
+/*
+func consoleTimeDeltaEncoder() zapcore.TimeEncoder {
 	return func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		duration := t.Sub(programStart)
 		seconds := duration / time.Second
@@ -90,3 +98,4 @@ func consoleDeltaEncoder() zapcore.TimeEncoder {
 		enc.AppendString(secColor.Sprintf("%03d", seconds) + msecColor.Sprintf(".%02d", milliseconds/10))
 	}
 }
+*/
