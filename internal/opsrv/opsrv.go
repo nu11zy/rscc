@@ -83,12 +83,13 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 	sshConfig.AddHostKey(signer)
 
 	return &OperatorServer{
-		db:        db,
-		sm:        sm,
-		address:   address,
-		sshConfig: sshConfig,
-		publicKey: signer.PublicKey(),
-		lg:        lg,
+		db:          db,
+		sm:          sm,
+		address:     address,
+		sshConfig:   sshConfig,
+		publicKey:   signer.PublicKey(),
+		lg:          lg,
+		tcpListener: nil,
 	}, nil
 }
 
