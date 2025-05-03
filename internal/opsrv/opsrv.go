@@ -89,7 +89,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		sm:          sm,
 		address:     address,
 		sshConfig:   sshConfig,
-		sshTimeout:  30, // TODO: make it configurable
+		sshTimeout:  constants.SshTimeout, // TODO: make it configurable (?)
 		publicKey:   signer.PublicKey(),
 		lg:          lg,
 		tcpListener: nil,

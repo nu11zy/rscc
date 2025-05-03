@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/network"
 	"rscc/internal/database"
@@ -61,7 +62,7 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 		db:          db,
 		address:     address,
 		lg:          lg,
-		sshTimeout:  30, // TODO: make this configurable
+		sshTimeout:  constants.SshTimeout, // TODO: make it configurable (?)
 		tcpListener: nil,
 	}
 
