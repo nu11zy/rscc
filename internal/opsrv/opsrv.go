@@ -31,6 +31,7 @@ type OperatorServer struct {
 	sm          *session.SessionManager
 	address     string
 	sshConfig   *ssh.ServerConfig
+	sshTimeout  int // timeout for SSH connection
 	publicKey   ssh.PublicKey
 	lg          *zap.SugaredLogger
 	tcpListener *net.TCPListener
@@ -88,6 +89,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		sm:          sm,
 		address:     address,
 		sshConfig:   sshConfig,
+		sshTimeout:  30, // TODO: make it configurable
 		publicKey:   signer.PublicKey(),
 		lg:          lg,
 		tcpListener: nil,
@@ -160,13 +162,10 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	lg := s.lg.Named(fmt.Sprintf("(%s)", conn.RemoteAddr().String()))
 	lg.Debug("process new connection")
 
-	// TODO: move to config
-	timeout := 30
-
 	// create connection with timeout
 	realConn := &network.TimeoutConn{
 		Conn:    conn,
-		Timeout: time.Duration(timeout) * time.Minute,
+		Timeout: time.Duration(s.sshTimeout) * time.Minute,
 	}
 
 	// create new SSH connection
@@ -179,13 +178,13 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	// chan to stop keepalive process in case of SSH termination
 	stopKeepalive := make(chan struct{}, 1)
 
-	if timeout > 0 {
+	if s.sshTimeout > 0 {
 		// set x2 for timeout (after that time SSH client will be mark as stolen)
-		realConn.Timeout = time.Duration(2*timeout) * time.Second
+		realConn.Timeout = time.Duration(2*s.sshTimeout) * time.Second
 
 		// send keepalive messages
 		go func() {
-			ticker := time.NewTicker(time.Duration(timeout) * time.Second)
+			ticker := time.NewTicker(time.Duration(s.sshTimeout) * time.Second)
 			defer ticker.Stop()
 
 			for {
