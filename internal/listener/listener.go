@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"rscc/internal/common/logger"
+	"rscc/internal/common/network"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/session"
@@ -140,15 +141,53 @@ func (l *AgentListener) CloseListener() error {
 }
 
 func (l *AgentListener) handleConnection(conn net.Conn) {
-	lg := l.lg.Named("tcp")
-	lg.Debugf("New connection from %s", conn.RemoteAddr())
+	lg := l.lg.Named(fmt.Sprintf("(%s)", conn.RemoteAddr().String()))
+	lg.Debug("process new connection")
 
-	sshConn, chans, reqs, err := ssh.NewServerConn(conn, l.sshConfig)
+	// TODO: move to config
+	timeout := 30
+
+	// create connection with timeout
+	realConn := &network.TimeoutConn{
+		Conn:    conn,
+		Timeout: time.Duration(timeout) * time.Minute,
+	}
+
+	// create new SSH connection
+	sshConn, chans, reqs, err := ssh.NewServerConn(realConn, l.sshConfig)
 	if err != nil {
 		lg.Errorf("SSH handshake failed: %v", err)
 		return
 	}
-	defer sshConn.Close()
+
+	// chan to stop keepalive process in case of SSH termination
+	stopKeepalive := make(chan struct{}, 1)
+
+	if timeout > 0 {
+		// set x2 for timeout (after that time SSH client will be mark as stolen)
+		realConn.Timeout = time.Duration(2*timeout) * time.Second
+
+		// send keepalive messages
+		go func() {
+			ticker := time.NewTicker(time.Duration(timeout) * time.Second)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ticker.C:
+					lg.Debug("send keepalive request")
+					if _, _, err = sshConn.SendRequest("keepalive@openssh.com", true, []byte{}); err != nil {
+						lg.Warnf("failed to send keepalive, assuming SSH client disconnected: %s", err.Error())
+						sshConn.Close()
+						return
+					}
+				case <-stopKeepalive:
+					lg.Debug("stop sending keepalive requests")
+					return
+				}
+			}
+		}()
+	}
 
 	rawMetadata := sshConn.User()
 	lg.Infof("New SSH connection from %s", sshConn.RemoteAddr())
@@ -165,6 +204,9 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 
 	go ssh.DiscardRequests(reqs)
 	l.handleChannels(chans)
+
+	// stop gorutine with keepalive
+	stopKeepalive <- struct{}{}
 
 	lg.Infof("SSH connection closed from %s", sshConn.RemoteAddr())
 }
