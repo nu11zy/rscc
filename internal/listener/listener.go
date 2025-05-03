@@ -3,7 +3,9 @@ package listener
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"rscc/internal/common/logger"
 	"rscc/internal/database"
@@ -14,14 +16,16 @@ import (
 
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/sync/errgroup"
 )
 
 type AgentListener struct {
-	sm        *session.SessionManager
-	db        *database.Database
-	address   string
-	sshConfig *ssh.ServerConfig
-	lg        *zap.SugaredLogger
+	sm          *session.SessionManager
+	db          *database.Database
+	address     string
+	sshConfig   *ssh.ServerConfig
+	lg          *zap.SugaredLogger
+	tcpListener *net.TCPListener
 }
 
 const (
@@ -51,10 +55,11 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 	}
 
 	agentListener := &AgentListener{
-		sm:      sm,
-		db:      db,
-		address: address,
-		lg:      lg,
+		sm:          sm,
+		db:          db,
+		address:     address,
+		lg:          lg,
+		tcpListener: nil,
 	}
 
 	sshConfig := &ssh.ServerConfig{
@@ -72,6 +77,7 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 	return agentListener, nil
 }
 
+// Start starts agent's listener
 func (l *AgentListener) Start(ctx context.Context) error {
 	listener, err := net.Listen("tcp", l.address)
 	if err != nil {
@@ -85,28 +91,48 @@ func (l *AgentListener) Start(ctx context.Context) error {
 	}
 	l.lg.Infof("Agent listener started at %s", l.address)
 
-	for {
-		err := tcpListener.SetDeadline(time.Now().Add(2 * time.Second))
-		if err != nil {
-			return fmt.Errorf("failed to set deadline: %w", err)
-		}
+	// save TCP listener
+	l.tcpListener = tcpListener
+	if err := l.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
+		return fmt.Errorf("failed to set deadline: %s", err.Error())
+	}
 
-		conn, err := tcpListener.Accept()
-		if err != nil {
-			if ne, ok := err.(net.Error); ok && ne.Timeout() {
-				select {
-				case <-ctx.Done():
-					l.lg.Info("Agent listener stopped")
-					return nil
-				default:
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		for {
+			conn, err := l.tcpListener.Accept()
+			if err != nil {
+				if ne, ok := err.(net.Error); ok && ne.Timeout() {
+					// avoid busy loop
 					continue
 				}
+				if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
+					return nil
+				}
+				l.lg.Errorf("failed to accept connection: %v", err)
+				return err
 			}
-			l.lg.Errorf("failed to accept connection: %v", err)
-			continue
+			go l.handleConnection(conn)
 		}
-		go l.handleConnection(conn)
+	})
+
+	g.Go(func() error {
+		<-ctx.Done()
+		l.CloseListener()
+		l.lg.Info("Stop agent listener serving")
+		return nil
+	})
+
+	return g.Wait()
+}
+
+// CloseListener closes listener if it's active
+func (l *AgentListener) CloseListener() error {
+	if l.tcpListener != nil {
+		return l.tcpListener.Close()
 	}
+	return nil
 }
 
 func (l *AgentListener) handleConnection(conn net.Conn) {

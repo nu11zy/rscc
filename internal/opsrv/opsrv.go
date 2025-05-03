@@ -2,6 +2,7 @@ package opsrv
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -20,16 +21,18 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/sync/errgroup"
 	"golang.org/x/term"
 )
 
 type OperatorServer struct {
-	db        *database.Database
-	sm        *session.SessionManager
-	address   string
-	sshConfig *ssh.ServerConfig
-	publicKey ssh.PublicKey
-	lg        *zap.SugaredLogger
+	db          *database.Database
+	sm          *session.SessionManager
+	address     string
+	sshConfig   *ssh.ServerConfig
+	publicKey   ssh.PublicKey
+	lg          *zap.SugaredLogger
+	tcpListener *net.TCPListener
 }
 
 type ExtraData struct {
@@ -89,6 +92,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 	}, nil
 }
 
+// Start starts operator's listener
 func (s *OperatorServer) Start(ctx context.Context) error {
 	listener, err := net.Listen("tcp", s.address)
 	if err != nil {
@@ -102,28 +106,48 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 	}
 	s.lg.Infof("Operator server started at %s", s.address)
 
-	for {
-		err := tcpListener.SetDeadline(time.Now().Add(2 * time.Second))
-		if err != nil {
-			return fmt.Errorf("failed to set deadline: %w", err)
-		}
+	// save TCP listener
+	s.tcpListener = tcpListener
+	if err := s.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
+		return fmt.Errorf("failed to set deadline: %s", err.Error())
+	}
 
-		conn, err := tcpListener.Accept()
-		if err != nil {
-			if ne, ok := err.(net.Error); ok && ne.Timeout() {
-				select {
-				case <-ctx.Done():
-					s.lg.Info("Operator server stopped")
-					return nil
-				default:
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		for {
+			conn, err := s.tcpListener.Accept()
+			if err != nil {
+				if ne, ok := err.(net.Error); ok && ne.Timeout() {
+					// avoid busy loop
 					continue
 				}
+				if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
+					return nil
+				}
+				s.lg.Errorf("failed to accept connection: %v", err)
+				return err
 			}
-			s.lg.Errorf("failed to accept connection: %v", err)
-			continue
+			go s.handleConnection(conn)
 		}
-		go s.handleConnection(conn)
+	})
+
+	g.Go(func() error {
+		<-ctx.Done()
+		s.CloseListener()
+		s.lg.Info("Stop operator listener serving")
+		return nil
+	})
+
+	return g.Wait()
+}
+
+// CloseListener closes listener if it's active
+func (l *OperatorServer) CloseListener() error {
+	if l.tcpListener != nil {
+		return l.tcpListener.Close()
 	}
+	return nil
 }
 
 func (s *OperatorServer) handleConnection(conn net.Conn) {
