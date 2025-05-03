@@ -108,14 +108,16 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 
 	// save TCP listener
 	s.tcpListener = tcpListener
-	if err := s.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
-		return fmt.Errorf("failed to set deadline: %s", err.Error())
-	}
 
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		for {
+			// set timeout
+			if err := s.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
+				return fmt.Errorf("failed to set deadline: %s", err.Error())
+			}
+
 			conn, err := s.tcpListener.Accept()
 			if err != nil {
 				if ne, ok := err.(net.Error); ok && ne.Timeout() {

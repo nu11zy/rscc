@@ -93,14 +93,16 @@ func (l *AgentListener) Start(ctx context.Context) error {
 
 	// save TCP listener
 	l.tcpListener = tcpListener
-	if err := l.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
-		return fmt.Errorf("failed to set deadline: %s", err.Error())
-	}
 
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		for {
+			// set timeout
+			if err := l.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
+				return fmt.Errorf("failed to set deadline: %s", err.Error())
+			}
+
 			conn, err := l.tcpListener.Accept()
 			if err != nil {
 				if ne, ok := err.(net.Error); ok && ne.Timeout() {
