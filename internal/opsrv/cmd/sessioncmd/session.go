@@ -18,7 +18,7 @@ func NewSessionCmd(sm *session.SessionManager) *SessionCmd {
 
 	cmd := &cobra.Command{
 		Use:     "session",
-		Short:   "session management",
+		Short:   "Session management",
 		Aliases: []string{"s"},
 		Args:    cobra.NoArgs,
 	}

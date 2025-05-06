@@ -9,7 +9,7 @@ import (
 func (s *SessionCmd) newCmdList() *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
-		Short:   "list sessions",
+		Short:   "List sessions",
 		Aliases: []string{"l", "ls"},
 		RunE:    s.cmdList,
 	}

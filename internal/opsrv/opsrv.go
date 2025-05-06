@@ -355,7 +355,7 @@ func (s *OperatorServer) handleShell(channel ssh.Channel) {
 func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app := &cobra.Command{
 		Use:                "rscc",
-		Short:              "reverse SSH command & control",
+		Short:              "Reverse SSH command & control",
 		DisableFlagParsing: true,
 		SilenceUsage:       true,
 		SilenceErrors:      true,
@@ -365,6 +365,27 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	}
 	app.Flags().BoolP("help", "h", false, "")
 	app.Flags().MarkHidden("help")
+
+	app.SetUsageTemplate(`{{if .HasAvailableSubCommands}}{{$cmds := .Commands}}{{if eq (len .Groups) 0}}Commands:{{range $cmds}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{else}}{{range $group := .Groups}}
+
+{{.Title}}{{range $cmds}}{{if (and (eq .GroupID $group.ID) (or .IsAvailableCommand (eq .Name "help")))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if not .AllChildCommandsHaveGroup}}
+
+Additional Commands:{{range $cmds}}{{if (and (eq .GroupID "") (or .IsAvailableCommand (eq .Name "help")))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+Flags:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+Global Flags:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+
+Use "[command] --help" for more information about a command.{{end}}
+`)
 
 	app.SetOut(terminal)
 	app.SetErr(terminal)

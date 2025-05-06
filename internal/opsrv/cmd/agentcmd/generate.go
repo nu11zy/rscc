@@ -33,7 +33,7 @@ type BuilderConfig struct {
 func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "generate",
-		Short:   "generate an agent",
+		Short:   "Generate an agent",
 		Aliases: []string{"g", "gen"},
 		Args:    cobra.NoArgs,
 		RunE:    a.cmdGenerate,

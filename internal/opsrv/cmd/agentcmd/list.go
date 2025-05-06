@@ -15,7 +15,7 @@ import (
 func (a *AgentCmd) newCmdList() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "list",
-		Short:   "list agents",
+		Short:   "List agents",
 		Aliases: []string{"l", "ls"},
 		Args:    cobra.NoArgs,
 		RunE:    a.cmdList,

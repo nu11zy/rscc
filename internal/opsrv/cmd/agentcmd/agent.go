@@ -19,7 +19,7 @@ func NewAgentCmd(publicKey ssh.PublicKey, db *database.Database) *AgentCmd {
 
 	cmd := &cobra.Command{
 		Use:     "agent",
-		Short:   "agent management",
+		Short:   "Agent management",
 		Aliases: []string{"a"},
 		Args:    cobra.NoArgs,
 	}
