@@ -10,6 +10,14 @@ type TimeoutConn struct {
 	Timeout time.Duration
 }
 
+// NewTimeoutConn creates new TimeoutConn
+func NewTimeoutConn(conn net.Conn, timeout time.Duration) *TimeoutConn {
+	return &TimeoutConn{
+		Conn:    conn,
+		Timeout: timeout,
+	}
+}
+
 // SetTimeout sets timeout for connection
 func (t *TimeoutConn) SetTimeout(timeout time.Duration) {
 	t.Timeout = timeout

@@ -64,3 +64,10 @@ func truncateString(s string, maxLen int) string {
 	}
 	return s[:maxLen-3] + "..."
 }
+
+func GetBanner() string {
+	banner := fmt.Sprintf("> %s  %s\n", SuccessColor.Sprint("┳━┓┏━┓┏━┓┏━┓"), color.New(color.Bold).Sprint("RSCC - v0.1"))
+	banner += fmt.Sprintf("> %s  %s\n", SuccessColor.Sprint("┣┳┛┗━┓┃  ┃  "), "Reverse SSH Command & Control")
+	banner += fmt.Sprintf("> %s  %s\n", SuccessColor.Sprint("┛┗━┗━┛┗━┛┗━┛"), InfoColor.Sprint("https://github.com/nu11zy/rscc"))
+	return banner
+}
