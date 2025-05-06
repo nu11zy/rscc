@@ -36,13 +36,6 @@ type OperatorServer struct {
 	lg         *zap.SugaredLogger
 }
 
-type ExtraData struct {
-	TargetHost     string
-	TargetPort     uint32
-	OriginatorIP   string
-	OriginatorPort uint32
-}
-
 func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
 	address := fmt.Sprintf("%s:%d", host, port)
