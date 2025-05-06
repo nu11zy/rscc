@@ -346,7 +346,9 @@ func (s *OperatorServer) handleShell(channel ssh.Channel) {
 		}
 
 		cli.SetArgs(strings.Fields(line))
-		cli.Execute()
+		if err := cli.Execute(); err != nil {
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
+		}
 	}
 }
 
@@ -356,6 +358,7 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 		Short:              "reverse SSH command & control",
 		DisableFlagParsing: true,
 		SilenceUsage:       true,
+		SilenceErrors:      true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
@@ -363,7 +366,6 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.Flags().BoolP("help", "h", false, "")
 	app.Flags().MarkHidden("help")
 
-	app.SetErrPrefix(fmt.Sprintf("%s Error:", pprint.ErrorPrefix))
 	app.SetOut(terminal)
 	app.SetErr(terminal)
 
