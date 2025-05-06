@@ -314,8 +314,8 @@ func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, command strin
 }
 
 // handleShell handles shell request
-func (s *OperatorServer) handleShell(channel ssh.Channel) {
-	defer channel.Close()
+func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel) {
+	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("cli")
 	lg.Debug("Starting CLI")
