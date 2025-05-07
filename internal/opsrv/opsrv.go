@@ -17,6 +17,7 @@ import (
 	"rscc/internal/session"
 	"rscc/internal/sshd"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -26,13 +27,15 @@ import (
 )
 
 type OperatorServer struct {
-	db         *database.Database
-	sm         *session.SessionManager
-	address    string
-	listener   *net.TCPListener
-	sshConfig  *ssh.ServerConfig
-	sshTimeout int
-	lg         *zap.SugaredLogger
+	db          *database.Database
+	sm          *session.SessionManager
+	address     string
+	listener    *net.TCPListener
+	sshConfig   *ssh.ServerConfig
+	sshTimeout  int
+	operators   map[string]*OperatorSession
+	operatorsMu sync.Mutex
+	lg          *zap.SugaredLogger
 }
 
 func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
@@ -83,6 +86,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		listener:   nil,
 		sshConfig:  nil,
 		sshTimeout: sshTimeout,
+		operators:  make(map[string]*OperatorSession),
 		lg:         lg,
 	}
 
@@ -169,6 +173,20 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.Public
 	return &ssh.Permissions{}, nil
 }
 
+// addOperator adds new operator to the list
+func (s *OperatorServer) addOperator(operator *OperatorSession) {
+	s.operatorsMu.Lock()
+	defer s.operatorsMu.Unlock()
+	s.operators[operator.username] = operator
+}
+
+// removeOperator removes operator from the list
+func (s *OperatorServer) removeOperator(operator *OperatorSession) {
+	s.operatorsMu.Lock()
+	defer s.operatorsMu.Unlock()
+	delete(s.operators, operator.username)
+}
+
 // handleConnection handles new SSH connection
 func (s *OperatorServer) handleConnection(conn net.Conn) {
 	s.lg.Debugf("New TCP connection from %s", conn.RemoteAddr())
@@ -207,21 +225,27 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 		}
 	}()
 
-	user := sshConn.User()
-	lg.Infof("New SSH connection (%s)", user)
+	lg.Infof("New SSH connection (%s)", sshConn.User())
 	lg.Debugf("SSH client version: %s", sshConn.ClientVersion())
 
+	operatorSession := &OperatorSession{
+		username:    sshConn.User(),
+		permissions: sshConn.Permissions,
+	}
+	s.addOperator(operatorSession)
+
 	go ssh.DiscardRequests(reqs)
-	s.handleChannels(chans)
+	s.handleChannels(chans, operatorSession)
 
 	// stop keepalive process
 	stopKeepalive <- struct{}{}
 
-	lg.Infof("SSH connection closed (%s)", user)
+	lg.Infof("SSH connection closed (%s)", operatorSession.username)
+	s.removeOperator(operatorSession)
 }
 
 // handleChannels handles SSH channels
-func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel) {
+func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel, operatorSession *OperatorSession) {
 	lg := s.lg.Named("ssh")
 
 	for newChannel := range chans {
@@ -233,7 +257,7 @@ func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel) {
 				lg.Errorf("Failed to accept channel: %v", err)
 				continue
 			}
-			channel := sshd.NewExtendedChannel(rawChannel)
+			channel := NewExtendedChannel(rawChannel, operatorSession)
 			go s.handleSession(channel, request)
 		case "direct-tcpip":
 			extraData := newChannel.ExtraData()
@@ -286,7 +310,7 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 }
 
 // handleSession handles SSH session channel
-func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-chan *ssh.Request) {
+func (s *OperatorServer) handleSession(channel *ExtendedChannel, request <-chan *ssh.Request) {
 	lg := s.lg.Named("ssh")
 
 	isPty := false
@@ -319,7 +343,7 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 }
 
 // handleExec handles exec request
-func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, command string) {
+func (s *OperatorServer) handleExec(channel *ExtendedChannel, command string) {
 	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("exec")
@@ -335,11 +359,11 @@ func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, command strin
 }
 
 // handleShell handles shell request
-func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel) {
+func (s *OperatorServer) handleShell(channel *ExtendedChannel) {
 	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("cli")
-	lg.Debug("Starting CLI")
+	lg.Infof("Starting CLI for %s", channel.operator.username)
 
 	terminal := term.NewTerminal(channel, "rscc > ")
 	terminal.Write([]byte(pprint.GetBanner()))
@@ -373,6 +397,7 @@ func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel) {
 	}
 }
 
+// newCli creates new CLI instance for operator
 func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app := &cobra.Command{
 		Use:                "rscc",
