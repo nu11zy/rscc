@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"rscc/internal/database/ent/user"
+	"rscc/internal/database/ent/operator"
 	"strings"
 	"time"
 
@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// User is the model entity for the User schema.
-type User struct {
+// Operator is the model entity for the Operator schema.
+type Operator struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID string `json:"id,omitempty"`
@@ -29,15 +29,15 @@ type User struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*User) scanValues(columns []string) ([]any, error) {
+func (*Operator) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsAdmin:
+		case operator.FieldIsAdmin:
 			values[i] = new(sql.NullBool)
-		case user.FieldID, user.FieldName, user.FieldPublicKey:
+		case operator.FieldID, operator.FieldName, operator.FieldPublicKey:
 			values[i] = new(sql.NullString)
-		case user.FieldLastLogin:
+		case operator.FieldLastLogin:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -47,96 +47,96 @@ func (*User) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the User fields.
-func (u *User) assignValues(columns []string, values []any) error {
+// to the Operator fields.
+func (o *Operator) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldID:
+		case operator.FieldID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				u.ID = value.String
+				o.ID = value.String
 			}
-		case user.FieldName:
+		case operator.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				u.Name = value.String
+				o.Name = value.String
 			}
-		case user.FieldLastLogin:
+		case operator.FieldLastLogin:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field last_login", values[i])
 			} else if value.Valid {
-				u.LastLogin = new(time.Time)
-				*u.LastLogin = value.Time
+				o.LastLogin = new(time.Time)
+				*o.LastLogin = value.Time
 			}
-		case user.FieldPublicKey:
+		case operator.FieldPublicKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field public_key", values[i])
 			} else if value.Valid {
-				u.PublicKey = value.String
+				o.PublicKey = value.String
 			}
-		case user.FieldIsAdmin:
+		case operator.FieldIsAdmin:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_admin", values[i])
 			} else if value.Valid {
-				u.IsAdmin = value.Bool
+				o.IsAdmin = value.Bool
 			}
 		default:
-			u.selectValues.Set(columns[i], values[i])
+			o.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the User.
+// Value returns the ent.Value that was dynamically selected and assigned to the Operator.
 // This includes values selected through modifiers, order, etc.
-func (u *User) Value(name string) (ent.Value, error) {
-	return u.selectValues.Get(name)
+func (o *Operator) Value(name string) (ent.Value, error) {
+	return o.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this User.
-// Note that you need to call User.Unwrap() before calling this method if this User
+// Update returns a builder for updating this Operator.
+// Note that you need to call Operator.Unwrap() before calling this method if this Operator
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (u *User) Update() *UserUpdateOne {
-	return NewUserClient(u.config).UpdateOne(u)
+func (o *Operator) Update() *OperatorUpdateOne {
+	return NewOperatorClient(o.config).UpdateOne(o)
 }
 
-// Unwrap unwraps the User entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Operator entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (u *User) Unwrap() *User {
-	_tx, ok := u.config.driver.(*txDriver)
+func (o *Operator) Unwrap() *Operator {
+	_tx, ok := o.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: User is not a transactional entity")
+		panic("ent: Operator is not a transactional entity")
 	}
-	u.config.driver = _tx.drv
-	return u
+	o.config.driver = _tx.drv
+	return o
 }
 
 // String implements the fmt.Stringer.
-func (u *User) String() string {
+func (o *Operator) String() string {
 	var builder strings.Builder
-	builder.WriteString("User(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString("Operator(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", o.ID))
 	builder.WriteString("name=")
-	builder.WriteString(u.Name)
+	builder.WriteString(o.Name)
 	builder.WriteString(", ")
-	if v := u.LastLogin; v != nil {
+	if v := o.LastLogin; v != nil {
 		builder.WriteString("last_login=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
 	builder.WriteString("public_key=")
-	builder.WriteString(u.PublicKey)
+	builder.WriteString(o.PublicKey)
 	builder.WriteString(", ")
 	builder.WriteString("is_admin=")
-	builder.WriteString(fmt.Sprintf("%v", u.IsAdmin))
+	builder.WriteString(fmt.Sprintf("%v", o.IsAdmin))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// Users is a parsable slice of User.
-type Users []*User
+// Operators is a parsable slice of Operator.
+type Operators []*Operator

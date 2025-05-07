@@ -5,8 +5,8 @@ package ent
 import (
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
+	"rscc/internal/database/ent/operator"
 	"rscc/internal/database/ent/schema"
-	"rscc/internal/database/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -73,22 +73,22 @@ func init() {
 	listenerDescID := listenerFields[0].Descriptor()
 	// listener.DefaultID holds the default value on creation for the id field.
 	listener.DefaultID = listenerDescID.Default.(func() string)
-	userFields := schema.User{}.Fields()
-	_ = userFields
-	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[1].Descriptor()
-	// user.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	user.NameValidator = userDescName.Validators[0].(func(string) error)
-	// userDescPublicKey is the schema descriptor for public_key field.
-	userDescPublicKey := userFields[3].Descriptor()
-	// user.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
-	user.PublicKeyValidator = userDescPublicKey.Validators[0].(func(string) error)
-	// userDescIsAdmin is the schema descriptor for is_admin field.
-	userDescIsAdmin := userFields[4].Descriptor()
-	// user.DefaultIsAdmin holds the default value on creation for the is_admin field.
-	user.DefaultIsAdmin = userDescIsAdmin.Default.(bool)
-	// userDescID is the schema descriptor for id field.
-	userDescID := userFields[0].Descriptor()
-	// user.DefaultID holds the default value on creation for the id field.
-	user.DefaultID = userDescID.Default.(func() string)
+	operatorFields := schema.Operator{}.Fields()
+	_ = operatorFields
+	// operatorDescName is the schema descriptor for name field.
+	operatorDescName := operatorFields[1].Descriptor()
+	// operator.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	operator.NameValidator = operatorDescName.Validators[0].(func(string) error)
+	// operatorDescPublicKey is the schema descriptor for public_key field.
+	operatorDescPublicKey := operatorFields[3].Descriptor()
+	// operator.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
+	operator.PublicKeyValidator = operatorDescPublicKey.Validators[0].(func(string) error)
+	// operatorDescIsAdmin is the schema descriptor for is_admin field.
+	operatorDescIsAdmin := operatorFields[4].Descriptor()
+	// operator.DefaultIsAdmin holds the default value on creation for the is_admin field.
+	operator.DefaultIsAdmin = operatorDescIsAdmin.Default.(bool)
+	// operatorDescID is the schema descriptor for id field.
+	operatorDescID := operatorFields[0].Descriptor()
+	// operator.DefaultID holds the default value on creation for the id field.
+	operator.DefaultID = operatorDescID.Default.(func() string)
 }

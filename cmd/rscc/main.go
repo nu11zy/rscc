@@ -18,14 +18,14 @@ import (
 )
 
 var (
-	operatorPort     int
-	operatorHost     string
-	agentPort        int
-	agentHost        string
-	operatorUsername string
-	publicKey        string
-	dbPath           string
-	debug            bool
+	operatorPort int
+	operatorHost string
+	agentPort    int
+	agentHost    string
+	operatorName string
+	publicKey    string
+	dbPath       string
+	debug        bool
 )
 
 type Cmd struct{}
@@ -55,9 +55,9 @@ func main() {
 				UsageText: "rscc admin [flags]",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:        "u",
-						Usage:       "admin `USERNAME`",
-						Destination: &operatorUsername,
+						Name:        "n",
+						Usage:       "admin `NAME`",
+						Destination: &operatorName,
 						Required:    true,
 					},
 					&cli.StringFlag{
@@ -141,13 +141,13 @@ func addAdmin(ctx context.Context, c *cli.Command) error {
 		return err
 	}
 
-	user, err := db.CreateUser(ctx, operatorUsername, publicKey, true)
+	user, err := db.CreateOperator(ctx, operatorName, publicKey, true)
 	if err != nil {
 		lg.Errorf("Failed to add operator: %v", err)
 		return err
 	}
 
-	lg.Infof("New admin `%s` with id `%s` created", user.Name, user.ID)
+	lg.Infof("New admin operator `%s` with id `%s` created", user.Name, user.ID)
 	return nil
 }
 
@@ -162,14 +162,14 @@ func run(ctx context.Context, c *cli.Command) error {
 	}
 
 	// Check if at least one operator exists
-	users, err := db.GetAllUsers(ctx)
+	operators, err := db.GetAllOperators(ctx)
 	if err != nil {
-		lg.Errorf("Failed to get all users: %v", err)
+		lg.Errorf("Failed to get all operators: %v", err)
 		return err
 	}
-	if len(users) == 0 {
-		lg.Errorf("Admin user not found. Use `rscc admin` to create new admin user.")
-		return fmt.Errorf("admin user not found")
+	if len(operators) == 0 {
+		lg.Errorf("Admin operator not found. Use `rscc admin` to create new admin operator.")
+		return fmt.Errorf("admin operator not found")
 	}
 
 	// Start session manager

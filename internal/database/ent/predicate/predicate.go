@@ -12,5 +12,5 @@ type Agent func(*sql.Selector)
 // Listener is the predicate function for listener builders.
 type Listener func(*sql.Selector)
 
-// User is the predicate function for user builders.
-type User func(*sql.Selector)
+// Operator is the predicate function for operator builders.
+type Operator func(*sql.Selector)

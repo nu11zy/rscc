@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
-	"rscc/internal/database/ent/user"
+	"rscc/internal/database/ent/operator"
 	"sync"
 
 	"entgo.io/ent"
@@ -77,7 +77,7 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			agent.Table:    agent.ValidColumn,
 			listener.Table: listener.ValidColumn,
-			user.Table:     user.ValidColumn,
+			operator.Table: operator.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

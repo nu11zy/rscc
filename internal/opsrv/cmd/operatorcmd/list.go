@@ -21,7 +21,7 @@ func (o *OperatorCmd) newCmdList() *cobra.Command {
 }
 
 func (o *OperatorCmd) cmdList(cmd *cobra.Command, args []string) error {
-	operators, err := o.db.GetAllUsers(cmd.Context())
+	operators, err := o.db.GetAllOperators(cmd.Context())
 	if err != nil {
 		return fmt.Errorf("failed to get operators: %w", err)
 	}

@@ -7,13 +7,13 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// User holds the schema definition for the User entity.
-type User struct {
+// Operator holds the schema definition for the Operator entity.
+type Operator struct {
 	ent.Schema
 }
 
-// Fields of the User.
-func (User) Fields() []ent.Field {
+// Fields of the Operator.
+func (Operator) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").DefaultFunc(utils.GenID).Immutable().Unique(),
 		field.String("name").NotEmpty().Unique(),
@@ -23,7 +23,7 @@ func (User) Fields() []ent.Field {
 	}
 }
 
-// Edges of the User.
-func (User) Edges() []ent.Edge {
+// Edges of the Operator.
+func (Operator) Edges() []ent.Edge {
 	return nil
 }

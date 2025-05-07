@@ -6,7 +6,7 @@ import (
 	"rscc/internal/common/logger"
 	"rscc/internal/database/ent"
 	"rscc/internal/database/ent/agent"
-	"rscc/internal/database/ent/user"
+	"rscc/internal/database/ent/operator"
 
 	"entgo.io/ent/dialect"
 	_ "github.com/mattn/go-sqlite3"
@@ -63,37 +63,37 @@ func (db *Database) GetListener(ctx context.Context, id string) (*ent.Listener, 
 	return listener, nil
 }
 
-// User
-func (db *Database) CreateUser(ctx context.Context, username, publicKey string, isAdmin bool) (*ent.User, error) {
-	user, err := db.client.User.Create().
+// Operator
+func (db *Database) CreateOperator(ctx context.Context, username, publicKey string, isAdmin bool) (*ent.Operator, error) {
+	operator, err := db.client.Operator.Create().
 		SetName(username).
 		SetPublicKey(publicKey).
 		SetIsAdmin(isAdmin).
 		Save(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, fmt.Errorf("failed to create operator: %w", err)
 	}
-	return user, nil
+	return operator, nil
 }
 
-func (db *Database) GetAllUsers(ctx context.Context) ([]*ent.User, error) {
-	users, err := db.client.User.Query().All(ctx)
+func (db *Database) GetAllOperators(ctx context.Context) ([]*ent.Operator, error) {
+	operators, err := db.client.Operator.Query().All(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all users: %w", err)
+		return nil, fmt.Errorf("failed to get all operators: %w", err)
 	}
-	return users, nil
+	return operators, nil
 }
 
-func (db *Database) GetUserByName(ctx context.Context, username string) (*ent.User, error) {
-	user, err := db.client.User.Query().Where(user.Name(username)).First(ctx)
+func (db *Database) GetOperatorByName(ctx context.Context, username string) (*ent.Operator, error) {
+	operator, err := db.client.Operator.Query().Where(operator.Name(username)).First(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get operator: %w", err)
 	}
-	return user, nil
+	return operator, nil
 }
 
-func (db *Database) DeleteUserByID(ctx context.Context, id string) error {
-	return db.client.User.DeleteOneID(id).Exec(ctx)
+func (db *Database) DeleteOperatorByID(ctx context.Context, id string) error {
+	return db.client.Operator.DeleteOneID(id).Exec(ctx)
 }
 
 // Agent

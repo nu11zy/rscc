@@ -158,7 +158,7 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.Public
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	user, err := s.db.GetUserByName(ctx, conn.User())
+	user, err := s.db.GetOperatorByName(ctx, conn.User())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
