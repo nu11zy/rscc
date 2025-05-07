@@ -4,5 +4,5 @@ const (
 	AgentDir             = "agents"
 	OperatorListenerName = "operator"
 	OperatorListenerID   = "00000000"
-	SshTimeout           = 5
+	SSHTimeout           = 5
 )

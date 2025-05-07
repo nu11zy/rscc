@@ -66,7 +66,7 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 		db:          db,
 		address:     address,
 		lg:          lg,
-		sshTimeout:  constants.SshTimeout, // TODO: make it configurable (?)
+		sshTimeout:  constants.SSHTimeout, // TODO: make it configurable (?)
 		tcpListener: nil,
 	}
 

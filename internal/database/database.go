@@ -6,6 +6,7 @@ import (
 	"rscc/internal/common/logger"
 	"rscc/internal/database/ent"
 	"rscc/internal/database/ent/agent"
+	"rscc/internal/database/ent/user"
 
 	"entgo.io/ent/dialect"
 	_ "github.com/mattn/go-sqlite3"
@@ -37,26 +38,11 @@ func NewDatabase(ctx context.Context, path string) (*Database, error) {
 	return &Database{client: client, lg: lg}, nil
 }
 
-func (db *Database) CreateUser(ctx context.Context, username, publicKey string, isAdmin bool) (*ent.User, error) {
-	user, err := db.client.User.Create().
-		SetName(username).
-		SetPublicKey(publicKey).
-		SetIsAdmin(isAdmin).
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
-	}
-	return user, nil
+func (db *Database) Close() error {
+	return db.client.Close()
 }
 
-func (db *Database) GetAllUsers(ctx context.Context) ([]*ent.User, error) {
-	users, err := db.client.User.Query().All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get all users: %w", err)
-	}
-	return users, nil
-}
-
+// Listener
 func (db *Database) CreateListenerWithID(ctx context.Context, id, name string, privateKey []byte) (*ent.Listener, error) {
 	listener, err := db.client.Listener.Create().
 		SetID(id).
@@ -77,14 +63,40 @@ func (db *Database) GetListener(ctx context.Context, id string) (*ent.Listener, 
 	return listener, nil
 }
 
-func (db *Database) Close() error {
-	return db.client.Close()
+// User
+func (db *Database) CreateUser(ctx context.Context, username, publicKey string, isAdmin bool) (*ent.User, error) {
+	user, err := db.client.User.Create().
+		SetName(username).
+		SetPublicKey(publicKey).
+		SetIsAdmin(isAdmin).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+	return user, nil
+}
+
+func (db *Database) GetAllUsers(ctx context.Context) ([]*ent.User, error) {
+	users, err := db.client.User.Query().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all users: %w", err)
+	}
+	return users, nil
+}
+
+func (db *Database) GetUserByName(ctx context.Context, username string) (*ent.User, error) {
+	user, err := db.client.User.Query().Where(user.Name(username)).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return user, nil
 }
 
 func (db *Database) DeleteUserByID(ctx context.Context, id string) error {
 	return db.client.User.DeleteOneID(id).Exec(ctx)
 }
 
+// Agent
 func (db *Database) CreateAgent(ctx context.Context, name, os, arch, server string, shared, pie, garble bool, subsystems []string, publicKey []byte, xxhash string) (*ent.Agent, error) {
 	agent, err := db.client.Agent.Create().
 		SetName(name).

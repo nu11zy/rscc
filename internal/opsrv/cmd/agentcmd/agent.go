@@ -4,7 +4,6 @@ import (
 	"rscc/internal/database"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
 )
 
 type AgentCmd struct {
@@ -12,7 +11,7 @@ type AgentCmd struct {
 	db      *database.Database
 }
 
-func NewAgentCmd(publicKey ssh.PublicKey, db *database.Database) *AgentCmd {
+func NewAgentCmd(db *database.Database) *AgentCmd {
 	agentCmd := &AgentCmd{
 		db: db,
 	}

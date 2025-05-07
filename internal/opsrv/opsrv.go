@@ -29,10 +29,9 @@ type OperatorServer struct {
 	db         *database.Database
 	sm         *session.SessionManager
 	address    string
+	listener   *net.TCPListener
 	sshConfig  *ssh.ServerConfig
 	sshTimeout int
-	publicKey  ssh.PublicKey
-	listener   *net.TCPListener
 	lg         *zap.SugaredLogger
 }
 
@@ -66,32 +65,35 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		}
 	}
 
-	sshConfig := &ssh.ServerConfig{
-		NoClientAuth: true,
-	}
-
 	signer, err := ssh.ParsePrivateKey(listener.PrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
-	sshConfig.AddHostKey(signer)
 
-	sshTimeout := constants.SshTimeout
+	sshTimeout := constants.SSHTimeout
 	if sshTimeout < 10 {
 		lg.Warnf("SSH timeout is less than 10 seconds, setting to 10 seconds")
 		sshTimeout = 10
 	}
 
-	return &OperatorServer{
+	opsrv := &OperatorServer{
 		db:         db,
 		sm:         sm,
 		address:    address,
-		sshConfig:  sshConfig,
-		sshTimeout: sshTimeout,
-		publicKey:  signer.PublicKey(),
 		listener:   nil,
+		sshConfig:  nil,
+		sshTimeout: sshTimeout,
 		lg:         lg,
-	}, nil
+	}
+
+	sshConfig := &ssh.ServerConfig{
+		NoClientAuth:      false,
+		PublicKeyCallback: opsrv.publicKeyCallback,
+	}
+	sshConfig.AddHostKey(signer)
+
+	opsrv.sshConfig = sshConfig
+	return opsrv, nil
 }
 
 // Start starts operator's listener
@@ -143,6 +145,28 @@ func (l *OperatorServer) CloseListener() error {
 		return l.listener.Close()
 	}
 	return nil
+}
+
+// publicKeyCallback is used to authenticate SSH connections
+func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	user, err := s.db.GetUserByName(ctx, conn.User())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	marshaledKey := string(ssh.MarshalAuthorizedKey(key))
+	if user.PublicKey != strings.TrimSpace(marshaledKey) {
+		s.lg.Warnf("User %s (%s) tried to connect with invalid key", conn.User(), conn.RemoteAddr())
+		return nil, fmt.Errorf("invalid key")
+	}
+
+	return &ssh.Permissions{}, nil
 }
 
 // handleConnection handles new SSH connection
@@ -388,6 +412,6 @@ Use "[command] --help" for more information about a command.{{end}}
 	app.SetErr(terminal)
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
-	app.AddCommand(agentcmd.NewAgentCmd(s.publicKey, s.db).Command)
+	app.AddCommand(agentcmd.NewAgentCmd(s.db).Command)
 	return app
 }

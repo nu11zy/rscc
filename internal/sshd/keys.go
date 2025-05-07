@@ -4,42 +4,12 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
 
 	"golang.org/x/crypto/ssh"
 )
-
-func GenerateRSAPrivateKey() ([]byte, error) {
-	key, err := rsa.GenerateKey(rand.Reader, 4096)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate private key: %w", err)
-	}
-
-	pemKey := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
-	}
-
-	pemBytes := pem.EncodeToMemory(pemKey)
-	return pemBytes, nil
-}
-
-func GenerateRSAPublicKey(privateKey []byte) ([]byte, error) {
-	block, _ := pem.Decode(privateKey)
-	if block == nil {
-		return nil, fmt.Errorf("failed to decode private key")
-	}
-
-	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse private key: %w", err)
-	}
-
-	return x509.MarshalPKIXPublicKey(key.Public())
-}
 
 type ECDSAKey struct {
 	curve      elliptic.Curve
