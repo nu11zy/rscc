@@ -38,6 +38,7 @@ require (
 	entgo.io/ent v0.14.4
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/fatih/color v1.18.0
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/multierr v1.10.0 // indirect

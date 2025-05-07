@@ -13,6 +13,7 @@ import (
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/opsrv/cmd/agentcmd"
+	"rscc/internal/opsrv/cmd/operatorcmd"
 	"rscc/internal/opsrv/cmd/sessioncmd"
 	"rscc/internal/session"
 	"rscc/internal/sshd"
@@ -20,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
@@ -33,7 +35,7 @@ type OperatorServer struct {
 	listener    *net.TCPListener
 	sshConfig   *ssh.ServerConfig
 	sshTimeout  int
-	operators   map[string]*OperatorSession
+	operators   map[string]*sshd.OperatorSession
 	operatorsMu sync.Mutex
 	lg          *zap.SugaredLogger
 }
@@ -86,7 +88,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		listener:   nil,
 		sshConfig:  nil,
 		sshTimeout: sshTimeout,
-		operators:  make(map[string]*OperatorSession),
+		operators:  make(map[string]*sshd.OperatorSession),
 		lg:         lg,
 	}
 
@@ -174,17 +176,17 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.Public
 }
 
 // addOperator adds new operator to the list
-func (s *OperatorServer) addOperator(operator *OperatorSession) {
+func (s *OperatorServer) addOperator(operator *sshd.OperatorSession) {
 	s.operatorsMu.Lock()
 	defer s.operatorsMu.Unlock()
-	s.operators[operator.username] = operator
+	s.operators[operator.Username] = operator
 }
 
 // removeOperator removes operator from the list
-func (s *OperatorServer) removeOperator(operator *OperatorSession) {
+func (s *OperatorServer) removeOperator(operator *sshd.OperatorSession) {
 	s.operatorsMu.Lock()
 	defer s.operatorsMu.Unlock()
-	delete(s.operators, operator.username)
+	delete(s.operators, operator.Username)
 }
 
 // handleConnection handles new SSH connection
@@ -228,9 +230,9 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	lg.Infof("New SSH connection (%s)", sshConn.User())
 	lg.Debugf("SSH client version: %s", sshConn.ClientVersion())
 
-	operatorSession := &OperatorSession{
-		username:    sshConn.User(),
-		permissions: sshConn.Permissions,
+	operatorSession := &sshd.OperatorSession{
+		Username:    sshConn.User(),
+		Permissions: sshConn.Permissions,
 	}
 	s.addOperator(operatorSession)
 
@@ -240,12 +242,12 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	// stop keepalive process
 	stopKeepalive <- struct{}{}
 
-	lg.Infof("SSH connection closed (%s)", operatorSession.username)
+	lg.Infof("SSH connection closed (%s)", operatorSession.Username)
 	s.removeOperator(operatorSession)
 }
 
 // handleChannels handles SSH channels
-func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel, operatorSession *OperatorSession) {
+func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel, operatorSession *sshd.OperatorSession) {
 	lg := s.lg.Named("ssh")
 
 	for newChannel := range chans {
@@ -257,7 +259,7 @@ func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel, operatorSes
 				lg.Errorf("Failed to accept channel: %v", err)
 				continue
 			}
-			channel := NewExtendedChannel(rawChannel, operatorSession)
+			channel := sshd.NewExtendedChannel(rawChannel, operatorSession)
 			go s.handleSession(channel, request)
 		case "direct-tcpip":
 			extraData := newChannel.ExtraData()
@@ -310,7 +312,7 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 }
 
 // handleSession handles SSH session channel
-func (s *OperatorServer) handleSession(channel *ExtendedChannel, request <-chan *ssh.Request) {
+func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-chan *ssh.Request) {
 	lg := s.lg.Named("ssh")
 
 	isPty := false
@@ -343,14 +345,14 @@ func (s *OperatorServer) handleSession(channel *ExtendedChannel, request <-chan 
 }
 
 // handleExec handles exec request
-func (s *OperatorServer) handleExec(channel *ExtendedChannel, command string) {
+func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, command string) {
 	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("exec")
 	lg.Debugf("Executing command: %s", command)
 
 	terminal := term.NewTerminal(channel, "")
-	app := s.newCli(terminal)
+	app := s.newCli(terminal, channel.Operator)
 	app.SetArgs(strings.Fields(command))
 
 	if err := app.Execute(); err != nil {
@@ -359,18 +361,18 @@ func (s *OperatorServer) handleExec(channel *ExtendedChannel, command string) {
 }
 
 // handleShell handles shell request
-func (s *OperatorServer) handleShell(channel *ExtendedChannel) {
+func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel) {
 	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("cli")
-	lg.Infof("Starting CLI for %s", channel.operator.username)
+	lg.Infof("Starting CLI for %s", channel.Operator.Username)
 
 	terminal := term.NewTerminal(channel, "rscc > ")
 	terminal.Write([]byte(pprint.GetBanner()))
 	// TODO: print status (number of sessions, uptime, etc.)
 
 	for {
-		cli := s.newCli(terminal)
+		cli := s.newCli(terminal, channel.Operator)
 
 		line, err := terminal.ReadLine()
 		if err != nil {
@@ -390,7 +392,12 @@ func (s *OperatorServer) handleShell(channel *ExtendedChannel) {
 			return
 		}
 
-		cli.SetArgs(strings.Fields(line))
+		args, err := shlex.Split(line)
+		if err != nil {
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
+			continue
+		}
+		cli.SetArgs(args)
 		if err := cli.Execute(); err != nil {
 			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
 		}
@@ -398,7 +405,7 @@ func (s *OperatorServer) handleShell(channel *ExtendedChannel) {
 }
 
 // newCli creates new CLI instance for operator
-func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
+func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.OperatorSession) *cobra.Command {
 	app := &cobra.Command{
 		Use:                "rscc",
 		Short:              "Reverse SSH command & control",
@@ -438,5 +445,6 @@ Use "[command] --help" for more information about a command.{{end}}
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
 	app.AddCommand(agentcmd.NewAgentCmd(s.db).Command)
+	app.AddCommand(operatorcmd.NewOperatorCmd(s.db, operatorSession).Command)
 	return app
 }

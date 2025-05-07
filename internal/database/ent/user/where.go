@@ -69,9 +69,9 @@ func Name(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldName, v))
 }
 
-// LastActivity applies equality check predicate on the "last_activity" field. It's identical to LastActivityEQ.
-func LastActivity(v time.Time) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLastActivity, v))
+// LastLogin applies equality check predicate on the "last_login" field. It's identical to LastLoginEQ.
+func LastLogin(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLastLogin, v))
 }
 
 // PublicKey applies equality check predicate on the "public_key" field. It's identical to PublicKeyEQ.
@@ -149,54 +149,54 @@ func NameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldName, v))
 }
 
-// LastActivityEQ applies the EQ predicate on the "last_activity" field.
-func LastActivityEQ(v time.Time) predicate.User {
-	return predicate.User(sql.FieldEQ(FieldLastActivity, v))
+// LastLoginEQ applies the EQ predicate on the "last_login" field.
+func LastLoginEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLastLogin, v))
 }
 
-// LastActivityNEQ applies the NEQ predicate on the "last_activity" field.
-func LastActivityNEQ(v time.Time) predicate.User {
-	return predicate.User(sql.FieldNEQ(FieldLastActivity, v))
+// LastLoginNEQ applies the NEQ predicate on the "last_login" field.
+func LastLoginNEQ(v time.Time) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldLastLogin, v))
 }
 
-// LastActivityIn applies the In predicate on the "last_activity" field.
-func LastActivityIn(vs ...time.Time) predicate.User {
-	return predicate.User(sql.FieldIn(FieldLastActivity, vs...))
+// LastLoginIn applies the In predicate on the "last_login" field.
+func LastLoginIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldIn(FieldLastLogin, vs...))
 }
 
-// LastActivityNotIn applies the NotIn predicate on the "last_activity" field.
-func LastActivityNotIn(vs ...time.Time) predicate.User {
-	return predicate.User(sql.FieldNotIn(FieldLastActivity, vs...))
+// LastLoginNotIn applies the NotIn predicate on the "last_login" field.
+func LastLoginNotIn(vs ...time.Time) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldLastLogin, vs...))
 }
 
-// LastActivityGT applies the GT predicate on the "last_activity" field.
-func LastActivityGT(v time.Time) predicate.User {
-	return predicate.User(sql.FieldGT(FieldLastActivity, v))
+// LastLoginGT applies the GT predicate on the "last_login" field.
+func LastLoginGT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGT(FieldLastLogin, v))
 }
 
-// LastActivityGTE applies the GTE predicate on the "last_activity" field.
-func LastActivityGTE(v time.Time) predicate.User {
-	return predicate.User(sql.FieldGTE(FieldLastActivity, v))
+// LastLoginGTE applies the GTE predicate on the "last_login" field.
+func LastLoginGTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldLastLogin, v))
 }
 
-// LastActivityLT applies the LT predicate on the "last_activity" field.
-func LastActivityLT(v time.Time) predicate.User {
-	return predicate.User(sql.FieldLT(FieldLastActivity, v))
+// LastLoginLT applies the LT predicate on the "last_login" field.
+func LastLoginLT(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLT(FieldLastLogin, v))
 }
 
-// LastActivityLTE applies the LTE predicate on the "last_activity" field.
-func LastActivityLTE(v time.Time) predicate.User {
-	return predicate.User(sql.FieldLTE(FieldLastActivity, v))
+// LastLoginLTE applies the LTE predicate on the "last_login" field.
+func LastLoginLTE(v time.Time) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldLastLogin, v))
 }
 
-// LastActivityIsNil applies the IsNil predicate on the "last_activity" field.
-func LastActivityIsNil() predicate.User {
-	return predicate.User(sql.FieldIsNull(FieldLastActivity))
+// LastLoginIsNil applies the IsNil predicate on the "last_login" field.
+func LastLoginIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldLastLogin))
 }
 
-// LastActivityNotNil applies the NotNil predicate on the "last_activity" field.
-func LastActivityNotNil() predicate.User {
-	return predicate.User(sql.FieldNotNull(FieldLastActivity))
+// LastLoginNotNil applies the NotNil predicate on the "last_login" field.
+func LastLoginNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldLastLogin))
 }
 
 // PublicKeyEQ applies the EQ predicate on the "public_key" field.

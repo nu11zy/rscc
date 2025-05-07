@@ -13,8 +13,8 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldLastActivity holds the string denoting the last_activity field in the database.
-	FieldLastActivity = "last_activity"
+	// FieldLastLogin holds the string denoting the last_login field in the database.
+	FieldLastLogin = "last_login"
 	// FieldPublicKey holds the string denoting the public_key field in the database.
 	FieldPublicKey = "public_key"
 	// FieldIsAdmin holds the string denoting the is_admin field in the database.
@@ -27,7 +27,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
-	FieldLastActivity,
+	FieldLastLogin,
 	FieldPublicKey,
 	FieldIsAdmin,
 }
@@ -66,9 +66,9 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByLastActivity orders the results by the last_activity field.
-func ByLastActivity(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastActivity, opts...).ToFunc()
+// ByLastLogin orders the results by the last_login field.
+func ByLastLogin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLastLogin, opts...).ToFunc()
 }
 
 // ByPublicKey orders the results by the public_key field.

@@ -44,7 +44,7 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "last_activity", Type: field.TypeTime, Nullable: true},
+		{Name: "last_login", Type: field.TypeTime, Nullable: true},
 		{Name: "public_key", Type: field.TypeString},
 		{Name: "is_admin", Type: field.TypeBool, Default: false},
 	}

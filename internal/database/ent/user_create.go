@@ -26,16 +26,16 @@ func (uc *UserCreate) SetName(s string) *UserCreate {
 	return uc
 }
 
-// SetLastActivity sets the "last_activity" field.
-func (uc *UserCreate) SetLastActivity(t time.Time) *UserCreate {
-	uc.mutation.SetLastActivity(t)
+// SetLastLogin sets the "last_login" field.
+func (uc *UserCreate) SetLastLogin(t time.Time) *UserCreate {
+	uc.mutation.SetLastLogin(t)
 	return uc
 }
 
-// SetNillableLastActivity sets the "last_activity" field if the given value is not nil.
-func (uc *UserCreate) SetNillableLastActivity(t *time.Time) *UserCreate {
+// SetNillableLastLogin sets the "last_login" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLastLogin(t *time.Time) *UserCreate {
 	if t != nil {
-		uc.SetLastActivity(*t)
+		uc.SetLastLogin(*t)
 	}
 	return uc
 }
@@ -179,9 +179,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := uc.mutation.LastActivity(); ok {
-		_spec.SetField(user.FieldLastActivity, field.TypeTime, value)
-		_node.LastActivity = &value
+	if value, ok := uc.mutation.LastLogin(); ok {
+		_spec.SetField(user.FieldLastLogin, field.TypeTime, value)
+		_node.LastLogin = &value
 	}
 	if value, ok := uc.mutation.PublicKey(); ok {
 		_spec.SetField(user.FieldPublicKey, field.TypeString, value)

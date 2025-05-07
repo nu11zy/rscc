@@ -1258,7 +1258,7 @@ type UserMutation struct {
 	typ           string
 	id            *string
 	name          *string
-	last_activity *time.Time
+	last_login    *time.Time
 	public_key    *string
 	is_admin      *bool
 	clearedFields map[string]struct{}
@@ -1407,53 +1407,53 @@ func (m *UserMutation) ResetName() {
 	m.name = nil
 }
 
-// SetLastActivity sets the "last_activity" field.
-func (m *UserMutation) SetLastActivity(t time.Time) {
-	m.last_activity = &t
+// SetLastLogin sets the "last_login" field.
+func (m *UserMutation) SetLastLogin(t time.Time) {
+	m.last_login = &t
 }
 
-// LastActivity returns the value of the "last_activity" field in the mutation.
-func (m *UserMutation) LastActivity() (r time.Time, exists bool) {
-	v := m.last_activity
+// LastLogin returns the value of the "last_login" field in the mutation.
+func (m *UserMutation) LastLogin() (r time.Time, exists bool) {
+	v := m.last_login
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldLastActivity returns the old "last_activity" field's value of the User entity.
+// OldLastLogin returns the old "last_login" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldLastActivity(ctx context.Context) (v *time.Time, err error) {
+func (m *UserMutation) OldLastLogin(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastActivity is only allowed on UpdateOne operations")
+		return v, errors.New("OldLastLogin is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastActivity requires an ID field in the mutation")
+		return v, errors.New("OldLastLogin requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastActivity: %w", err)
+		return v, fmt.Errorf("querying old value for OldLastLogin: %w", err)
 	}
-	return oldValue.LastActivity, nil
+	return oldValue.LastLogin, nil
 }
 
-// ClearLastActivity clears the value of the "last_activity" field.
-func (m *UserMutation) ClearLastActivity() {
-	m.last_activity = nil
-	m.clearedFields[user.FieldLastActivity] = struct{}{}
+// ClearLastLogin clears the value of the "last_login" field.
+func (m *UserMutation) ClearLastLogin() {
+	m.last_login = nil
+	m.clearedFields[user.FieldLastLogin] = struct{}{}
 }
 
-// LastActivityCleared returns if the "last_activity" field was cleared in this mutation.
-func (m *UserMutation) LastActivityCleared() bool {
-	_, ok := m.clearedFields[user.FieldLastActivity]
+// LastLoginCleared returns if the "last_login" field was cleared in this mutation.
+func (m *UserMutation) LastLoginCleared() bool {
+	_, ok := m.clearedFields[user.FieldLastLogin]
 	return ok
 }
 
-// ResetLastActivity resets all changes to the "last_activity" field.
-func (m *UserMutation) ResetLastActivity() {
-	m.last_activity = nil
-	delete(m.clearedFields, user.FieldLastActivity)
+// ResetLastLogin resets all changes to the "last_login" field.
+func (m *UserMutation) ResetLastLogin() {
+	m.last_login = nil
+	delete(m.clearedFields, user.FieldLastLogin)
 }
 
 // SetPublicKey sets the "public_key" field.
@@ -1566,8 +1566,8 @@ func (m *UserMutation) Fields() []string {
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
-	if m.last_activity != nil {
-		fields = append(fields, user.FieldLastActivity)
+	if m.last_login != nil {
+		fields = append(fields, user.FieldLastLogin)
 	}
 	if m.public_key != nil {
 		fields = append(fields, user.FieldPublicKey)
@@ -1585,8 +1585,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldName:
 		return m.Name()
-	case user.FieldLastActivity:
-		return m.LastActivity()
+	case user.FieldLastLogin:
+		return m.LastLogin()
 	case user.FieldPublicKey:
 		return m.PublicKey()
 	case user.FieldIsAdmin:
@@ -1602,8 +1602,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldName:
 		return m.OldName(ctx)
-	case user.FieldLastActivity:
-		return m.OldLastActivity(ctx)
+	case user.FieldLastLogin:
+		return m.OldLastLogin(ctx)
 	case user.FieldPublicKey:
 		return m.OldPublicKey(ctx)
 	case user.FieldIsAdmin:
@@ -1624,12 +1624,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetName(v)
 		return nil
-	case user.FieldLastActivity:
+	case user.FieldLastLogin:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetLastActivity(v)
+		m.SetLastLogin(v)
 		return nil
 	case user.FieldPublicKey:
 		v, ok := value.(string)
@@ -1675,8 +1675,8 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(user.FieldLastActivity) {
-		fields = append(fields, user.FieldLastActivity)
+	if m.FieldCleared(user.FieldLastLogin) {
+		fields = append(fields, user.FieldLastLogin)
 	}
 	return fields
 }
@@ -1692,8 +1692,8 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
-	case user.FieldLastActivity:
-		m.ClearLastActivity()
+	case user.FieldLastLogin:
+		m.ClearLastLogin()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)
@@ -1706,8 +1706,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldName:
 		m.ResetName()
 		return nil
-	case user.FieldLastActivity:
-		m.ResetLastActivity()
+	case user.FieldLastLogin:
+		m.ResetLastLogin()
 		return nil
 	case user.FieldPublicKey:
 		m.ResetPublicKey()

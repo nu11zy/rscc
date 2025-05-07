@@ -17,7 +17,7 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").DefaultFunc(utils.GenID).Immutable().Unique(),
 		field.String("name").NotEmpty().Unique(),
-		field.Time("last_activity").Optional().Nillable(),
+		field.Time("last_login").Optional().Nillable(),
 		field.String("public_key").NotEmpty(),
 		field.Bool("is_admin").Default(false),
 	}

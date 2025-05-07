@@ -42,23 +42,23 @@ func (uu *UserUpdate) SetNillableName(s *string) *UserUpdate {
 	return uu
 }
 
-// SetLastActivity sets the "last_activity" field.
-func (uu *UserUpdate) SetLastActivity(t time.Time) *UserUpdate {
-	uu.mutation.SetLastActivity(t)
+// SetLastLogin sets the "last_login" field.
+func (uu *UserUpdate) SetLastLogin(t time.Time) *UserUpdate {
+	uu.mutation.SetLastLogin(t)
 	return uu
 }
 
-// SetNillableLastActivity sets the "last_activity" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableLastActivity(t *time.Time) *UserUpdate {
+// SetNillableLastLogin sets the "last_login" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLastLogin(t *time.Time) *UserUpdate {
 	if t != nil {
-		uu.SetLastActivity(*t)
+		uu.SetLastLogin(*t)
 	}
 	return uu
 }
 
-// ClearLastActivity clears the value of the "last_activity" field.
-func (uu *UserUpdate) ClearLastActivity() *UserUpdate {
-	uu.mutation.ClearLastActivity()
+// ClearLastLogin clears the value of the "last_login" field.
+func (uu *UserUpdate) ClearLastLogin() *UserUpdate {
+	uu.mutation.ClearLastLogin()
 	return uu
 }
 
@@ -152,11 +152,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.LastActivity(); ok {
-		_spec.SetField(user.FieldLastActivity, field.TypeTime, value)
+	if value, ok := uu.mutation.LastLogin(); ok {
+		_spec.SetField(user.FieldLastLogin, field.TypeTime, value)
 	}
-	if uu.mutation.LastActivityCleared() {
-		_spec.ClearField(user.FieldLastActivity, field.TypeTime)
+	if uu.mutation.LastLoginCleared() {
+		_spec.ClearField(user.FieldLastLogin, field.TypeTime)
 	}
 	if value, ok := uu.mutation.PublicKey(); ok {
 		_spec.SetField(user.FieldPublicKey, field.TypeString, value)
@@ -198,23 +198,23 @@ func (uuo *UserUpdateOne) SetNillableName(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetLastActivity sets the "last_activity" field.
-func (uuo *UserUpdateOne) SetLastActivity(t time.Time) *UserUpdateOne {
-	uuo.mutation.SetLastActivity(t)
+// SetLastLogin sets the "last_login" field.
+func (uuo *UserUpdateOne) SetLastLogin(t time.Time) *UserUpdateOne {
+	uuo.mutation.SetLastLogin(t)
 	return uuo
 }
 
-// SetNillableLastActivity sets the "last_activity" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableLastActivity(t *time.Time) *UserUpdateOne {
+// SetNillableLastLogin sets the "last_login" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLastLogin(t *time.Time) *UserUpdateOne {
 	if t != nil {
-		uuo.SetLastActivity(*t)
+		uuo.SetLastLogin(*t)
 	}
 	return uuo
 }
 
-// ClearLastActivity clears the value of the "last_activity" field.
-func (uuo *UserUpdateOne) ClearLastActivity() *UserUpdateOne {
-	uuo.mutation.ClearLastActivity()
+// ClearLastLogin clears the value of the "last_login" field.
+func (uuo *UserUpdateOne) ClearLastLogin() *UserUpdateOne {
+	uuo.mutation.ClearLastLogin()
 	return uuo
 }
 
@@ -338,11 +338,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.LastActivity(); ok {
-		_spec.SetField(user.FieldLastActivity, field.TypeTime, value)
+	if value, ok := uuo.mutation.LastLogin(); ok {
+		_spec.SetField(user.FieldLastLogin, field.TypeTime, value)
 	}
-	if uuo.mutation.LastActivityCleared() {
-		_spec.ClearField(user.FieldLastActivity, field.TypeTime)
+	if uuo.mutation.LastLoginCleared() {
+		_spec.ClearField(user.FieldLastLogin, field.TypeTime)
 	}
 	if value, ok := uuo.mutation.PublicKey(); ok {
 		_spec.SetField(user.FieldPublicKey, field.TypeString, value)

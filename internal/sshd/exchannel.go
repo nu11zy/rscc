@@ -1,4 +1,4 @@
-package opsrv
+package sshd
 
 import "golang.org/x/crypto/ssh"
 
@@ -7,21 +7,21 @@ type ExitStatus struct {
 }
 
 type OperatorSession struct {
-	username    string
-	permissions *ssh.Permissions
+	Username    string
+	Permissions *ssh.Permissions
 }
 
 type ExtendedChannel struct {
 	ssh.Channel
 
-	operator *OperatorSession
+	Operator *OperatorSession
 	closed   bool
 }
 
 func NewExtendedChannel(channel ssh.Channel, operator *OperatorSession) *ExtendedChannel {
 	return &ExtendedChannel{
 		Channel:  channel,
-		operator: operator,
+		Operator: operator,
 	}
 }
 

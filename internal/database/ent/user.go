@@ -19,8 +19,8 @@ type User struct {
 	ID string `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// LastActivity holds the value of the "last_activity" field.
-	LastActivity *time.Time `json:"last_activity,omitempty"`
+	// LastLogin holds the value of the "last_login" field.
+	LastLogin *time.Time `json:"last_login,omitempty"`
 	// PublicKey holds the value of the "public_key" field.
 	PublicKey string `json:"public_key,omitempty"`
 	// IsAdmin holds the value of the "is_admin" field.
@@ -37,7 +37,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID, user.FieldName, user.FieldPublicKey:
 			values[i] = new(sql.NullString)
-		case user.FieldLastActivity:
+		case user.FieldLastLogin:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -66,12 +66,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Name = value.String
 			}
-		case user.FieldLastActivity:
+		case user.FieldLastLogin:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_activity", values[i])
+				return fmt.Errorf("unexpected type %T for field last_login", values[i])
 			} else if value.Valid {
-				u.LastActivity = new(time.Time)
-				*u.LastActivity = value.Time
+				u.LastLogin = new(time.Time)
+				*u.LastLogin = value.Time
 			}
 		case user.FieldPublicKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -124,8 +124,8 @@ func (u *User) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(u.Name)
 	builder.WriteString(", ")
-	if v := u.LastActivity; v != nil {
-		builder.WriteString("last_activity=")
+	if v := u.LastLogin; v != nil {
+		builder.WriteString("last_login=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
