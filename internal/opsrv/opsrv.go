@@ -219,6 +219,19 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 		Permissions: sshConn.Permissions,
 	}
 
+	// Get operator and update last login
+	dbCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	operator, err := s.db.GetOperatorByName(dbCtx, sshConn.User())
+	if err != nil {
+		lg.Errorf("Failed to get operator: %v", err)
+		return
+	}
+	_, err = operator.Update().SetLastLogin(time.Now()).Save(dbCtx)
+	if err != nil {
+		lg.Errorf("Failed to update operator last login: %v", err)
+	}
+
 	go ssh.DiscardRequests(reqs)
 	s.handleChannels(chans, operatorSession)
 

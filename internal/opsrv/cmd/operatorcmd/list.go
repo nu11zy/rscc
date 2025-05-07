@@ -3,7 +3,6 @@ package operatorcmd
 import (
 	"fmt"
 	"rscc/internal/common/pprint"
-	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -28,9 +27,24 @@ func (o *OperatorCmd) cmdList(cmd *cobra.Command, args []string) error {
 
 	var rows [][]string
 	for _, operator := range operators {
-		rows = append(rows, []string{operator.ID, operator.Name, strconv.FormatBool(operator.IsAdmin)})
+		name := operator.Name
+		if name == o.operator.Username {
+			name = pprint.SuccessColor.Sprint(name)
+		}
+
+		var role = "operator"
+		if operator.IsAdmin {
+			role = pprint.WarnColor.Sprint(pprint.Bold.Sprint("admin"))
+		}
+
+		var lastLogin = "never"
+		if operator.LastLogin != nil {
+			lastLogin = operator.LastLogin.Format("02.01.2006 15:04:05")
+		}
+
+		rows = append(rows, []string{operator.ID, name, role, lastLogin})
 	}
 
-	cmd.Println(pprint.Table([]string{"ID", "Name", "Is Admin"}, rows))
+	cmd.Println(pprint.Table([]string{"ID", "Name", "Role", "Last Login"}, rows))
 	return nil
 }
