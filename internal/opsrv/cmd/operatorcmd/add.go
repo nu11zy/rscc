@@ -16,6 +16,7 @@ func (o *OperatorCmd) newCmdAdd() *cobra.Command {
 		Short:   "Add an operator",
 		Aliases: []string{"a"},
 		Args:    cobra.NoArgs,
+		PreRunE: o.checkAdmin,
 		RunE:    o.cmdAdd,
 	}
 	cmd.Flags().StringP("name", "n", "", "operator name")
@@ -28,6 +29,7 @@ func (o *OperatorCmd) newCmdAdd() *cobra.Command {
 }
 
 func (o *OperatorCmd) cmdAdd(cmd *cobra.Command, args []string) error {
+	// Get flags
 	name, err := cmd.Flags().GetString("name")
 	if err != nil {
 		return fmt.Errorf("failed to get operator name: %w", err)

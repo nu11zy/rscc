@@ -170,6 +170,14 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.Public
 		return nil, fmt.Errorf("invalid key")
 	}
 
+	if user.IsAdmin {
+		return &ssh.Permissions{
+			CriticalOptions: map[string]string{
+				"admin": "admin",
+			},
+		}, nil
+	}
+
 	return &ssh.Permissions{}, nil
 }
 
