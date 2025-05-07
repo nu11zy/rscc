@@ -35,7 +35,6 @@ type OperatorServer struct {
 	listener    *net.TCPListener
 	sshConfig   *ssh.ServerConfig
 	sshTimeout  int
-	operators   map[string]*sshd.OperatorSession
 	operatorsMu sync.Mutex
 	lg          *zap.SugaredLogger
 }
@@ -88,7 +87,6 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		listener:   nil,
 		sshConfig:  nil,
 		sshTimeout: sshTimeout,
-		operators:  make(map[string]*sshd.OperatorSession),
 		lg:         lg,
 	}
 
@@ -175,20 +173,6 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.Public
 	return &ssh.Permissions{}, nil
 }
 
-// addOperator adds new operator to the list
-func (s *OperatorServer) addOperator(operator *sshd.OperatorSession) {
-	s.operatorsMu.Lock()
-	defer s.operatorsMu.Unlock()
-	s.operators[operator.Username] = operator
-}
-
-// removeOperator removes operator from the list
-func (s *OperatorServer) removeOperator(operator *sshd.OperatorSession) {
-	s.operatorsMu.Lock()
-	defer s.operatorsMu.Unlock()
-	delete(s.operators, operator.Username)
-}
-
 // handleConnection handles new SSH connection
 func (s *OperatorServer) handleConnection(conn net.Conn) {
 	s.lg.Debugf("New TCP connection from %s", conn.RemoteAddr())
@@ -234,7 +218,6 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 		Username:    sshConn.User(),
 		Permissions: sshConn.Permissions,
 	}
-	s.addOperator(operatorSession)
 
 	go ssh.DiscardRequests(reqs)
 	s.handleChannels(chans, operatorSession)
@@ -242,8 +225,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	// stop keepalive process
 	stopKeepalive <- struct{}{}
 
-	lg.Infof("SSH connection closed (%s)", operatorSession.Username)
-	s.removeOperator(operatorSession)
+	lg.Infof("SSH connection closed (%s)", sshConn.User())
 }
 
 // handleChannels handles SSH channels
