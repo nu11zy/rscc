@@ -44,9 +44,13 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 	if err != nil {
 		if ent.IsNotFound(err) {
 			lg.Info("Agent listener not found, creating new one")
-			privateKey, err := sshd.GeneratePrivateKey()
+			keyPair, err := sshd.NewECDSAKey()
 			if err != nil {
-				return nil, fmt.Errorf("failed to generate private key: %w", err)
+				return nil, fmt.Errorf("failed to generate key pair: %w", err)
+			}
+			privateKey, err := keyPair.GetPrivateKey()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get private key: %w", err)
 			}
 			listener, err = db.CreateListenerWithID(ctx, AgentListenerID, AgentListenerName, privateKey)
 			if err != nil {
