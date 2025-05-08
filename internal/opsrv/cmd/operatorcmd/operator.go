@@ -14,6 +14,11 @@ type OperatorCmd struct {
 	operator *sshd.OperatorSession
 }
 
+// operator list
+// operator add --name <name> --key <public-key> --admin
+// operator remove <name/id>
+// operator info <name/id>
+
 func NewOperatorCmd(db *database.Database, operator *sshd.OperatorSession) *OperatorCmd {
 	operatorCmd := &OperatorCmd{
 		db:       db,

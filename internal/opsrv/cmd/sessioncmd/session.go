@@ -11,6 +11,9 @@ type SessionCmd struct {
 	sm      *session.SessionManager
 }
 
+// session list
+// session info <id>
+
 func NewSessionCmd(sm *session.SessionManager) *SessionCmd {
 	sessionCmd := &SessionCmd{
 		sm: sm,
