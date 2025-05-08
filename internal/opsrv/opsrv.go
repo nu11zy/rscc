@@ -2,6 +2,7 @@ package opsrv
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -319,18 +320,34 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 	lg := s.lg.Named("ssh")
 
 	isPty := false
+	var terminal *term.Terminal
 	for req := range request {
 		lg.Debugf("Session request: %s", req.Type)
 		switch req.Type {
 		case "pty-req":
 			isPty = true
+			terminal = term.NewTerminal(channel, "")
+			if len(req.Payload) >= 12 {
+				width := int(binary.BigEndian.Uint32(req.Payload[4:8]))
+				height := int(binary.BigEndian.Uint32(req.Payload[8:12]))
+				terminal.SetSize(width, height)
+			}
 			req.Reply(true, nil)
 		case "window-change":
+			if len(req.Payload) < 8 {
+				lg.Warn("Window change request received with invalid payload")
+				terminal.SetSize(80, 24)
+				req.Reply(true, nil)
+				continue
+			}
+			width := int(binary.BigEndian.Uint32(req.Payload[0:4]))
+			height := int(binary.BigEndian.Uint32(req.Payload[4:8]))
+			terminal.SetSize(width, height)
 			req.Reply(true, nil)
 		case "shell":
 			if isPty {
 				req.Reply(true, nil)
-				go s.handleShell(channel)
+				go s.handleShell(channel, terminal)
 			} else {
 				lg.Warn("Shell request received before PTY request")
 				channel.Write([]byte("Only PTY is supported.\n"))
@@ -338,7 +355,7 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 				channel.CloseWithStatus(1)
 			}
 		case "exec":
-			go s.handleExec(channel, string(req.Payload[4:]))
+			go s.handleExec(channel, terminal, string(req.Payload[4:]))
 			req.Reply(true, nil)
 		default:
 			lg.Warnf("Unsupported session request: %s", req.Type)
@@ -348,13 +365,12 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 }
 
 // handleExec handles exec request
-func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, command string) {
+func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, terminal *term.Terminal, command string) {
 	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("exec")
 	lg.Debugf("Executing command: %s", command)
 
-	terminal := term.NewTerminal(channel, "")
 	app := s.newCli(terminal, channel.Operator)
 	app.SetArgs(strings.Fields(command))
 
@@ -364,13 +380,13 @@ func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, command strin
 }
 
 // handleShell handles shell request
-func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel) {
+func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel, terminal *term.Terminal) {
 	defer channel.CloseWithStatus(0)
 
 	lg := s.lg.Named("cli")
 	lg.Infof("Starting CLI for %s", channel.Operator.Username)
 
-	terminal := term.NewTerminal(channel, "rscc > ")
+	terminal.SetPrompt("rscc > ")
 	terminal.Write([]byte(pprint.GetBanner()))
 	// TODO: print status (number of sessions, uptime, etc.)
 
@@ -422,6 +438,7 @@ func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.O
 	app.Flags().BoolP("help", "h", false, "")
 	app.Flags().MarkHidden("help")
 	app.PersistentFlags().BoolP("help", "h", false, "Print this help message")
+	app.PersistentFlags().MarkHidden("help")
 
 	app.SetUsageTemplate(`
 {{- if .HasAvailableSubCommands}}Commands:{{range .Commands}}{{if .IsAvailableCommand}}
@@ -430,7 +447,7 @@ func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.O
 {{- if .HasAvailableLocalFlags}}Flags:
 {{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}
 
-Use "[command] -h /--help" for more information about a command.
+Use "[command] -h / --help" for more information about a command.
 `)
 
 	app.SetOut(terminal)

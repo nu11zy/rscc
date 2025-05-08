@@ -3,14 +3,14 @@ package utils
 import (
 	"crypto/rand"
 	"math/big"
+	"rscc/internal/common/constants"
 )
 
 const safeCharset = "abcdefghjkmnpqrstuvwxyz1234567890"
-const idLength = 8
 
 func GenID() string {
-	b := make([]byte, idLength)
-	for i := 0; i < idLength; i++ {
+	b := make([]byte, constants.IDLength)
+	for i := 0; i < constants.IDLength; i++ {
 		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(safeCharset))))
 		if err != nil {
 			panic("failed to generate secure random ID")

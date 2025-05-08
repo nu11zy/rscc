@@ -132,6 +132,14 @@ func (db *Database) GetAgentByName(ctx context.Context, name string) (*ent.Agent
 	return agent, nil
 }
 
+func (db *Database) GetAgentByID(ctx context.Context, id string) (*ent.Agent, error) {
+	agent, err := db.client.Agent.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent: %w", err)
+	}
+	return agent, nil
+}
+
 func (db *Database) DeleteAgent(ctx context.Context, id string) error {
 	return db.client.Agent.DeleteOneID(id).Exec(ctx)
 }
