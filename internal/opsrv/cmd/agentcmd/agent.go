@@ -33,5 +33,6 @@ func NewAgentCmd(db *database.Database) *AgentCmd {
 	cmd.AddCommand(agentCmd.newCmdList())
 	cmd.AddCommand(agentCmd.newCmdGenerate())
 	cmd.AddCommand(agentCmd.newCmdInfo())
+	cmd.AddCommand(agentCmd.newCmdRemove())
 	return agentCmd
 }
