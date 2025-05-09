@@ -2,7 +2,9 @@ package agentcmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"rscc/internal/common/constants"
+	"rscc/internal/common/pprint"
 	"rscc/internal/database/ent"
 
 	"github.com/spf13/cobra"
@@ -10,7 +12,7 @@ import (
 
 func (a *AgentCmd) newCmdInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "info",
+		Use:     "info <id/name>",
 		Short:   "Get agent info",
 		Aliases: []string{"i"},
 		Args:    cobra.ExactArgs(1),
@@ -42,18 +44,37 @@ func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// TODO: Pretty print
-	cmd.Printf("Agent ID: %s\n", agent.ID)
-	cmd.Printf("Agent Name: %s\n", agent.Name)
-	cmd.Printf("Agent OS: %s\n", agent.Os)
-	cmd.Printf("Agent Arch: %s\n", agent.Arch)
-	cmd.Printf("Agent Server: %s\n", agent.Server)
-	cmd.Printf("Agent Shared: %t\n", agent.Shared)
-	cmd.Printf("Agent PIE: %t\n", agent.Pie)
-	cmd.Printf("Agent Garble: %t\n", agent.Garble)
-	cmd.Printf("Agent Subsystems: %v\n", agent.Subsystems)
-	cmd.Printf("Agent Public Key: %s\n", agent.PublicKey)
-	cmd.Printf("Agent XXHash: %s\n", agent.Xxhash)
+	buildFeutures := []string{}
+	if agent.Shared {
+		buildFeutures = append(buildFeutures, "shared")
+	}
+	if agent.Pie {
+		buildFeutures = append(buildFeutures, "pie")
+	}
+	if agent.Garble {
+		buildFeutures = append(buildFeutures, "garble")
+	}
+
+	fullPath, err := filepath.Abs(agent.Path)
+	if err != nil {
+		return fmt.Errorf("failed to get full path to agent: %w", err)
+	}
+
+	cmd.Println(pprint.Info("Agent extra info:"))
+	cmd.Printf("- ID: %s\n", agent.ID)
+	cmd.Printf("- Name: %s\n", agent.Name)
+	cmd.Printf("- OS: %s (%s)\n", agent.Os, agent.Arch)
+	cmd.Printf("- Server: %s\n", agent.Server)
+
+	if len(buildFeutures) > 0 {
+		cmd.Printf("- Features: %v\n", buildFeutures)
+	}
+	if len(agent.Subsystems) > 0 {
+		cmd.Printf("- Subsystems: %v\n", agent.Subsystems)
+	}
+
+	cmd.Printf("- Path: %s\n", fullPath)
+	cmd.Printf("- Public Key: %s", agent.PublicKey)
 
 	return nil
 }

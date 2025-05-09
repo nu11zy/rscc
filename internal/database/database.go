@@ -97,7 +97,7 @@ func (db *Database) DeleteOperatorByID(ctx context.Context, id string) error {
 }
 
 // Agent
-func (db *Database) CreateAgent(ctx context.Context, name, os, arch, server string, shared, pie, garble bool, subsystems []string, publicKey []byte, xxhash string) (*ent.Agent, error) {
+func (db *Database) CreateAgent(ctx context.Context, name, os, arch, server string, shared, pie, garble bool, subsystems []string, xxhash, path string, publicKey []byte) (*ent.Agent, error) {
 	agent, err := db.client.Agent.Create().
 		SetName(name).
 		SetOs(os).
@@ -107,8 +107,9 @@ func (db *Database) CreateAgent(ctx context.Context, name, os, arch, server stri
 		SetPie(pie).
 		SetGarble(garble).
 		SetSubsystems(subsystems).
-		SetPublicKey(publicKey).
 		SetXxhash(xxhash).
+		SetPath(path).
+		SetPublicKey(publicKey).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create agent: %w", err)

@@ -19,8 +19,9 @@ var (
 		{Name: "pie", Type: field.TypeBool, Default: false},
 		{Name: "garble", Type: field.TypeBool, Default: false},
 		{Name: "subsystems", Type: field.TypeJSON},
-		{Name: "public_key", Type: field.TypeBytes},
 		{Name: "xxhash", Type: field.TypeString},
+		{Name: "path", Type: field.TypeString},
+		{Name: "public_key", Type: field.TypeBytes},
 	}
 	// AgentsTable holds the schema information for the "agents" table.
 	AgentsTable = &schema.Table{

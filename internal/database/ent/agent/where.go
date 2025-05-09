@@ -98,14 +98,19 @@ func Garble(v bool) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldGarble, v))
 }
 
-// PublicKey applies equality check predicate on the "public_key" field. It's identical to PublicKeyEQ.
-func PublicKey(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
-}
-
 // Xxhash applies equality check predicate on the "xxhash" field. It's identical to XxhashEQ.
 func Xxhash(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldXxhash, v))
+}
+
+// Path applies equality check predicate on the "path" field. It's identical to PathEQ.
+func Path(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldPath, v))
+}
+
+// PublicKey applies equality check predicate on the "public_key" field. It's identical to PublicKeyEQ.
+func PublicKey(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -398,46 +403,6 @@ func GarbleNEQ(v bool) predicate.Agent {
 	return predicate.Agent(sql.FieldNEQ(FieldGarble, v))
 }
 
-// PublicKeyEQ applies the EQ predicate on the "public_key" field.
-func PublicKeyEQ(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
-}
-
-// PublicKeyNEQ applies the NEQ predicate on the "public_key" field.
-func PublicKeyNEQ(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldNEQ(FieldPublicKey, v))
-}
-
-// PublicKeyIn applies the In predicate on the "public_key" field.
-func PublicKeyIn(vs ...[]byte) predicate.Agent {
-	return predicate.Agent(sql.FieldIn(FieldPublicKey, vs...))
-}
-
-// PublicKeyNotIn applies the NotIn predicate on the "public_key" field.
-func PublicKeyNotIn(vs ...[]byte) predicate.Agent {
-	return predicate.Agent(sql.FieldNotIn(FieldPublicKey, vs...))
-}
-
-// PublicKeyGT applies the GT predicate on the "public_key" field.
-func PublicKeyGT(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldGT(FieldPublicKey, v))
-}
-
-// PublicKeyGTE applies the GTE predicate on the "public_key" field.
-func PublicKeyGTE(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldGTE(FieldPublicKey, v))
-}
-
-// PublicKeyLT applies the LT predicate on the "public_key" field.
-func PublicKeyLT(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldLT(FieldPublicKey, v))
-}
-
-// PublicKeyLTE applies the LTE predicate on the "public_key" field.
-func PublicKeyLTE(v []byte) predicate.Agent {
-	return predicate.Agent(sql.FieldLTE(FieldPublicKey, v))
-}
-
 // XxhashEQ applies the EQ predicate on the "xxhash" field.
 func XxhashEQ(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldXxhash, v))
@@ -501,6 +466,111 @@ func XxhashEqualFold(v string) predicate.Agent {
 // XxhashContainsFold applies the ContainsFold predicate on the "xxhash" field.
 func XxhashContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldXxhash, v))
+}
+
+// PathEQ applies the EQ predicate on the "path" field.
+func PathEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldPath, v))
+}
+
+// PathNEQ applies the NEQ predicate on the "path" field.
+func PathNEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldPath, v))
+}
+
+// PathIn applies the In predicate on the "path" field.
+func PathIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldPath, vs...))
+}
+
+// PathNotIn applies the NotIn predicate on the "path" field.
+func PathNotIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldPath, vs...))
+}
+
+// PathGT applies the GT predicate on the "path" field.
+func PathGT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldPath, v))
+}
+
+// PathGTE applies the GTE predicate on the "path" field.
+func PathGTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldPath, v))
+}
+
+// PathLT applies the LT predicate on the "path" field.
+func PathLT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldPath, v))
+}
+
+// PathLTE applies the LTE predicate on the "path" field.
+func PathLTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldPath, v))
+}
+
+// PathContains applies the Contains predicate on the "path" field.
+func PathContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldPath, v))
+}
+
+// PathHasPrefix applies the HasPrefix predicate on the "path" field.
+func PathHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldPath, v))
+}
+
+// PathHasSuffix applies the HasSuffix predicate on the "path" field.
+func PathHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldPath, v))
+}
+
+// PathEqualFold applies the EqualFold predicate on the "path" field.
+func PathEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldPath, v))
+}
+
+// PathContainsFold applies the ContainsFold predicate on the "path" field.
+func PathContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldPath, v))
+}
+
+// PublicKeyEQ applies the EQ predicate on the "public_key" field.
+func PublicKeyEQ(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
+}
+
+// PublicKeyNEQ applies the NEQ predicate on the "public_key" field.
+func PublicKeyNEQ(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldPublicKey, v))
+}
+
+// PublicKeyIn applies the In predicate on the "public_key" field.
+func PublicKeyIn(vs ...[]byte) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldPublicKey, vs...))
+}
+
+// PublicKeyNotIn applies the NotIn predicate on the "public_key" field.
+func PublicKeyNotIn(vs ...[]byte) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldPublicKey, vs...))
+}
+
+// PublicKeyGT applies the GT predicate on the "public_key" field.
+func PublicKeyGT(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldPublicKey, v))
+}
+
+// PublicKeyGTE applies the GTE predicate on the "public_key" field.
+func PublicKeyGTE(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldPublicKey, v))
+}
+
+// PublicKeyLT applies the LT predicate on the "public_key" field.
+func PublicKeyLT(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldPublicKey, v))
+}
+
+// PublicKeyLTE applies the LTE predicate on the "public_key" field.
+func PublicKeyLTE(v []byte) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldPublicKey, v))
 }
 
 // And groups predicates with the AND operator between them.

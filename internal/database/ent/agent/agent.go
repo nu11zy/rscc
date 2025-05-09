@@ -27,10 +27,12 @@ const (
 	FieldGarble = "garble"
 	// FieldSubsystems holds the string denoting the subsystems field in the database.
 	FieldSubsystems = "subsystems"
-	// FieldPublicKey holds the string denoting the public_key field in the database.
-	FieldPublicKey = "public_key"
 	// FieldXxhash holds the string denoting the xxhash field in the database.
 	FieldXxhash = "xxhash"
+	// FieldPath holds the string denoting the path field in the database.
+	FieldPath = "path"
+	// FieldPublicKey holds the string denoting the public_key field in the database.
+	FieldPublicKey = "public_key"
 	// Table holds the table name of the agent in the database.
 	Table = "agents"
 )
@@ -46,8 +48,9 @@ var Columns = []string{
 	FieldPie,
 	FieldGarble,
 	FieldSubsystems,
-	FieldPublicKey,
 	FieldXxhash,
+	FieldPath,
+	FieldPublicKey,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -77,10 +80,12 @@ var (
 	DefaultGarble bool
 	// DefaultSubsystems holds the default value on creation for the "subsystems" field.
 	DefaultSubsystems []string
-	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
-	PublicKeyValidator func([]byte) error
 	// XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
 	XxhashValidator func(string) error
+	// PathValidator is a validator for the "path" field. It is called by the builders before save.
+	PathValidator func(string) error
+	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
+	PublicKeyValidator func([]byte) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -131,4 +136,9 @@ func ByGarble(opts ...sql.OrderTermOption) OrderOption {
 // ByXxhash orders the results by the xxhash field.
 func ByXxhash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldXxhash, opts...).ToFunc()
+}
+
+// ByPath orders the results by the path field.
+func ByPath(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPath, opts...).ToFunc()
 }

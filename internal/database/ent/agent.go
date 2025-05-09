@@ -33,10 +33,12 @@ type Agent struct {
 	Garble bool `json:"garble,omitempty"`
 	// Subsystems holds the value of the "subsystems" field.
 	Subsystems []string `json:"subsystems,omitempty"`
-	// PublicKey holds the value of the "public_key" field.
-	PublicKey []byte `json:"public_key,omitempty"`
 	// Xxhash holds the value of the "xxhash" field.
-	Xxhash       string `json:"xxhash,omitempty"`
+	Xxhash string `json:"xxhash,omitempty"`
+	// Path holds the value of the "path" field.
+	Path string `json:"path,omitempty"`
+	// PublicKey holds the value of the "public_key" field.
+	PublicKey    []byte `json:"public_key,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -49,7 +51,7 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case agent.FieldShared, agent.FieldPie, agent.FieldGarble:
 			values[i] = new(sql.NullBool)
-		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldServer, agent.FieldXxhash:
+		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldServer, agent.FieldXxhash, agent.FieldPath:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -122,17 +124,23 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field subsystems: %w", err)
 				}
 			}
-		case agent.FieldPublicKey:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field public_key", values[i])
-			} else if value != nil {
-				a.PublicKey = *value
-			}
 		case agent.FieldXxhash:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field xxhash", values[i])
 			} else if value.Valid {
 				a.Xxhash = value.String
+			}
+		case agent.FieldPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field path", values[i])
+			} else if value.Valid {
+				a.Path = value.String
+			}
+		case agent.FieldPublicKey:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field public_key", values[i])
+			} else if value != nil {
+				a.PublicKey = *value
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -194,11 +202,14 @@ func (a *Agent) String() string {
 	builder.WriteString("subsystems=")
 	builder.WriteString(fmt.Sprintf("%v", a.Subsystems))
 	builder.WriteString(", ")
-	builder.WriteString("public_key=")
-	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
-	builder.WriteString(", ")
 	builder.WriteString("xxhash=")
 	builder.WriteString(a.Xxhash)
+	builder.WriteString(", ")
+	builder.WriteString("path=")
+	builder.WriteString(a.Path)
+	builder.WriteString(", ")
+	builder.WriteString("public_key=")
+	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
 	builder.WriteByte(')')
 	return builder.String()
 }

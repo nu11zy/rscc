@@ -46,8 +46,9 @@ type AgentMutation struct {
 	garble           *bool
 	subsystems       *[]string
 	appendsubsystems []string
-	public_key       *[]byte
 	xxhash           *string
+	_path            *string
+	public_key       *[]byte
 	clearedFields    map[string]struct{}
 	done             bool
 	oldValue         func(context.Context) (*Agent, error)
@@ -461,42 +462,6 @@ func (m *AgentMutation) ResetSubsystems() {
 	m.appendsubsystems = nil
 }
 
-// SetPublicKey sets the "public_key" field.
-func (m *AgentMutation) SetPublicKey(b []byte) {
-	m.public_key = &b
-}
-
-// PublicKey returns the value of the "public_key" field in the mutation.
-func (m *AgentMutation) PublicKey() (r []byte, exists bool) {
-	v := m.public_key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPublicKey returns the old "public_key" field's value of the Agent entity.
-// If the Agent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldPublicKey(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPublicKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPublicKey: %w", err)
-	}
-	return oldValue.PublicKey, nil
-}
-
-// ResetPublicKey resets all changes to the "public_key" field.
-func (m *AgentMutation) ResetPublicKey() {
-	m.public_key = nil
-}
-
 // SetXxhash sets the "xxhash" field.
 func (m *AgentMutation) SetXxhash(s string) {
 	m.xxhash = &s
@@ -533,6 +498,78 @@ func (m *AgentMutation) ResetXxhash() {
 	m.xxhash = nil
 }
 
+// SetPath sets the "path" field.
+func (m *AgentMutation) SetPath(s string) {
+	m._path = &s
+}
+
+// Path returns the value of the "path" field in the mutation.
+func (m *AgentMutation) Path() (r string, exists bool) {
+	v := m._path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPath returns the old "path" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPath: %w", err)
+	}
+	return oldValue.Path, nil
+}
+
+// ResetPath resets all changes to the "path" field.
+func (m *AgentMutation) ResetPath() {
+	m._path = nil
+}
+
+// SetPublicKey sets the "public_key" field.
+func (m *AgentMutation) SetPublicKey(b []byte) {
+	m.public_key = &b
+}
+
+// PublicKey returns the value of the "public_key" field in the mutation.
+func (m *AgentMutation) PublicKey() (r []byte, exists bool) {
+	v := m.public_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKey returns the old "public_key" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldPublicKey(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKey: %w", err)
+	}
+	return oldValue.PublicKey, nil
+}
+
+// ResetPublicKey resets all changes to the "public_key" field.
+func (m *AgentMutation) ResetPublicKey() {
+	m.public_key = nil
+}
+
 // Where appends a list predicates to the AgentMutation builder.
 func (m *AgentMutation) Where(ps ...predicate.Agent) {
 	m.predicates = append(m.predicates, ps...)
@@ -567,7 +604,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.name != nil {
 		fields = append(fields, agent.FieldName)
 	}
@@ -592,11 +629,14 @@ func (m *AgentMutation) Fields() []string {
 	if m.subsystems != nil {
 		fields = append(fields, agent.FieldSubsystems)
 	}
-	if m.public_key != nil {
-		fields = append(fields, agent.FieldPublicKey)
-	}
 	if m.xxhash != nil {
 		fields = append(fields, agent.FieldXxhash)
+	}
+	if m._path != nil {
+		fields = append(fields, agent.FieldPath)
+	}
+	if m.public_key != nil {
+		fields = append(fields, agent.FieldPublicKey)
 	}
 	return fields
 }
@@ -622,10 +662,12 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Garble()
 	case agent.FieldSubsystems:
 		return m.Subsystems()
-	case agent.FieldPublicKey:
-		return m.PublicKey()
 	case agent.FieldXxhash:
 		return m.Xxhash()
+	case agent.FieldPath:
+		return m.Path()
+	case agent.FieldPublicKey:
+		return m.PublicKey()
 	}
 	return nil, false
 }
@@ -651,10 +693,12 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldGarble(ctx)
 	case agent.FieldSubsystems:
 		return m.OldSubsystems(ctx)
-	case agent.FieldPublicKey:
-		return m.OldPublicKey(ctx)
 	case agent.FieldXxhash:
 		return m.OldXxhash(ctx)
+	case agent.FieldPath:
+		return m.OldPath(ctx)
+	case agent.FieldPublicKey:
+		return m.OldPublicKey(ctx)
 	}
 	return nil, fmt.Errorf("unknown Agent field %s", name)
 }
@@ -720,19 +764,26 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSubsystems(v)
 		return nil
-	case agent.FieldPublicKey:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPublicKey(v)
-		return nil
 	case agent.FieldXxhash:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetXxhash(v)
+		return nil
+	case agent.FieldPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPath(v)
+		return nil
+	case agent.FieldPublicKey:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKey(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Agent field %s", name)
@@ -807,11 +858,14 @@ func (m *AgentMutation) ResetField(name string) error {
 	case agent.FieldSubsystems:
 		m.ResetSubsystems()
 		return nil
-	case agent.FieldPublicKey:
-		m.ResetPublicKey()
-		return nil
 	case agent.FieldXxhash:
 		m.ResetXxhash()
+		return nil
+	case agent.FieldPath:
+		m.ResetPath()
+		return nil
+	case agent.FieldPublicKey:
+		m.ResetPublicKey()
 		return nil
 	}
 	return fmt.Errorf("unknown Agent field %s", name)

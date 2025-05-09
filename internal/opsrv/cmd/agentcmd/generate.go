@@ -146,19 +146,20 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Get agent hash
-	agentBytes, err := os.ReadFile(filepath.Join(constants.AgentDir, name))
+	agentPath := filepath.Join(constants.AgentDir, name)
+	agentBytes, err := os.ReadFile(agentPath)
 	if err != nil {
 		return fmt.Errorf("failed to read agent: %w", err)
 	}
 	agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 
 	// Add agent to database
-	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, server, shared, pie, garble, ss, pubKey, agentHash)
+	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, server, shared, pie, garble, ss, agentHash, agentPath, pubKey)
 	if err != nil {
 		return fmt.Errorf("failed to add agent to database: %w", err)
 	}
 
-	cmd.Println(pprint.Success("Agent `%s` [id: %s] generated (%s)", agent.Name, agent.ID, filepath.Join("./agents", name)))
+	cmd.Println(pprint.Success("Agent `%s` [id: %s] generated (%s)", agent.Name, agent.ID, agent.Path))
 	return nil
 }
 

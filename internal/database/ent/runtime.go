@@ -47,14 +47,18 @@ func init() {
 	agentDescSubsystems := agentFields[8].Descriptor()
 	// agent.DefaultSubsystems holds the default value on creation for the subsystems field.
 	agent.DefaultSubsystems = agentDescSubsystems.Default.([]string)
-	// agentDescPublicKey is the schema descriptor for public_key field.
-	agentDescPublicKey := agentFields[9].Descriptor()
-	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
-	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
 	// agentDescXxhash is the schema descriptor for xxhash field.
-	agentDescXxhash := agentFields[10].Descriptor()
+	agentDescXxhash := agentFields[9].Descriptor()
 	// agent.XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
 	agent.XxhashValidator = agentDescXxhash.Validators[0].(func(string) error)
+	// agentDescPath is the schema descriptor for path field.
+	agentDescPath := agentFields[10].Descriptor()
+	// agent.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	agent.PathValidator = agentDescPath.Validators[0].(func(string) error)
+	// agentDescPublicKey is the schema descriptor for public_key field.
+	agentDescPublicKey := agentFields[11].Descriptor()
+	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
+	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
 	// agentDescID is the schema descriptor for id field.
 	agentDescID := agentFields[0].Descriptor()
 	// agent.DefaultID holds the default value on creation for the id field.

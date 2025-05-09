@@ -440,15 +440,15 @@ func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.O
 	app.PersistentFlags().BoolP("help", "h", false, "Print this help message")
 	app.PersistentFlags().MarkHidden("help")
 
-	app.SetUsageTemplate(`
-{{- if .HasAvailableSubCommands}}Commands:{{range .Commands}}{{if .IsAvailableCommand}}
-  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}
+	// 	app.SetUsageTemplate(`
+	// {{- if .HasAvailableSubCommands}}Commands:{{range .Commands}}{{if .IsAvailableCommand}}
+	//   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}
 
-{{- if .HasAvailableLocalFlags}}Flags:
-{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}
+	// {{- if .HasAvailableLocalFlags}}Flags:
+	// {{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}
 
-Use "[command] -h / --help" for more information about a command.
-`)
+	// Use "[command] -h / --help" for more information about a command.
+	// `)
 
 	app.SetOut(terminal)
 	app.SetErr(terminal)

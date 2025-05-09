@@ -24,8 +24,9 @@ func (Agent) Fields() []ent.Field {
 		field.Bool("pie").Immutable().Default(false),
 		field.Bool("garble").Immutable().Default(false),
 		field.Strings("subsystems").Immutable().Default([]string{}),
-		field.Bytes("public_key").Immutable().NotEmpty(),
 		field.String("xxhash").Immutable().NotEmpty(),
+		field.String("path").Immutable().NotEmpty(),
+		field.Bytes("public_key").Immutable().NotEmpty(),
 	}
 }
 

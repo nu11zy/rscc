@@ -91,15 +91,21 @@ func (ac *AgentCreate) SetSubsystems(s []string) *AgentCreate {
 	return ac
 }
 
-// SetPublicKey sets the "public_key" field.
-func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
-	ac.mutation.SetPublicKey(b)
-	return ac
-}
-
 // SetXxhash sets the "xxhash" field.
 func (ac *AgentCreate) SetXxhash(s string) *AgentCreate {
 	ac.mutation.SetXxhash(s)
+	return ac
+}
+
+// SetPath sets the "path" field.
+func (ac *AgentCreate) SetPath(s string) *AgentCreate {
+	ac.mutation.SetPath(s)
+	return ac
+}
+
+// SetPublicKey sets the "public_key" field.
+func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
+	ac.mutation.SetPublicKey(b)
 	return ac
 }
 
@@ -220,20 +226,28 @@ func (ac *AgentCreate) check() error {
 	if _, ok := ac.mutation.Subsystems(); !ok {
 		return &ValidationError{Name: "subsystems", err: errors.New(`ent: missing required field "Agent.subsystems"`)}
 	}
-	if _, ok := ac.mutation.PublicKey(); !ok {
-		return &ValidationError{Name: "public_key", err: errors.New(`ent: missing required field "Agent.public_key"`)}
-	}
-	if v, ok := ac.mutation.PublicKey(); ok {
-		if err := agent.PublicKeyValidator(v); err != nil {
-			return &ValidationError{Name: "public_key", err: fmt.Errorf(`ent: validator failed for field "Agent.public_key": %w`, err)}
-		}
-	}
 	if _, ok := ac.mutation.Xxhash(); !ok {
 		return &ValidationError{Name: "xxhash", err: errors.New(`ent: missing required field "Agent.xxhash"`)}
 	}
 	if v, ok := ac.mutation.Xxhash(); ok {
 		if err := agent.XxhashValidator(v); err != nil {
 			return &ValidationError{Name: "xxhash", err: fmt.Errorf(`ent: validator failed for field "Agent.xxhash": %w`, err)}
+		}
+	}
+	if _, ok := ac.mutation.Path(); !ok {
+		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "Agent.path"`)}
+	}
+	if v, ok := ac.mutation.Path(); ok {
+		if err := agent.PathValidator(v); err != nil {
+			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Agent.path": %w`, err)}
+		}
+	}
+	if _, ok := ac.mutation.PublicKey(); !ok {
+		return &ValidationError{Name: "public_key", err: errors.New(`ent: missing required field "Agent.public_key"`)}
+	}
+	if v, ok := ac.mutation.PublicKey(); ok {
+		if err := agent.PublicKeyValidator(v); err != nil {
+			return &ValidationError{Name: "public_key", err: fmt.Errorf(`ent: validator failed for field "Agent.public_key": %w`, err)}
 		}
 	}
 	return nil
@@ -303,13 +317,17 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_spec.SetField(agent.FieldSubsystems, field.TypeJSON, value)
 		_node.Subsystems = value
 	}
-	if value, ok := ac.mutation.PublicKey(); ok {
-		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)
-		_node.PublicKey = value
-	}
 	if value, ok := ac.mutation.Xxhash(); ok {
 		_spec.SetField(agent.FieldXxhash, field.TypeString, value)
 		_node.Xxhash = value
+	}
+	if value, ok := ac.mutation.Path(); ok {
+		_spec.SetField(agent.FieldPath, field.TypeString, value)
+		_node.Path = value
+	}
+	if value, ok := ac.mutation.PublicKey(); ok {
+		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)
+		_node.PublicKey = value
 	}
 	return _node, _spec
 }
