@@ -12,7 +12,7 @@ import (
 
 func (a *AgentCmd) newCmdInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "info <id/name>",
+		Use:     "info <id>",
 		Short:   "Get agent info",
 		Aliases: []string{"i"},
 		Args:    cobra.ExactArgs(1),
@@ -23,25 +23,17 @@ func (a *AgentCmd) newCmdInfo() *cobra.Command {
 }
 
 func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
-	idOrName := args[0]
-
-	var agent *ent.Agent
-	if len(idOrName) == constants.IDLength {
-		var err error
-		agent, err = a.db.GetAgentByID(cmd.Context(), idOrName)
-		if err != nil && !ent.IsNotFound(err) {
-			return fmt.Errorf("failed to get agent: %w", err)
-		}
+	id := args[0]
+	if len(id) != constants.IDLength {
+		return fmt.Errorf("invalid agent id: %s", id)
 	}
 
-	if agent == nil {
-		var err error
-		agent, err = a.db.GetAgentByName(cmd.Context(), idOrName)
-		if err != nil && !ent.IsNotFound(err) {
-			return fmt.Errorf("failed to get agent: %w", err)
-		} else {
-			return fmt.Errorf("agent '%s' not found", idOrName)
+	agent, err := a.db.GetAgentByID(cmd.Context(), id)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return fmt.Errorf("agent '%s' not found", id)
 		}
+		return fmt.Errorf("failed to get agent: %w", err)
 	}
 
 	buildFeutures := []string{}

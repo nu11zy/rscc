@@ -14,8 +14,8 @@ type AgentCmd struct {
 // + agent list
 // + agent generate --name <name> --os <os> --arch <arch> --server <server> --shared --pie --garble --ss <subsystem-list>
 // - agent add --name <name> --key <public-key> --os <os> --arch <arch> --server <server> --shared --pie --garble --ss <subsystem-list> <path>
-// - agent remove <name/id>
-// - agent info <name/id>
+// - agent remove <id>
+// + agent info <id>
 
 func NewAgentCmd(db *database.Database) *AgentCmd {
 	agentCmd := &AgentCmd{
