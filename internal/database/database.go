@@ -92,6 +92,14 @@ func (db *Database) GetOperatorByName(ctx context.Context, username string) (*en
 	return operator, nil
 }
 
+func (db *Database) GetOperatorByID(ctx context.Context, id string) (*ent.Operator, error) {
+	operator, err := db.client.Operator.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get operator: %w", err)
+	}
+	return operator, nil
+}
+
 func (db *Database) DeleteOperatorByID(ctx context.Context, id string) error {
 	return db.client.Operator.DeleteOneID(id).Exec(ctx)
 }
