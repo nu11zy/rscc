@@ -151,7 +151,7 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to unzip agent: %w", err)
 	}
-	// defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpDir)
 
 	// Prepare builder config
 	builderConfig := BuilderConfig{
@@ -190,7 +190,7 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 
 	// Add agent to database
-	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey) // TODO: fix
+	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey)
 	if err != nil {
 		return fmt.Errorf("failed to add agent to database: %w", err)
 	}

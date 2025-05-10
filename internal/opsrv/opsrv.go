@@ -387,7 +387,7 @@ func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel, terminal *te
 
 	terminal.SetPrompt("rscc > ")
 	terminal.Write([]byte(pprint.GetBanner()))
-	// TODO: print status (number of sessions, uptime, etc.)
+	// terminal.Write([]byte(fmt.Sprintf("Active sessions: %d. Listening on %s\n", len(s.sm.ListSessions()), s.address)))
 
 	for {
 		cli := s.newCli(terminal, channel.Operator)
