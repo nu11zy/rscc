@@ -16,8 +16,8 @@ type OperatorCmd struct {
 
 // + operator list
 // + operator add --name <name> --key <public-key> --admin
-// - operator remove <name/id>
-// - operator info <name/id>
+// + operator remove <name/id>
+// + operator info <name/id>
 
 func NewOperatorCmd(db *database.Database, operator *sshd.OperatorSession) *OperatorCmd {
 	operatorCmd := &OperatorCmd{
@@ -34,6 +34,7 @@ func NewOperatorCmd(db *database.Database, operator *sshd.OperatorSession) *Oper
 	cmd.AddCommand(operatorCmd.newCmdList())
 	cmd.AddCommand(operatorCmd.newCmdAdd())
 	cmd.AddCommand(operatorCmd.newCmdRemove())
+	cmd.AddCommand(operatorCmd.newCmdInfo())
 
 	operatorCmd.Command = cmd
 	return operatorCmd
