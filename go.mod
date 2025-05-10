@@ -4,7 +4,6 @@ go 1.24.2
 
 require (
 	github.com/mattn/go-sqlite3 v1.14.28
-	github.com/urfave/cli/v3 v3.2.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.13.0
 	golang.org/x/term v0.31.0
