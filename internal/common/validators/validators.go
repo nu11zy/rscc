@@ -65,9 +65,8 @@ func ValidateGOARCH(goarch string) bool {
 
 func ValidateSybsystem(ss string) bool {
 	var validSS = []string{
-		"execute-assembly",
-		"inject",
-		"sleep",
+		"sftp",
+		"kill",
 	}
 
 	return slices.Contains(validSS, ss)

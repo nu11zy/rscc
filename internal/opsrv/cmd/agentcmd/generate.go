@@ -54,7 +54,7 @@ func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd.Flags().Bool("pie", false, "generate a position independent executable")
 	cmd.Flags().Bool("garble", false, "use garble to obfuscate agent")
 	cmd.Flags().Bool("debug", false, "enable debug messages")
-	cmd.Flags().StringSlice("ss", []string{}, "subsystems to add to the agent (e.g. execute-assembly, inject, sleep)")
+	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, "subsystems to add to the agent (e.g. sftp, kill)")
 	cmd.MarkFlagsMutuallyExclusive("shared", "pie")
 	cmd.MarkFlagRequired("servers")
 
@@ -379,6 +379,12 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 		buildMode = "-buildmode=default"
 	}
 
+	// Tags
+	tags := ""
+	if len(builderConfig.SS) > 0 {
+		tags = strings.Join(builderConfig.SS, ",")
+	}
+
 	// Build agent
 	var cmd *exec.Cmd
 	if builderConfig.Garble {
@@ -393,6 +399,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 			"-mod=vendor",
 			"-trimpath",
 			fmt.Sprintf("-ldflags=%s", ldflags),
+			fmt.Sprintf("-tags=%s", tags),
 			buildMode,
 			"cmd/agent/main.go",
 		)
@@ -405,6 +412,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 			"-mod=vendor",
 			"-trimpath",
 			fmt.Sprintf("-ldflags=%s", ldflags),
+			fmt.Sprintf("-tags=%s", tags),
 			buildMode,
 			"cmd/agent/main.go",
 		)

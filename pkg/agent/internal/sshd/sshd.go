@@ -1,6 +1,7 @@
 package sshd
 
 import (
+	"agent/internal/sshd/subsystems"
 	"fmt"
 	"io"
 
@@ -9,6 +10,7 @@ import (
 	// {{end}}
 	"net"
 
+	"github.com/google/shlex"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -143,24 +145,42 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 			// {{if .Debug}}
 			log.Printf("Subsystem request received: %v", req.Payload)
 			// {{end}}
-			system := string(req.Payload[4:])
-			switch system {
-			case "sftp":
+			line := string(req.Payload[4:])
+
+			args, err := shlex.Split(line)
+			if err != nil && len(args) > 0 {
 				// {{if .Debug}}
-				log.Printf("SFTP subsystem request received")
+				log.Printf("Failed to parse subsystem command: %v", err)
 				// {{end}}
+				channel.Write([]byte(fmt.Sprintf("Failed to parse subsystem command: %v\n", err)))
 				req.Reply(true, nil)
-			default:
+				continue
+			}
+
+			system := args[0]
+			systemArgs := []string{}
+			if len(args) > 1 {
+				systemArgs = args[1:]
+			}
+			if subsystemFunc, ok := subsystems.Subsystems[system]; ok {
 				// {{if .Debug}}
-				log.Printf("Unknown subsystem: %v", system)
+				log.Printf("Subsystem function found: %s", system)
 				// {{end}}
-				req.Reply(false, []byte(fmt.Sprintf("Subsystem %s not supported.", system)))
+				go subsystemFunc(channel, systemArgs)
+				req.Reply(true, nil)
+			} else {
+				// {{if .Debug}}
+				log.Printf("Subsystem not supported: %s", system)
+				// {{end}}
+				channel.Write([]byte(fmt.Sprintf("Subsystem not supported: %s\n", system)))
+				req.Reply(true, nil)
 			}
 		default:
 			// {{if .Debug}}
 			log.Printf("Unknown request: %v", req.Type)
 			// {{end}}
-			req.Reply(false, []byte("Unknown request"))
+			channel.Write([]byte(fmt.Sprintf("Unknown request: %s\n", req.Type)))
+			req.Reply(true, nil)
 		}
 	}
 }

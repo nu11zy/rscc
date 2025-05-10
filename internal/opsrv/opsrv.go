@@ -292,7 +292,7 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 	}
 	lg.Infof("Reverse SSH connection from %s:%d to %s:%d", connData.OriginatorIP, connData.OriginatorPort, connData.TargetHost, connData.TargetPort)
 
-	agentId := strings.Split(string(connData.TargetHost), ":")[1]
+	agentId := strings.Split(string(connData.TargetHost), "+")[1]
 	session, ok := s.sm.GetSession(agentId)
 	if !ok {
 		lg.Warnf("Session not found: %s", agentId)

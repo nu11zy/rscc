@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/pkg/sftp v1.13.9
 	golang.org/x/sys v0.33.0 // indirect
 )

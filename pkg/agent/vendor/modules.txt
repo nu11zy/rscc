@@ -4,10 +4,17 @@ github.com/aymanbagabas/go-pty
 # github.com/creack/pty v1.1.24
 ## explicit; go 1.18
 github.com/creack/pty
+# github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+## explicit; go 1.13
+github.com/google/shlex
 # github.com/kr/fs v0.1.0
 ## explicit
+github.com/kr/fs
 # github.com/pkg/sftp v1.13.9
 ## explicit; go 1.15
+github.com/pkg/sftp
+github.com/pkg/sftp/internal/encoding/ssh/filexfer
+github.com/pkg/sftp/internal/encoding/ssh/filexfer/openssh
 # github.com/u-root/u-root v0.11.0
 ## explicit; go 1.19
 github.com/u-root/u-root/pkg/termios
