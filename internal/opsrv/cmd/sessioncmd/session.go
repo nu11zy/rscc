@@ -28,6 +28,7 @@ func NewSessionCmd(sm *session.SessionManager) *SessionCmd {
 
 	sessionCmd.Command = cmd
 	cmd.AddCommand(sessionCmd.newCmdList())
+	cmd.AddCommand(sessionCmd.newCmdInfo())
 
 	return sessionCmd
 }
