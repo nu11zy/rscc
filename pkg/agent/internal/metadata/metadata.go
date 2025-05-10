@@ -43,7 +43,6 @@ func GetMetadata() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Printf("Metadata: %s", encoded)
 	return encoded, nil
 }
 
