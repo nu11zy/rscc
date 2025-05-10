@@ -1,4 +1,3 @@
-// Reverse SSH agent (starts without arguments and connects to the server)
 package main
 
 import (
@@ -6,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+
 	// {{if .Config.IsDebug}}
 	"log"
 	// {{end}}
@@ -18,8 +18,8 @@ import (
 )
 
 var privKey = ""
-var serverAddress = "127.0.0.1:5522"
-var sshClientVersion = "SSH-2.0-OpenSSH_9.9"
+var serverAddress = ""
+var sshClientVersion = ""
 
 // SRV <-> TCP <-> SSH_CHAN <-> SRV_PIPE <-> AGENT_PIPE <-> AGENT_SSH_SRV <-> SSH_CHAN <-> PTY
 func main() {
@@ -34,6 +34,7 @@ func main() {
 		// {{end}}
 		return
 	}
+	return
 
 	decodedPrivKey, err := base64.StdEncoding.DecodeString(privKey)
 	if err != nil {
