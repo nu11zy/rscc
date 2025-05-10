@@ -37,9 +37,9 @@ func (ac *AgentCreate) SetArch(s string) *AgentCreate {
 	return ac
 }
 
-// SetServer sets the "server" field.
-func (ac *AgentCreate) SetServer(s string) *AgentCreate {
-	ac.mutation.SetServer(s)
+// SetServers sets the "servers" field.
+func (ac *AgentCreate) SetServers(s []string) *AgentCreate {
+	ac.mutation.SetServers(s)
 	return ac
 }
 
@@ -206,13 +206,8 @@ func (ac *AgentCreate) check() error {
 			return &ValidationError{Name: "arch", err: fmt.Errorf(`ent: validator failed for field "Agent.arch": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Server(); !ok {
-		return &ValidationError{Name: "server", err: errors.New(`ent: missing required field "Agent.server"`)}
-	}
-	if v, ok := ac.mutation.Server(); ok {
-		if err := agent.ServerValidator(v); err != nil {
-			return &ValidationError{Name: "server", err: fmt.Errorf(`ent: validator failed for field "Agent.server": %w`, err)}
-		}
+	if _, ok := ac.mutation.Servers(); !ok {
+		return &ValidationError{Name: "servers", err: errors.New(`ent: missing required field "Agent.servers"`)}
 	}
 	if _, ok := ac.mutation.Shared(); !ok {
 		return &ValidationError{Name: "shared", err: errors.New(`ent: missing required field "Agent.shared"`)}
@@ -297,9 +292,9 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_spec.SetField(agent.FieldArch, field.TypeString, value)
 		_node.Arch = value
 	}
-	if value, ok := ac.mutation.Server(); ok {
-		_spec.SetField(agent.FieldServer, field.TypeString, value)
-		_node.Server = value
+	if value, ok := ac.mutation.Servers(); ok {
+		_spec.SetField(agent.FieldServers, field.TypeJSON, value)
+		_node.Servers = value
 	}
 	if value, ok := ac.mutation.Shared(); ok {
 		_spec.SetField(agent.FieldShared, field.TypeBool, value)

@@ -105,12 +105,12 @@ func (db *Database) DeleteOperatorByID(ctx context.Context, id string) error {
 }
 
 // Agent
-func (db *Database) CreateAgent(ctx context.Context, name, os, arch, server string, shared, pie, garble bool, subsystems []string, xxhash, path string, publicKey []byte) (*ent.Agent, error) {
+func (db *Database) CreateAgent(ctx context.Context, name, os, arch string, servers []string, shared, pie, garble bool, subsystems []string, xxhash, path string, publicKey []byte) (*ent.Agent, error) {
 	agent, err := db.client.Agent.Create().
 		SetName(name).
 		SetOs(os).
 		SetArch(arch).
-		SetServer(server).
+		SetServers(servers).
 		SetShared(shared).
 		SetPie(pie).
 		SetGarble(garble).

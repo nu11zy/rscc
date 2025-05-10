@@ -78,11 +78,6 @@ func Arch(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldArch, v))
 }
 
-// Server applies equality check predicate on the "server" field. It's identical to ServerEQ.
-func Server(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldServer, v))
-}
-
 // Shared applies equality check predicate on the "shared" field. It's identical to SharedEQ.
 func Shared(v bool) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldShared, v))
@@ -306,71 +301,6 @@ func ArchEqualFold(v string) predicate.Agent {
 // ArchContainsFold applies the ContainsFold predicate on the "arch" field.
 func ArchContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldArch, v))
-}
-
-// ServerEQ applies the EQ predicate on the "server" field.
-func ServerEQ(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldServer, v))
-}
-
-// ServerNEQ applies the NEQ predicate on the "server" field.
-func ServerNEQ(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldNEQ(FieldServer, v))
-}
-
-// ServerIn applies the In predicate on the "server" field.
-func ServerIn(vs ...string) predicate.Agent {
-	return predicate.Agent(sql.FieldIn(FieldServer, vs...))
-}
-
-// ServerNotIn applies the NotIn predicate on the "server" field.
-func ServerNotIn(vs ...string) predicate.Agent {
-	return predicate.Agent(sql.FieldNotIn(FieldServer, vs...))
-}
-
-// ServerGT applies the GT predicate on the "server" field.
-func ServerGT(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldGT(FieldServer, v))
-}
-
-// ServerGTE applies the GTE predicate on the "server" field.
-func ServerGTE(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldGTE(FieldServer, v))
-}
-
-// ServerLT applies the LT predicate on the "server" field.
-func ServerLT(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldLT(FieldServer, v))
-}
-
-// ServerLTE applies the LTE predicate on the "server" field.
-func ServerLTE(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldLTE(FieldServer, v))
-}
-
-// ServerContains applies the Contains predicate on the "server" field.
-func ServerContains(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldContains(FieldServer, v))
-}
-
-// ServerHasPrefix applies the HasPrefix predicate on the "server" field.
-func ServerHasPrefix(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldHasPrefix(FieldServer, v))
-}
-
-// ServerHasSuffix applies the HasSuffix predicate on the "server" field.
-func ServerHasSuffix(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldHasSuffix(FieldServer, v))
-}
-
-// ServerEqualFold applies the EqualFold predicate on the "server" field.
-func ServerEqualFold(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldEqualFold(FieldServer, v))
-}
-
-// ServerContainsFold applies the ContainsFold predicate on the "server" field.
-func ServerContainsFold(v string) predicate.Agent {
-	return predicate.Agent(sql.FieldContainsFold(FieldServer, v))
 }
 
 // SharedEQ applies the EQ predicate on the "shared" field.

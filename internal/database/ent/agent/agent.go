@@ -17,8 +17,8 @@ const (
 	FieldOs = "os"
 	// FieldArch holds the string denoting the arch field in the database.
 	FieldArch = "arch"
-	// FieldServer holds the string denoting the server field in the database.
-	FieldServer = "server"
+	// FieldServers holds the string denoting the servers field in the database.
+	FieldServers = "servers"
 	// FieldShared holds the string denoting the shared field in the database.
 	FieldShared = "shared"
 	// FieldPie holds the string denoting the pie field in the database.
@@ -43,7 +43,7 @@ var Columns = []string{
 	FieldName,
 	FieldOs,
 	FieldArch,
-	FieldServer,
+	FieldServers,
 	FieldShared,
 	FieldPie,
 	FieldGarble,
@@ -70,8 +70,6 @@ var (
 	OsValidator func(string) error
 	// ArchValidator is a validator for the "arch" field. It is called by the builders before save.
 	ArchValidator func(string) error
-	// ServerValidator is a validator for the "server" field. It is called by the builders before save.
-	ServerValidator func(string) error
 	// DefaultShared holds the default value on creation for the "shared" field.
 	DefaultShared bool
 	// DefaultPie holds the default value on creation for the "pie" field.
@@ -111,11 +109,6 @@ func ByOs(opts ...sql.OrderTermOption) OrderOption {
 // ByArch orders the results by the arch field.
 func ByArch(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArch, opts...).ToFunc()
-}
-
-// ByServer orders the results by the server field.
-func ByServer(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldServer, opts...).ToFunc()
 }
 
 // ByShared orders the results by the shared field.

@@ -1,9 +1,8 @@
 package session
 
 import (
-	"bytes"
 	"encoding/base64"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 
 	"rscc/internal/common/utils"
@@ -13,8 +12,14 @@ import (
 
 // Agent metadata
 type Metadata struct {
-	Username string
-	Hostname string
+	Username string   `json:"u,omitempty"`
+	Hostname string   `json:"h,omitempty"`
+	Domain   string   `json:"d,omitempty"`
+	IPs      []string `json:"i,omitempty"`
+	OSMeta   string   `json:"om,omitempty"`
+	ProcName string   `json:"pn,omitempty"`
+	IsPriv   bool     `json:"ip,omitempty"`
+	Extra    string   `json:"e,omitempty"`
 }
 
 type Session struct {
@@ -24,21 +29,18 @@ type Session struct {
 }
 
 func NewSession(encMetadata string, sshConn *ssh.ServerConn) (*Session, error) {
-	rawMetadata, err := base64.URLEncoding.DecodeString(encMetadata)
+	jsonMetadata, err := base64.RawStdEncoding.DecodeString(encMetadata)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode metadata: %w", err)
 	}
 
 	var metadata Metadata
-	dec := gob.NewDecoder(bytes.NewReader(rawMetadata))
-	err = dec.Decode(&metadata)
-	if err != nil {
-		return nil, fmt.Errorf("failed to deserialize metadata: %w", err)
+	if err = json.Unmarshal(jsonMetadata, &metadata); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata: %w", err)
 	}
 
-	id := utils.GenID()
 	return &Session{
-		ID:       id,
+		ID:       utils.GenID(),
 		Metadata: metadata,
 		SSHConn:  sshConn,
 	}, nil

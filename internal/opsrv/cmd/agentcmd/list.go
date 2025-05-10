@@ -7,6 +7,7 @@ import (
 	"rscc/internal/common/constants"
 	"rscc/internal/common/pprint"
 	"strconv"
+	"strings"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/spf13/cobra"
@@ -37,11 +38,12 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 	rows := make([][]string, len(agents))
 	for i, agent := range agents {
 		osArch := fmt.Sprintf("%s (%s)", agent.Os, agent.Arch)
+		servers := strings.Join(agent.Servers, "\n")
 		// Check if agent file exists
 		agentBytes, err := os.ReadFile(filepath.Join(constants.AgentDir, agent.Name))
 		if err != nil {
 			if os.IsNotExist(err) {
-				rows[i] = []string{agent.ID, pprint.ErrorColor.Sprint(agent.Name), osArch, agent.Server}
+				rows[i] = []string{agent.ID, pprint.ErrorColor.Sprint(agent.Name), osArch, servers}
 				continue
 			} else {
 				return fmt.Errorf("failed to read agent file %s: %w", agent.ID, err)
@@ -51,9 +53,9 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 		// Check if agent file is modified
 		agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 		if agentHash != agent.Xxhash {
-			rows[i] = []string{agent.ID, pprint.WarnColor.Sprint(agent.Name), osArch, agent.Server}
+			rows[i] = []string{agent.ID, pprint.WarnColor.Sprint(agent.Name), osArch, servers}
 		} else {
-			rows[i] = []string{agent.ID, agent.Name, osArch, agent.Server}
+			rows[i] = []string{agent.ID, agent.Name, osArch, servers}
 		}
 	}
 

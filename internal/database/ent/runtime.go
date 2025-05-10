@@ -27,10 +27,6 @@ func init() {
 	agentDescArch := agentFields[3].Descriptor()
 	// agent.ArchValidator is a validator for the "arch" field. It is called by the builders before save.
 	agent.ArchValidator = agentDescArch.Validators[0].(func(string) error)
-	// agentDescServer is the schema descriptor for server field.
-	agentDescServer := agentFields[4].Descriptor()
-	// agent.ServerValidator is a validator for the "server" field. It is called by the builders before save.
-	agent.ServerValidator = agentDescServer.Validators[0].(func(string) error)
 	// agentDescShared is the schema descriptor for shared field.
 	agentDescShared := agentFields[5].Descriptor()
 	// agent.DefaultShared holds the default value on creation for the shared field.

@@ -3,7 +3,10 @@ package metadata
 import (
 	"encoding/base64"
 	"encoding/json"
+
+	// {{if .Debug}}
 	"log"
+	// {{end}}
 	"net"
 	"os"
 	"os/user"
@@ -31,6 +34,12 @@ func GetMetadata() (string, error) {
 	}
 	metadata.Domain, metadata.Username = getUsername()
 
+	encoded, err := encodeMetadata(metadata)
+	if err != nil {
+		return "", err
+	}
+
+	// {{if .Debug}}
 	log.Printf("Username: %s", metadata.Username)
 	log.Printf("Hostname: %s", metadata.Hostname)
 	log.Printf("Domain: %s", metadata.Domain)
@@ -38,11 +47,8 @@ func GetMetadata() (string, error) {
 	log.Printf("IPs: %v", metadata.IPs)
 	log.Printf("ProcName: %s", metadata.ProcName)
 	log.Printf("IsPriv: %t", metadata.IsPriv)
-
-	encoded, err := encodeMetadata(metadata)
-	if err != nil {
-		return "", err
-	}
+	log.Printf("Encoded metadata: %s", encoded)
+	// {{end}}
 	return encoded, nil
 }
 

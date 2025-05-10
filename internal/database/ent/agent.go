@@ -23,8 +23,8 @@ type Agent struct {
 	Os string `json:"os,omitempty"`
 	// Arch holds the value of the "arch" field.
 	Arch string `json:"arch,omitempty"`
-	// Server holds the value of the "server" field.
-	Server string `json:"server,omitempty"`
+	// Servers holds the value of the "servers" field.
+	Servers []string `json:"servers,omitempty"`
 	// Shared holds the value of the "shared" field.
 	Shared bool `json:"shared,omitempty"`
 	// Pie holds the value of the "pie" field.
@@ -47,11 +47,11 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agent.FieldSubsystems, agent.FieldPublicKey:
+		case agent.FieldServers, agent.FieldSubsystems, agent.FieldPublicKey:
 			values[i] = new([]byte)
 		case agent.FieldShared, agent.FieldPie, agent.FieldGarble:
 			values[i] = new(sql.NullBool)
-		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldServer, agent.FieldXxhash, agent.FieldPath:
+		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldXxhash, agent.FieldPath:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -92,11 +92,13 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Arch = value.String
 			}
-		case agent.FieldServer:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field server", values[i])
-			} else if value.Valid {
-				a.Server = value.String
+		case agent.FieldServers:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field servers", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &a.Servers); err != nil {
+					return fmt.Errorf("unmarshal field servers: %w", err)
+				}
 			}
 		case agent.FieldShared:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -187,8 +189,8 @@ func (a *Agent) String() string {
 	builder.WriteString("arch=")
 	builder.WriteString(a.Arch)
 	builder.WriteString(", ")
-	builder.WriteString("server=")
-	builder.WriteString(a.Server)
+	builder.WriteString("servers=")
+	builder.WriteString(fmt.Sprintf("%v", a.Servers))
 	builder.WriteString(", ")
 	builder.WriteString("shared=")
 	builder.WriteString(fmt.Sprintf("%v", a.Shared))

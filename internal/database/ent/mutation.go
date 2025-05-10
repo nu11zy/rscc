@@ -40,7 +40,8 @@ type AgentMutation struct {
 	name             *string
 	os               *string
 	arch             *string
-	server           *string
+	servers          *[]string
+	appendservers    []string
 	shared           *bool
 	pie              *bool
 	garble           *bool
@@ -267,40 +268,55 @@ func (m *AgentMutation) ResetArch() {
 	m.arch = nil
 }
 
-// SetServer sets the "server" field.
-func (m *AgentMutation) SetServer(s string) {
-	m.server = &s
+// SetServers sets the "servers" field.
+func (m *AgentMutation) SetServers(s []string) {
+	m.servers = &s
+	m.appendservers = nil
 }
 
-// Server returns the value of the "server" field in the mutation.
-func (m *AgentMutation) Server() (r string, exists bool) {
-	v := m.server
+// Servers returns the value of the "servers" field in the mutation.
+func (m *AgentMutation) Servers() (r []string, exists bool) {
+	v := m.servers
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldServer returns the old "server" field's value of the Agent entity.
+// OldServers returns the old "servers" field's value of the Agent entity.
 // If the Agent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldServer(ctx context.Context) (v string, err error) {
+func (m *AgentMutation) OldServers(ctx context.Context) (v []string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldServer is only allowed on UpdateOne operations")
+		return v, errors.New("OldServers is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldServer requires an ID field in the mutation")
+		return v, errors.New("OldServers requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldServer: %w", err)
+		return v, fmt.Errorf("querying old value for OldServers: %w", err)
 	}
-	return oldValue.Server, nil
+	return oldValue.Servers, nil
 }
 
-// ResetServer resets all changes to the "server" field.
-func (m *AgentMutation) ResetServer() {
-	m.server = nil
+// AppendServers adds s to the "servers" field.
+func (m *AgentMutation) AppendServers(s []string) {
+	m.appendservers = append(m.appendservers, s...)
+}
+
+// AppendedServers returns the list of values that were appended to the "servers" field in this mutation.
+func (m *AgentMutation) AppendedServers() ([]string, bool) {
+	if len(m.appendservers) == 0 {
+		return nil, false
+	}
+	return m.appendservers, true
+}
+
+// ResetServers resets all changes to the "servers" field.
+func (m *AgentMutation) ResetServers() {
+	m.servers = nil
+	m.appendservers = nil
 }
 
 // SetShared sets the "shared" field.
@@ -614,8 +630,8 @@ func (m *AgentMutation) Fields() []string {
 	if m.arch != nil {
 		fields = append(fields, agent.FieldArch)
 	}
-	if m.server != nil {
-		fields = append(fields, agent.FieldServer)
+	if m.servers != nil {
+		fields = append(fields, agent.FieldServers)
 	}
 	if m.shared != nil {
 		fields = append(fields, agent.FieldShared)
@@ -652,8 +668,8 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Os()
 	case agent.FieldArch:
 		return m.Arch()
-	case agent.FieldServer:
-		return m.Server()
+	case agent.FieldServers:
+		return m.Servers()
 	case agent.FieldShared:
 		return m.Shared()
 	case agent.FieldPie:
@@ -683,8 +699,8 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldOs(ctx)
 	case agent.FieldArch:
 		return m.OldArch(ctx)
-	case agent.FieldServer:
-		return m.OldServer(ctx)
+	case agent.FieldServers:
+		return m.OldServers(ctx)
 	case agent.FieldShared:
 		return m.OldShared(ctx)
 	case agent.FieldPie:
@@ -729,12 +745,12 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetArch(v)
 		return nil
-	case agent.FieldServer:
-		v, ok := value.(string)
+	case agent.FieldServers:
+		v, ok := value.([]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetServer(v)
+		m.SetServers(v)
 		return nil
 	case agent.FieldShared:
 		v, ok := value.(bool)
@@ -843,8 +859,8 @@ func (m *AgentMutation) ResetField(name string) error {
 	case agent.FieldArch:
 		m.ResetArch()
 		return nil
-	case agent.FieldServer:
-		m.ResetServer()
+	case agent.FieldServers:
+		m.ResetServers()
 		return nil
 	case agent.FieldShared:
 		m.ResetShared()

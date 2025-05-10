@@ -19,7 +19,7 @@ func (Agent) Fields() []ent.Field {
 		field.String("name").Immutable().Unique().NotEmpty(),
 		field.String("os").Immutable().NotEmpty(),
 		field.String("arch").Immutable().NotEmpty(),
-		field.String("server").Immutable().NotEmpty(),
+		field.Strings("servers").Immutable(),
 		field.Bool("shared").Immutable().Default(false),
 		field.Bool("pie").Immutable().Default(false),
 		field.Bool("garble").Immutable().Default(false),

@@ -56,7 +56,7 @@ func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 	cmd.Printf("- ID: %s\n", agent.ID)
 	cmd.Printf("- Name: %s\n", agent.Name)
 	cmd.Printf("- OS: %s (%s)\n", agent.Os, agent.Arch)
-	cmd.Printf("- Server: %s\n", agent.Server)
+	cmd.Printf("- Servers: %v\n", agent.Servers)
 
 	if len(buildFeutures) > 0 {
 		cmd.Printf("- Features: %v\n", buildFeutures)

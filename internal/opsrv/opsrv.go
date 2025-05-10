@@ -300,8 +300,7 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 	}
 	lg.Infof("Session found: %s", agentId)
 
-	// TODO: use ssh-jump channel
-	sessionConn, sessionReqs, err := session.SSHConn.Conn.OpenChannel("jumphost", nil)
+	sessionConn, sessionReqs, err := session.SSHConn.Conn.OpenChannel("ssh-jump", nil)
 	if err != nil {
 		lg.Errorf("Failed to open ssh-jump channel: %v", err)
 		return

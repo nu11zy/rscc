@@ -14,7 +14,7 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "os", Type: field.TypeString},
 		{Name: "arch", Type: field.TypeString},
-		{Name: "server", Type: field.TypeString},
+		{Name: "servers", Type: field.TypeJSON},
 		{Name: "shared", Type: field.TypeBool, Default: false},
 		{Name: "pie", Type: field.TypeBool, Default: false},
 		{Name: "garble", Type: field.TypeBool, Default: false},
