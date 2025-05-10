@@ -120,7 +120,7 @@ func (l *AgentListener) Start(ctx context.Context) error {
 				if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
 					return nil
 				}
-				l.lg.Errorf("failed to accept connection: %v", err)
+				l.lg.Errorf("Failed to accept connection: %v", err)
 				return err
 			}
 			go l.handleConnection(conn)
@@ -130,9 +130,9 @@ func (l *AgentListener) Start(ctx context.Context) error {
 	g.Go(func() error {
 		<-ctx.Done()
 		if err := l.CloseListener(); err != nil {
-			l.lg.Warn("close listener", zap.Error(err))
+			l.lg.Warn("Close listener", zap.Error(err))
 		}
-		l.lg.Info("stop listener")
+		l.lg.Info("Stop listener")
 		return nil
 	})
 

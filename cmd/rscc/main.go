@@ -13,7 +13,7 @@ import (
 	"rscc/internal/opsrv"
 	"rscc/internal/session"
 
-	"github.com/urfave/cli/v3"
+	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -43,96 +43,50 @@ func main() {
 	defer lg.Sync()
 	ctx = logger.WithLogger(ctx, lg)
 
-	// Initialize CLI app
-	app := &cli.Command{
-		Name:      "rscc",
-		Usage:     "reverse SSH command & control",
-		UsageText: "rscc [flags]",
-		Commands: []*cli.Command{
-			{
-				Name:      "admin",
-				Usage:     "Create new admin",
-				UsageText: "rscc admin [flags]",
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:        "n",
-						Usage:       "admin `NAME`",
-						Destination: &operatorName,
-						Required:    true,
-					},
-					&cli.StringFlag{
-						Name:        "k",
-						Usage:       "admin `PUBLIC_KEY`",
-						Destination: &publicKey,
-						Required:    true,
-					},
-				},
-				Action: addAdmin,
-			},
-			{
-				Name:      "start",
-				Usage:     "Start rscc",
-				UsageText: "rscc start [flags]",
-				Flags: []cli.Flag{
-					&cli.IntFlag{
-						Name:        "op",
-						Usage:       "operator listener `PORT`",
-						Destination: &operatorPort,
-						Value:       55022,
-					},
-					&cli.StringFlag{
-						Name:        "oh",
-						Usage:       "operator listener `HOST`",
-						Destination: &operatorHost,
-						Value:       "0.0.0.0",
-					},
-					&cli.IntFlag{
-						Name:        "ap",
-						Usage:       "agent listener `PORT`",
-						Destination: &agentPort,
-						Value:       5522,
-					},
-					&cli.StringFlag{
-						Name:        "ah",
-						Usage:       "agent listener `HOST`",
-						Destination: &agentHost,
-						Value:       "0.0.0.0",
-					},
-				},
-				Action: run,
-			},
-		},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "db",
-				Usage:       "database `PATH`",
-				Destination: &dbPath,
-				Value:       "rscc.db",
-			},
-			&cli.BoolFlag{
-				Name:        "debug",
-				Usage:       "enable debug mode",
-				Destination: &debug,
-				Value:       false,
-			},
-		},
-		Before: preRun,
+	appRoot := &cobra.Command{
+		Use:               "rscc [command]",
+		Short:             "Reverse SSH command & control",
+		PersistentPreRunE: preRun,
 	}
+	appRoot.PersistentFlags().StringVar(&dbPath, "db", "rscc.db", "database path")
+	appRoot.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug mode")
 
-	// Run CLI app
-	if err := app.Run(ctx, os.Args); err != nil {
+	appAdmin := &cobra.Command{
+		Use:   "admin [flags]",
+		Short: "Create new admin",
+		RunE:  adminCmd,
+	}
+	appAdmin.Flags().StringVarP(&operatorName, "name", "n", "", "operator name")
+	appAdmin.Flags().StringVarP(&publicKey, "key", "k", "", "operator public key")
+	appAdmin.MarkFlagRequired("name")
+	appAdmin.MarkFlagRequired("key")
+	appRoot.AddCommand(appAdmin)
+
+	appStart := &cobra.Command{
+		Use:   "start [flags]",
+		Short: "Start rscc",
+		RunE:  startCmd,
+	}
+	appStart.Flags().IntVar(&operatorPort, "op", 55022, "operator listener port")
+	appStart.Flags().StringVar(&operatorHost, "oh", "0.0.0.0", "operator listener host")
+	appStart.Flags().IntVar(&agentPort, "ap", 5522, "agent listener port")
+	appStart.Flags().StringVar(&agentHost, "ah", "0.0.0.0", "agent listener host")
+	appRoot.AddCommand(appStart)
+
+	if err := appRoot.ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
 }
 
-func preRun(ctx context.Context, c *cli.Command) (context.Context, error) {
+func preRun(cmd *cobra.Command, args []string) error {
 	if debug {
 		logger.SetDebug()
 	}
-	return ctx, nil
+	return nil
 }
 
-func addAdmin(ctx context.Context, c *cli.Command) error {
+func adminCmd(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
 	lg := logger.FromContext(ctx)
 
 	db, err := database.NewDatabase(ctx, dbPath)
@@ -151,7 +105,8 @@ func addAdmin(ctx context.Context, c *cli.Command) error {
 	return nil
 }
 
-func run(ctx context.Context, c *cli.Command) error {
+func startCmd(cmd *cobra.Command, args []string) error {
+	ctx := cmd.Context()
 	lg := logger.FromContext(ctx)
 
 	// Initialize database
