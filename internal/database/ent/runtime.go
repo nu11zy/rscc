@@ -7,6 +7,8 @@ import (
 	"rscc/internal/database/ent/listener"
 	"rscc/internal/database/ent/operator"
 	"rscc/internal/database/ent/schema"
+	"rscc/internal/database/ent/session"
+	"time"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -15,46 +17,54 @@ import (
 func init() {
 	agentFields := schema.Agent{}.Fields()
 	_ = agentFields
+	// agentDescCreatedAt is the schema descriptor for created_at field.
+	agentDescCreatedAt := agentFields[1].Descriptor()
+	// agent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agent.DefaultCreatedAt = agentDescCreatedAt.Default.(func() time.Time)
 	// agentDescName is the schema descriptor for name field.
-	agentDescName := agentFields[1].Descriptor()
+	agentDescName := agentFields[2].Descriptor()
 	// agent.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	agent.NameValidator = agentDescName.Validators[0].(func(string) error)
 	// agentDescOs is the schema descriptor for os field.
-	agentDescOs := agentFields[2].Descriptor()
+	agentDescOs := agentFields[3].Descriptor()
 	// agent.OsValidator is a validator for the "os" field. It is called by the builders before save.
 	agent.OsValidator = agentDescOs.Validators[0].(func(string) error)
 	// agentDescArch is the schema descriptor for arch field.
-	agentDescArch := agentFields[3].Descriptor()
+	agentDescArch := agentFields[4].Descriptor()
 	// agent.ArchValidator is a validator for the "arch" field. It is called by the builders before save.
 	agent.ArchValidator = agentDescArch.Validators[0].(func(string) error)
 	// agentDescShared is the schema descriptor for shared field.
-	agentDescShared := agentFields[5].Descriptor()
+	agentDescShared := agentFields[6].Descriptor()
 	// agent.DefaultShared holds the default value on creation for the shared field.
 	agent.DefaultShared = agentDescShared.Default.(bool)
 	// agentDescPie is the schema descriptor for pie field.
-	agentDescPie := agentFields[6].Descriptor()
+	agentDescPie := agentFields[7].Descriptor()
 	// agent.DefaultPie holds the default value on creation for the pie field.
 	agent.DefaultPie = agentDescPie.Default.(bool)
 	// agentDescGarble is the schema descriptor for garble field.
-	agentDescGarble := agentFields[7].Descriptor()
+	agentDescGarble := agentFields[8].Descriptor()
 	// agent.DefaultGarble holds the default value on creation for the garble field.
 	agent.DefaultGarble = agentDescGarble.Default.(bool)
 	// agentDescSubsystems is the schema descriptor for subsystems field.
-	agentDescSubsystems := agentFields[8].Descriptor()
+	agentDescSubsystems := agentFields[9].Descriptor()
 	// agent.DefaultSubsystems holds the default value on creation for the subsystems field.
 	agent.DefaultSubsystems = agentDescSubsystems.Default.([]string)
 	// agentDescXxhash is the schema descriptor for xxhash field.
-	agentDescXxhash := agentFields[9].Descriptor()
+	agentDescXxhash := agentFields[10].Descriptor()
 	// agent.XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
 	agent.XxhashValidator = agentDescXxhash.Validators[0].(func(string) error)
 	// agentDescPath is the schema descriptor for path field.
-	agentDescPath := agentFields[10].Descriptor()
+	agentDescPath := agentFields[11].Descriptor()
 	// agent.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	agent.PathValidator = agentDescPath.Validators[0].(func(string) error)
 	// agentDescPublicKey is the schema descriptor for public_key field.
-	agentDescPublicKey := agentFields[11].Descriptor()
+	agentDescPublicKey := agentFields[12].Descriptor()
 	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
+	// agentDescHits is the schema descriptor for hits field.
+	agentDescHits := agentFields[13].Descriptor()
+	// agent.DefaultHits holds the default value on creation for the hits field.
+	agent.DefaultHits = agentDescHits.Default.(int)
 	// agentDescID is the schema descriptor for id field.
 	agentDescID := agentFields[0].Descriptor()
 	// agent.DefaultID holds the default value on creation for the id field.
@@ -91,4 +101,46 @@ func init() {
 	operatorDescID := operatorFields[0].Descriptor()
 	// operator.DefaultID holds the default value on creation for the id field.
 	operator.DefaultID = operatorDescID.Default.(func() string)
+	sessionFields := schema.Session{}.Fields()
+	_ = sessionFields
+	// sessionDescCreatedAt is the schema descriptor for created_at field.
+	sessionDescCreatedAt := sessionFields[1].Descriptor()
+	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
+	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
+	// sessionDescAgentID is the schema descriptor for agent_id field.
+	sessionDescAgentID := sessionFields[2].Descriptor()
+	// session.AgentIDValidator is a validator for the "agent_id" field. It is called by the builders before save.
+	session.AgentIDValidator = sessionDescAgentID.Validators[0].(func(string) error)
+	// sessionDescUsername is the schema descriptor for username field.
+	sessionDescUsername := sessionFields[3].Descriptor()
+	// session.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	session.UsernameValidator = sessionDescUsername.Validators[0].(func(string) error)
+	// sessionDescHostname is the schema descriptor for hostname field.
+	sessionDescHostname := sessionFields[4].Descriptor()
+	// session.HostnameValidator is a validator for the "hostname" field. It is called by the builders before save.
+	session.HostnameValidator = sessionDescHostname.Validators[0].(func(string) error)
+	// sessionDescDomain is the schema descriptor for domain field.
+	sessionDescDomain := sessionFields[5].Descriptor()
+	// session.DefaultDomain holds the default value on creation for the domain field.
+	session.DefaultDomain = sessionDescDomain.Default.(string)
+	// sessionDescIsPriv is the schema descriptor for is_priv field.
+	sessionDescIsPriv := sessionFields[6].Descriptor()
+	// session.DefaultIsPriv holds the default value on creation for the is_priv field.
+	session.DefaultIsPriv = sessionDescIsPriv.Default.(bool)
+	// sessionDescOsMeta is the schema descriptor for os_meta field.
+	sessionDescOsMeta := sessionFields[8].Descriptor()
+	// session.DefaultOsMeta holds the default value on creation for the os_meta field.
+	session.DefaultOsMeta = sessionDescOsMeta.Default.(string)
+	// sessionDescProcName is the schema descriptor for proc_name field.
+	sessionDescProcName := sessionFields[9].Descriptor()
+	// session.DefaultProcName holds the default value on creation for the proc_name field.
+	session.DefaultProcName = sessionDescProcName.Default.(string)
+	// sessionDescExtra is the schema descriptor for extra field.
+	sessionDescExtra := sessionFields[10].Descriptor()
+	// session.DefaultExtra holds the default value on creation for the extra field.
+	session.DefaultExtra = sessionDescExtra.Default.(string)
+	// sessionDescID is the schema descriptor for id field.
+	sessionDescID := sessionFields[0].Descriptor()
+	// session.DefaultID holds the default value on creation for the id field.
+	session.DefaultID = sessionDescID.Default.(func() string)
 }

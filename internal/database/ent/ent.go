@@ -10,6 +10,7 @@ import (
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
 	"rscc/internal/database/ent/operator"
+	"rscc/internal/database/ent/session"
 	"sync"
 
 	"entgo.io/ent"
@@ -78,6 +79,7 @@ func checkColumn(table, column string) error {
 			agent.Table:    agent.ValidColumn,
 			listener.Table: listener.ValidColumn,
 			operator.Table: operator.ValidColumn,
+			session.Table:  session.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

@@ -262,12 +262,12 @@ func (aq *AgentQuery) Clone() *AgentQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Agent.Query().
-//		GroupBy(agent.FieldName).
+//		GroupBy(agent.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aq *AgentQuery) GroupBy(field string, fields ...string) *AgentGroupBy {
@@ -285,11 +285,11 @@ func (aq *AgentQuery) GroupBy(field string, fields ...string) *AgentGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.Agent.Query().
-//		Select(agent.FieldName).
+//		Select(agent.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (aq *AgentQuery) Select(fields ...string) *AgentSelect {
 	aq.ctx.Fields = append(aq.ctx.Fields, fields...)

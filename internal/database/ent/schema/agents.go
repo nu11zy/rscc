@@ -2,6 +2,7 @@ package schema
 
 import (
 	"rscc/internal/common/utils"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
@@ -16,6 +17,7 @@ type Agent struct {
 func (Agent) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").DefaultFunc(utils.GenID).Immutable().Unique(),
+		field.Time("created_at").Default(time.Now).Immutable(),
 		field.String("name").Immutable().Unique().NotEmpty(),
 		field.String("os").Immutable().NotEmpty(),
 		field.String("arch").Immutable().NotEmpty(),
@@ -27,6 +29,7 @@ func (Agent) Fields() []ent.Field {
 		field.String("xxhash").Immutable().NotEmpty(),
 		field.String("path").Immutable().NotEmpty(),
 		field.Bytes("public_key").Immutable().NotEmpty(),
+		field.Int("hits").Default(0),
 	}
 }
 

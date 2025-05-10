@@ -27,6 +27,27 @@ func (au *AgentUpdate) Where(ps ...predicate.Agent) *AgentUpdate {
 	return au
 }
 
+// SetHits sets the "hits" field.
+func (au *AgentUpdate) SetHits(i int) *AgentUpdate {
+	au.mutation.ResetHits()
+	au.mutation.SetHits(i)
+	return au
+}
+
+// SetNillableHits sets the "hits" field if the given value is not nil.
+func (au *AgentUpdate) SetNillableHits(i *int) *AgentUpdate {
+	if i != nil {
+		au.SetHits(*i)
+	}
+	return au
+}
+
+// AddHits adds i to the "hits" field.
+func (au *AgentUpdate) AddHits(i int) *AgentUpdate {
+	au.mutation.AddHits(i)
+	return au
+}
+
 // Mutation returns the AgentMutation object of the builder.
 func (au *AgentUpdate) Mutation() *AgentMutation {
 	return au.mutation
@@ -68,6 +89,12 @@ func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.Hits(); ok {
+		_spec.SetField(agent.FieldHits, field.TypeInt, value)
+	}
+	if value, ok := au.mutation.AddedHits(); ok {
+		_spec.AddField(agent.FieldHits, field.TypeInt, value)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agent.Label}
@@ -86,6 +113,27 @@ type AgentUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AgentMutation
+}
+
+// SetHits sets the "hits" field.
+func (auo *AgentUpdateOne) SetHits(i int) *AgentUpdateOne {
+	auo.mutation.ResetHits()
+	auo.mutation.SetHits(i)
+	return auo
+}
+
+// SetNillableHits sets the "hits" field if the given value is not nil.
+func (auo *AgentUpdateOne) SetNillableHits(i *int) *AgentUpdateOne {
+	if i != nil {
+		auo.SetHits(*i)
+	}
+	return auo
+}
+
+// AddHits adds i to the "hits" field.
+func (auo *AgentUpdateOne) AddHits(i int) *AgentUpdateOne {
+	auo.mutation.AddHits(i)
+	return auo
 }
 
 // Mutation returns the AgentMutation object of the builder.
@@ -158,6 +206,12 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := auo.mutation.Hits(); ok {
+		_spec.SetField(agent.FieldHits, field.TypeInt, value)
+	}
+	if value, ok := auo.mutation.AddedHits(); ok {
+		_spec.AddField(agent.FieldHits, field.TypeInt, value)
 	}
 	_node = &Agent{config: auo.config}
 	_spec.Assign = _node.assignValues

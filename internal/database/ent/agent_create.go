@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"rscc/internal/database/ent/agent"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -17,6 +18,20 @@ type AgentCreate struct {
 	config
 	mutation *AgentMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ac *AgentCreate) SetCreatedAt(t time.Time) *AgentCreate {
+	ac.mutation.SetCreatedAt(t)
+	return ac
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableCreatedAt(t *time.Time) *AgentCreate {
+	if t != nil {
+		ac.SetCreatedAt(*t)
+	}
+	return ac
 }
 
 // SetName sets the "name" field.
@@ -109,6 +124,20 @@ func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
 	return ac
 }
 
+// SetHits sets the "hits" field.
+func (ac *AgentCreate) SetHits(i int) *AgentCreate {
+	ac.mutation.SetHits(i)
+	return ac
+}
+
+// SetNillableHits sets the "hits" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableHits(i *int) *AgentCreate {
+	if i != nil {
+		ac.SetHits(*i)
+	}
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *AgentCreate) SetID(s string) *AgentCreate {
 	ac.mutation.SetID(s)
@@ -158,6 +187,10 @@ func (ac *AgentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ac *AgentCreate) defaults() {
+	if _, ok := ac.mutation.CreatedAt(); !ok {
+		v := agent.DefaultCreatedAt()
+		ac.mutation.SetCreatedAt(v)
+	}
 	if _, ok := ac.mutation.Shared(); !ok {
 		v := agent.DefaultShared
 		ac.mutation.SetShared(v)
@@ -174,6 +207,10 @@ func (ac *AgentCreate) defaults() {
 		v := agent.DefaultSubsystems
 		ac.mutation.SetSubsystems(v)
 	}
+	if _, ok := ac.mutation.Hits(); !ok {
+		v := agent.DefaultHits
+		ac.mutation.SetHits(v)
+	}
 	if _, ok := ac.mutation.ID(); !ok {
 		v := agent.DefaultID()
 		ac.mutation.SetID(v)
@@ -182,6 +219,9 @@ func (ac *AgentCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AgentCreate) check() error {
+	if _, ok := ac.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Agent.created_at"`)}
+	}
 	if _, ok := ac.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Agent.name"`)}
 	}
@@ -245,6 +285,9 @@ func (ac *AgentCreate) check() error {
 			return &ValidationError{Name: "public_key", err: fmt.Errorf(`ent: validator failed for field "Agent.public_key": %w`, err)}
 		}
 	}
+	if _, ok := ac.mutation.Hits(); !ok {
+		return &ValidationError{Name: "hits", err: errors.New(`ent: missing required field "Agent.hits"`)}
+	}
 	return nil
 }
 
@@ -279,6 +322,10 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 	if id, ok := ac.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := ac.mutation.CreatedAt(); ok {
+		_spec.SetField(agent.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if value, ok := ac.mutation.Name(); ok {
 		_spec.SetField(agent.FieldName, field.TypeString, value)
@@ -323,6 +370,10 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.PublicKey(); ok {
 		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)
 		_node.PublicKey = value
+	}
+	if value, ok := ac.mutation.Hits(); ok {
+		_spec.SetField(agent.FieldHits, field.TypeInt, value)
+		_node.Hits = value
 	}
 	return _node, _spec
 }

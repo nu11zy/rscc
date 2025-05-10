@@ -9,10 +9,11 @@ import (
 
 func (s *SessionCmd) newCmdInfo() *cobra.Command {
 	return &cobra.Command{
-		Use:   "info <id>",
-		Short: "Get information about a session",
-		Args:  cobra.ExactArgs(1),
-		RunE:  s.cmdInfo,
+		Use:     "info <id>",
+		Short:   "Get information about a session",
+		Aliases: []string{"i"},
+		Args:    cobra.ExactArgs(1),
+		RunE:    s.cmdInfo,
 	}
 }
 

@@ -4,6 +4,7 @@ package agent
 
 import (
 	"rscc/internal/database/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 )
@@ -63,6 +64,11 @@ func IDContainsFold(id string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldID, id))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldCreatedAt, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldName, v))
@@ -106,6 +112,51 @@ func Path(v string) predicate.Agent {
 // PublicKey applies equality check predicate on the "public_key" field. It's identical to PublicKeyEQ.
 func PublicKey(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
+}
+
+// Hits applies equality check predicate on the "hits" field. It's identical to HitsEQ.
+func Hits(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldHits, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -501,6 +552,46 @@ func PublicKeyLT(v []byte) predicate.Agent {
 // PublicKeyLTE applies the LTE predicate on the "public_key" field.
 func PublicKeyLTE(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldLTE(FieldPublicKey, v))
+}
+
+// HitsEQ applies the EQ predicate on the "hits" field.
+func HitsEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldHits, v))
+}
+
+// HitsNEQ applies the NEQ predicate on the "hits" field.
+func HitsNEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldHits, v))
+}
+
+// HitsIn applies the In predicate on the "hits" field.
+func HitsIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldHits, vs...))
+}
+
+// HitsNotIn applies the NotIn predicate on the "hits" field.
+func HitsNotIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldHits, vs...))
+}
+
+// HitsGT applies the GT predicate on the "hits" field.
+func HitsGT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldHits, v))
+}
+
+// HitsGTE applies the GTE predicate on the "hits" field.
+func HitsGTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldHits, v))
+}
+
+// HitsLT applies the LT predicate on the "hits" field.
+func HitsLT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldHits, v))
+}
+
+// HitsLTE applies the LTE predicate on the "hits" field.
+func HitsLTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldHits, v))
 }
 
 // And groups predicates with the AND operator between them.

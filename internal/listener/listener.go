@@ -200,13 +200,11 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 	}()
 
 	lg.Infof("New SSH connection from %s (%s)", sshConn.RemoteAddr(), sshConn.ClientVersion())
-	encMetadata := sshConn.User()
-	session, err := session.NewSession(encMetadata, sshConn)
+	session, err := l.sm.AddSession(sshConn.User(), sshConn)
 	if err != nil {
-		lg.Errorf("Failed to create session: %v", err)
+		lg.Errorf("Failed to add session: %v", err)
 		return
 	}
-	l.sm.AddSession(session)
 	defer l.sm.RemoveSession(session)
 
 	lg.Infof("New session: %s (%s@%s)", session.ID, session.Metadata.Username, session.Metadata.Hostname)
@@ -268,7 +266,11 @@ func (l *AgentListener) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicK
 	for _, agent := range agents {
 		if bytes.Equal(marshaledKey, agent.PublicKey) {
 			lg.Infof("Public key matches agent `%s` [id: %s]", agent.Name, agent.ID)
-			return &ssh.Permissions{}, nil
+			return &ssh.Permissions{
+				Extensions: map[string]string{
+					"id": agent.ID,
+				},
+			}, nil
 		}
 	}
 

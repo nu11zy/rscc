@@ -11,6 +11,7 @@ var (
 	// AgentsColumns holds the columns for the "agents" table.
 	AgentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "os", Type: field.TypeString},
 		{Name: "arch", Type: field.TypeString},
@@ -22,6 +23,7 @@ var (
 		{Name: "xxhash", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "public_key", Type: field.TypeBytes},
+		{Name: "hits", Type: field.TypeInt, Default: 0},
 	}
 	// AgentsTable holds the schema information for the "agents" table.
 	AgentsTable = &schema.Table{
@@ -55,11 +57,32 @@ var (
 		Columns:    OperatorsColumns,
 		PrimaryKey: []*schema.Column{OperatorsColumns[0]},
 	}
+	// SessionsColumns holds the columns for the "sessions" table.
+	SessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "agent_id", Type: field.TypeString},
+		{Name: "username", Type: field.TypeString},
+		{Name: "hostname", Type: field.TypeString},
+		{Name: "domain", Type: field.TypeString, Default: ""},
+		{Name: "is_priv", Type: field.TypeBool, Default: false},
+		{Name: "ips", Type: field.TypeJSON},
+		{Name: "os_meta", Type: field.TypeString, Default: ""},
+		{Name: "proc_name", Type: field.TypeString, Default: ""},
+		{Name: "extra", Type: field.TypeString, Default: ""},
+	}
+	// SessionsTable holds the schema information for the "sessions" table.
+	SessionsTable = &schema.Table{
+		Name:       "sessions",
+		Columns:    SessionsColumns,
+		PrimaryKey: []*schema.Column{SessionsColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AgentsTable,
 		ListenersTable,
 		OperatorsTable,
+		SessionsTable,
 	}
 )
 

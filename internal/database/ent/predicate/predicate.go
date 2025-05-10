@@ -14,3 +14,6 @@ type Listener func(*sql.Selector)
 
 // Operator is the predicate function for operator builders.
 type Operator func(*sql.Selector)
+
+// Session is the predicate function for session builders.
+type Session func(*sql.Selector)

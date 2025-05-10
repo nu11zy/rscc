@@ -3,6 +3,8 @@
 package agent
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 )
 
@@ -11,6 +13,8 @@ const (
 	Label = "agent"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldOs holds the string denoting the os field in the database.
@@ -33,6 +37,8 @@ const (
 	FieldPath = "path"
 	// FieldPublicKey holds the string denoting the public_key field in the database.
 	FieldPublicKey = "public_key"
+	// FieldHits holds the string denoting the hits field in the database.
+	FieldHits = "hits"
 	// Table holds the table name of the agent in the database.
 	Table = "agents"
 )
@@ -40,6 +46,7 @@ const (
 // Columns holds all SQL columns for agent fields.
 var Columns = []string{
 	FieldID,
+	FieldCreatedAt,
 	FieldName,
 	FieldOs,
 	FieldArch,
@@ -51,6 +58,7 @@ var Columns = []string{
 	FieldXxhash,
 	FieldPath,
 	FieldPublicKey,
+	FieldHits,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -64,6 +72,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// OsValidator is a validator for the "os" field. It is called by the builders before save.
@@ -84,6 +94,8 @@ var (
 	PathValidator func(string) error
 	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	PublicKeyValidator func([]byte) error
+	// DefaultHits holds the default value on creation for the "hits" field.
+	DefaultHits int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -94,6 +106,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.
@@ -134,4 +151,9 @@ func ByXxhash(opts ...sql.OrderTermOption) OrderOption {
 // ByPath orders the results by the path field.
 func ByPath(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPath, opts...).ToFunc()
+}
+
+// ByHits orders the results by the hits field.
+func ByHits(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHits, opts...).ToFunc()
 }

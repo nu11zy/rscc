@@ -149,6 +149,29 @@ func (db *Database) GetAgentByID(ctx context.Context, id string) (*ent.Agent, er
 	return agent, nil
 }
 
+func (db *Database) UpdateAgentHits(ctx context.Context, id string) error {
+	return db.client.Agent.UpdateOneID(id).AddHits(1).Exec(ctx)
+}
+
 func (db *Database) DeleteAgent(ctx context.Context, id string) error {
 	return db.client.Agent.DeleteOneID(id).Exec(ctx)
+}
+
+// Session
+func (db *Database) CreateSession(ctx context.Context, agentID, username, hostname, domain, osMeta, procName, extra string, ips []string, isPriv bool) (*ent.Session, error) {
+	session, err := db.client.Session.Create().
+		SetAgentID(agentID).
+		SetUsername(username).
+		SetHostname(hostname).
+		SetDomain(domain).
+		SetIsPriv(isPriv).
+		SetIps(ips).
+		SetOsMeta(osMeta).
+		SetProcName(procName).
+		SetExtra(extra).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create session: %w", err)
+	}
+	return session, nil
 }

@@ -18,6 +18,8 @@ type Tx struct {
 	Listener *ListenerClient
 	// Operator is the client for interacting with the Operator builders.
 	Operator *OperatorClient
+	// Session is the client for interacting with the Session builders.
+	Session *SessionClient
 
 	// lazily loaded.
 	client     *Client
@@ -152,6 +154,7 @@ func (tx *Tx) init() {
 	tx.Agent = NewAgentClient(tx.config)
 	tx.Listener = NewListenerClient(tx.config)
 	tx.Operator = NewOperatorClient(tx.config)
+	tx.Session = NewSessionClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"rscc/internal/database/ent/agent"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -17,6 +18,8 @@ type Agent struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID string `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Os holds the value of the "os" field.
@@ -38,7 +41,9 @@ type Agent struct {
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty"`
 	// PublicKey holds the value of the "public_key" field.
-	PublicKey    []byte `json:"public_key,omitempty"`
+	PublicKey []byte `json:"public_key,omitempty"`
+	// Hits holds the value of the "hits" field.
+	Hits         int `json:"hits,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -51,8 +56,12 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case agent.FieldShared, agent.FieldPie, agent.FieldGarble:
 			values[i] = new(sql.NullBool)
+		case agent.FieldHits:
+			values[i] = new(sql.NullInt64)
 		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldXxhash, agent.FieldPath:
 			values[i] = new(sql.NullString)
+		case agent.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -73,6 +82,12 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				a.ID = value.String
+			}
+		case agent.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				a.CreatedAt = value.Time
 			}
 		case agent.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -144,6 +159,12 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				a.PublicKey = *value
 			}
+		case agent.FieldHits:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field hits", values[i])
+			} else if value.Valid {
+				a.Hits = int(value.Int64)
+			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
 		}
@@ -180,6 +201,9 @@ func (a *Agent) String() string {
 	var builder strings.Builder
 	builder.WriteString("Agent(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
+	builder.WriteString("created_at=")
+	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(a.Name)
 	builder.WriteString(", ")
@@ -212,6 +236,9 @@ func (a *Agent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("public_key=")
 	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
+	builder.WriteString(", ")
+	builder.WriteString("hits=")
+	builder.WriteString(fmt.Sprintf("%v", a.Hits))
 	builder.WriteByte(')')
 	return builder.String()
 }
