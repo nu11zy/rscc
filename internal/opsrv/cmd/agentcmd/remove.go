@@ -54,6 +54,6 @@ func (a *AgentCmd) cmdRemove(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to delete agent: %w", err)
 	}
 
-	cmd.Println(pprint.Success("Agent '%s' removed", agent.Name))
+	cmd.Println(pprint.Success("Agent '%s' removed\n", pprint.Blue.Sprint(agent.Name)))
 	return nil
 }

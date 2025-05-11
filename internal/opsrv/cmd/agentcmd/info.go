@@ -66,7 +66,9 @@ func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Subsystems:"), strings.Join(agent.Subsystems, ", "))
 	}
 
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Created:"), agent.CreatedAt.Format("2006-01-02 15:04:05"))
 	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Path:"), fullPath)
+	cmd.Printf(" %s\t%d\n", pprint.Blue.Sprint("├─ Hits:"), agent.Hits)
 	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("└─ Public Key:"), agent.PublicKey)
 
 	return nil
