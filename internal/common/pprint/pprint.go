@@ -2,22 +2,27 @@ package pprint
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 var (
-	SuccessColor = color.New(color.FgGreen)
-	InfoColor    = color.New(color.FgBlue)
-	WarnColor    = color.New(color.FgYellow)
-	ErrorColor   = color.New(color.FgRed)
-	Bold         = color.New(color.Bold)
+	Bold   = color.New(color.Bold)
+	Blue   = color.New(color.FgBlue)
+	Green  = color.New(color.FgGreen)
+	Cyan   = color.New(color.FgCyan)
+	Red    = color.New(color.FgRed)
+	Purple = color.New(color.FgMagenta)
+	Yellow = color.New(color.FgYellow)
+	Gray   = color.New(color.FgBlack)
+	Reset  = color.New(color.Reset)
 
-	SuccessPrefix = SuccessColor.Sprintf("[+]")
-	InfoPrefix    = InfoColor.Sprintf("[i]")
-	WarnPrefix    = WarnColor.Sprintf("[*]")
-	ErrorPrefix   = ErrorColor.Sprintf("[-]")
+	SuccessPrefix = Green.Sprintf("[+]")
+	InfoPrefix    = Blue.Sprintf("[i]")
+	WarnPrefix    = Yellow.Sprintf("[*]")
+	ErrorPrefix   = Red.Sprintf("[-]")
 )
 
 func Error(format string, a ...any) string {
@@ -42,7 +47,7 @@ func Table(headers []string, rows [][]string) string {
 	// Headers
 	headerRow := make(table.Row, len(headers))
 	for i, h := range headers {
-		headerRow[i] = InfoColor.Sprint(h)
+		headerRow[i] = Bold.Sprint(h)
 	}
 	t.AppendHeader(headerRow)
 
@@ -50,25 +55,38 @@ func Table(headers []string, rows [][]string) string {
 	for _, row := range rows {
 		tableRow := make(table.Row, len(row))
 		for i, cell := range row {
-			tableRow[i] = truncateString(cell, 32)
+			tableRow[i] = cell
 		}
 		t.AppendRow(tableRow)
+		t.AppendSeparator()
 	}
 
 	t.SetStyle(table.StyleLight)
 	return t.Render()
 }
 
-func truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
+func TruncateString(s string, maxLen int) string {
+	if strings.Contains(s, "\n") {
+		lines := strings.Split(s, "\n")
+		for i, line := range lines {
+			if len(line) > maxLen {
+				lines[i] = line[:maxLen-3] + "..."
+			}
+		}
+		return strings.Join(lines, "\n")
 	}
-	return s[:maxLen-3] + "..."
+
+	if len(s) > maxLen {
+		return s[:maxLen-3] + "..."
+	}
+
+	return s
 }
 
 func GetBanner() string {
-	banner := fmt.Sprintf("> %s  %s\n", SuccessColor.Sprint("┳━┓┏━┓┏━┓┏━┓"), Bold.Sprint("RSCC - v0.1"))
-	banner += fmt.Sprintf("> %s  %s\n", SuccessColor.Sprint("┣┳┛┗━┓┃  ┃  "), "Reverse SSH Command & Control")
-	banner += fmt.Sprintf("> %s  %s\n", SuccessColor.Sprint("┛┗━┗━┛┗━┛┗━┛"), InfoColor.Sprint("https://github.com/nu11zy/rscc"))
+	banner := fmt.Sprintf("> %s  %s\n", Green.Sprint("┳━┓┏━┓┏━┓┏━┓"), Bold.Sprint("RSCC - v0.1"))
+	banner += fmt.Sprintf("> %s  %s\n", Green.Sprint("┣┳┛┗━┓┃  ┃  "), "Reverse SSH Command & Control")
+	banner += fmt.Sprintf("> %s  %s\n", Green.Sprint("┛┗━┗━┛┗━┛┗━┛"), Blue.Sprint("https://github.com/nu11zy/rscc"))
+	banner += "\n"
 	return banner
 }

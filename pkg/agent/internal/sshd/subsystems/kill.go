@@ -4,7 +4,9 @@
 package subsystems
 
 import (
+	// {{if .Debug}}
 	"log"
+	// {{end}}
 	"os"
 
 	"golang.org/x/crypto/ssh"

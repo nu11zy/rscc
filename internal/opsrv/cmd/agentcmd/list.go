@@ -37,13 +37,17 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 
 	rows := make([][]string, len(agents))
 	for i, agent := range agents {
-		osArch := fmt.Sprintf("%s (%s)", agent.Os, agent.Arch)
-		servers := strings.Join(agent.Servers, "\n")
+		id := agent.ID
+		name := pprint.TruncateString(agent.Name, 32)
+		osArch := fmt.Sprintf("%s/%s", agent.Os, agent.Arch)
+		servers := pprint.TruncateString(strings.Join(agent.Servers, "\n"), 32)
+		hits := strconv.Itoa(agent.Hits)
+
 		// Check if agent file exists
 		agentBytes, err := os.ReadFile(filepath.Join(constants.AgentDir, agent.Name))
 		if err != nil {
 			if os.IsNotExist(err) {
-				rows[i] = []string{agent.ID, pprint.ErrorColor.Sprint(agent.Name), osArch, servers}
+				rows[i] = []string{pprint.Blue.Sprint(id), pprint.Red.Sprint(name), osArch, servers, hits}
 				continue
 			} else {
 				return fmt.Errorf("failed to read agent file %s: %w", agent.ID, err)
@@ -53,13 +57,13 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 		// Check if agent file is modified
 		agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 		if agentHash != agent.Xxhash {
-			rows[i] = []string{agent.ID, pprint.WarnColor.Sprint(agent.Name), osArch, servers}
+			rows[i] = []string{pprint.Blue.Sprint(id), pprint.Yellow.Sprint(name), osArch, servers, hits}
 		} else {
-			rows[i] = []string{agent.ID, agent.Name, osArch, servers}
+			rows[i] = []string{pprint.Blue.Sprint(id), name, osArch, servers, hits}
 		}
 	}
 
-	cmd.Println(pprint.Table([]string{"ID", "Name", "OS", "Server"}, rows))
-	cmd.Printf("[%s] - file not found; [%s] - file modified\n", pprint.ErrorColor.Sprint("*"), pprint.WarnColor.Sprint("*"))
+	cmd.Println(pprint.Table([]string{"ID", "NAME", "OS/ARCH", "SERVERS", "HITS"}, rows))
+	cmd.Printf("[%s] - file not found; [%s] - file modified. Type 'agent info <id>' to get more info\n", pprint.Red.Sprint("*"), pprint.Yellow.Sprint("*"))
 	return nil
 }

@@ -172,10 +172,13 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to template agent: %s", err.Error())
 	}
 
-	cmd.Println(pprint.Info("Template agent: %s", tmpDir))
-
 	// Build agent
-	cmd.Println(pprint.Info("Building agent `%s` for %s/%s (server: %s)", name, goos, goarch, servers))
+	cmd.Println(pprint.Info(
+		"Building agent '%s' for %s/%s",
+		pprint.Green.Sprint(name),
+		pprint.Bold.Sprint(goos),
+		pprint.Bold.Sprint(goarch),
+	))
 	name, err = buildAgent(tmpDir, builderConfig)
 	if err != nil {
 		return fmt.Errorf("failed to build agent: %w", err)
@@ -195,7 +198,12 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to add agent to database: %w", err)
 	}
 
-	cmd.Println(pprint.Success("Agent `%s` [id: %s] generated (%s)", agent.Name, agent.ID, agent.Path))
+	cmd.Println(pprint.Success(
+		"Agent '%s' generated! [ID: %s, Path: %s]\n",
+		pprint.Green.Sprint(agent.Name),
+		pprint.Blue.Sprint(agent.ID),
+		pprint.Yellow.Sprint(agent.Path),
+	))
 	return nil
 }
 

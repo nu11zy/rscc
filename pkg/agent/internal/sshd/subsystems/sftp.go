@@ -4,7 +4,9 @@
 package subsystems
 
 import (
+	// {{if .Debug}}
 	"log"
+	// {{end}}
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"

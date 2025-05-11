@@ -29,12 +29,12 @@ func (o *OperatorCmd) cmdList(cmd *cobra.Command, args []string) error {
 	for _, operator := range operators {
 		name := operator.Name
 		if name == o.operator.Username {
-			name = pprint.SuccessColor.Sprint(name)
+			name = pprint.Green.Sprint(name)
 		}
 
 		var role = "operator"
 		if operator.IsAdmin {
-			role = pprint.WarnColor.Sprint(pprint.Bold.Sprint("admin"))
+			role = pprint.Yellow.Sprint(pprint.Bold.Sprint("admin"))
 		}
 
 		var lastLogin = "never"

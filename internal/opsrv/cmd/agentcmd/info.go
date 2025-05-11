@@ -6,6 +6,7 @@ import (
 	"rscc/internal/common/constants"
 	"rscc/internal/common/pprint"
 	"rscc/internal/database/ent"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -53,20 +54,20 @@ func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 	}
 
 	cmd.Println(pprint.Info("Agent extra info:"))
-	cmd.Printf("- ID: %s\n", agent.ID)
-	cmd.Printf("- Name: %s\n", agent.Name)
-	cmd.Printf("- OS: %s (%s)\n", agent.Os, agent.Arch)
-	cmd.Printf("- Servers: %v\n", agent.Servers)
+	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("├─ ID:"), agent.ID)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Name:"), agent.Name)
+	cmd.Printf(" %s\t\t%s/%s\n", pprint.Blue.Sprint("├─ OS:"), agent.Os, agent.Arch)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Servers:"), strings.Join(agent.Servers, ", "))
 
 	if len(buildFeutures) > 0 {
-		cmd.Printf("- Features: %v\n", buildFeutures)
+		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Features:"), strings.Join(buildFeutures, ", "))
 	}
 	if len(agent.Subsystems) > 0 {
-		cmd.Printf("- Subsystems: %v\n", agent.Subsystems)
+		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Subsystems:"), strings.Join(agent.Subsystems, ", "))
 	}
 
-	cmd.Printf("- Path: %s\n", fullPath)
-	cmd.Printf("- Public Key: %s", agent.PublicKey)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Path:"), fullPath)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("└─ Public Key:"), agent.PublicKey)
 
 	return nil
 }
