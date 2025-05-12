@@ -20,11 +20,9 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
-	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
@@ -37,7 +35,6 @@ require (
 
 require (
 	entgo.io/ent v0.14.4
-	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/fatih/color v1.18.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
