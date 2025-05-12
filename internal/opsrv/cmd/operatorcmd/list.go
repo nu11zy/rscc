@@ -27,6 +27,7 @@ func (o *OperatorCmd) cmdList(cmd *cobra.Command, args []string) error {
 
 	var rows [][]string
 	for _, operator := range operators {
+		id := pprint.Blue.Sprint(operator.ID)
 		name := operator.Name
 		if name == o.operator.Username {
 			name = pprint.Green.Sprint(name)
@@ -42,9 +43,10 @@ func (o *OperatorCmd) cmdList(cmd *cobra.Command, args []string) error {
 			lastLogin = operator.LastLogin.Format("02.01.2006 15:04:05")
 		}
 
-		rows = append(rows, []string{operator.ID, name, role, lastLogin})
+		rows = append(rows, []string{id, name, role, lastLogin})
 	}
 
 	cmd.Println(pprint.Table([]string{"ID", "Name", "Role", "Last Login"}, rows))
+	cmd.Println()
 	return nil
 }

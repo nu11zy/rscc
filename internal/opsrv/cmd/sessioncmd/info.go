@@ -26,21 +26,23 @@ func (s *SessionCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	cmd.Printf("- Session ID: %s\n", session.ID)
-	cmd.Printf("- Username: %s\n", session.Metadata.Username)
-	cmd.Printf("- Hostname: %s\n", session.Metadata.Hostname)
+	cmd.Println(pprint.Info("Session info:"))
+	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("├─ ID:"), session.ID)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Created:"), session.CreatedAt.Format("02.01.2006 15:04:05"))
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Username:"), session.Metadata.Username)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Hostname:"), session.Metadata.Hostname)
 	if session.Metadata.Domain != "" {
-		cmd.Printf("- Domain: %s\n", session.Metadata.Domain)
+		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Domain:"), session.Metadata.Domain)
 	}
 	if len(session.Metadata.IPs) > 0 {
-		cmd.Printf("- IPs: [%s]\n", strings.Join(session.Metadata.IPs, ", "))
+		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ IPs:"), strings.Join(session.Metadata.IPs, ", "))
 	}
-	cmd.Printf("- OS: %s\n", session.Metadata.OSMeta)
-	cmd.Printf("- ProcName: %s\n", session.Metadata.ProcName)
-	cmd.Printf("- IsPriv: %t\n", session.Metadata.IsPriv)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Process:"), session.Metadata.ProcName)
+	cmd.Printf(" %s\t%t\n", pprint.Blue.Sprint("├─ IsAdmin:"), session.Metadata.IsPriv)
 	if session.Metadata.Extra != "" {
-		cmd.Printf("- Extra: %s\n", session.Metadata.Extra)
+		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Extra:"), session.Metadata.Extra)
 	}
+	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("└─ OS:"), session.Metadata.OSMeta)
 
 	return nil
 }

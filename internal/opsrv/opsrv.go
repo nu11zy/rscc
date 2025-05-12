@@ -412,12 +412,12 @@ func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel, terminal *te
 
 		args, err := shlex.Split(line)
 		if err != nil {
-			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n\n", pprint.ErrorPrefix, err.Error()))
 			continue
 		}
 		cli.SetArgs(args)
 		if err := cli.Execute(); err != nil {
-			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n\n", pprint.ErrorPrefix, err.Error()))
 		}
 	}
 }

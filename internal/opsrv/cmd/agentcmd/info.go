@@ -53,7 +53,7 @@ func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get full path to agent: %w", err)
 	}
 
-	cmd.Println(pprint.Info("Agent extra info:"))
+	cmd.Println(pprint.Info("Agent info:"))
 	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("├─ ID:"), agent.ID)
 	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Name:"), agent.Name)
 	cmd.Printf(" %s\t\t%s/%s\n", pprint.Blue.Sprint("├─ OS:"), agent.Os, agent.Arch)

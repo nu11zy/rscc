@@ -65,5 +65,6 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 
 	cmd.Println(pprint.Table([]string{"ID", "NAME", "OS/ARCH", "SERVERS", "HITS"}, rows))
 	cmd.Printf("[%s] - file not found; [%s] - file modified. Type 'agent info <id>' to get more info\n", pprint.Red.Sprint("*"), pprint.Yellow.Sprint("*"))
+	cmd.Println()
 	return nil
 }

@@ -3,6 +3,7 @@ package operatorcmd
 import (
 	"fmt"
 	"rscc/internal/common/constants"
+	"rscc/internal/common/pprint"
 	"rscc/internal/database/ent"
 
 	"github.com/spf13/cobra"
@@ -45,22 +46,23 @@ func (o *OperatorCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	cmd.Println("Name:", operator.Name)
-	cmd.Println("ID:", operator.ID)
+	cmd.Println(pprint.Info("Operator info:"))
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Name:"), operator.Name)
+	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("├─ ID:"), operator.ID)
 
 	var role = "operator"
 	if operator.IsAdmin {
 		role = "admin"
 	}
-	cmd.Println("Role:", role)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Role:"), role)
 
 	var lastLogin = "never"
 	if operator.LastLogin != nil {
 		lastLogin = operator.LastLogin.Format("2006-01-02 15:04:05")
 	}
-	cmd.Println("Last Login:", lastLogin)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Last Login:"), lastLogin)
+	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("└─ Public Key:"), operator.PublicKey)
 
-	cmd.Println("Public Key:", operator.PublicKey)
-
+	cmd.Println()
 	return nil
 }
