@@ -168,12 +168,14 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 				// {{end}}
 				go subsystemFunc(channel, systemArgs)
 				req.Reply(true, nil)
+				return
 			} else {
 				// {{if .Debug}}
 				log.Printf("Subsystem not supported: %s", system)
 				// {{end}}
 				channel.Write([]byte(fmt.Sprintf("Subsystem not supported: %s\n", system)))
 				req.Reply(true, nil)
+				return
 			}
 		default:
 			// {{if .Debug}}
