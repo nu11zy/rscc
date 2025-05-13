@@ -36,6 +36,7 @@ require (
 require (
 	entgo.io/ent v0.14.4
 	github.com/cespare/xxhash/v2 v2.3.0
+	github.com/creack/pty v1.1.24
 	github.com/fatih/color v1.18.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/jedib0t/go-pretty/v6 v6.6.7

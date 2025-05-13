@@ -76,6 +76,10 @@ func (s *SessionManager) ListSessions() []*Session {
 	return sessions
 }
 
+func (s *SessionManager) CountSessions() int {
+	return len(s.sessions)
+}
+
 func (s *SessionManager) GetSession(id string) (*Session, bool) {
 	session, ok := s.sessions[id]
 	return session, ok

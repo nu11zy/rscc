@@ -11,10 +11,11 @@ import (
 
 func (o *OperatorCmd) newCmdInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "info <id / name>",
-		Short: "Get information about an operator",
-		Args:  cobra.ExactArgs(1),
-		RunE:  o.cmdInfo,
+		Use:     "info <id / name>",
+		Short:   "Get information about an operator",
+		Aliases: []string{"i"},
+		Args:    cobra.ExactArgs(1),
+		RunE:    o.cmdInfo,
 	}
 
 	return cmd

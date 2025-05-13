@@ -11,6 +11,7 @@ import (
 	"rscc/internal/common/logger"
 	"rscc/internal/common/network"
 	"rscc/internal/common/pprint"
+	"rscc/internal/common/utils"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/opsrv/cmd/agentcmd"
@@ -391,9 +392,8 @@ func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel, terminal *te
 	lg := s.lg.Named("cli")
 	lg.Infof("Starting CLI for %s", channel.Operator.Username)
 
-	terminal.SetPrompt("rscc > ")
+	terminal.SetPrompt(fmt.Sprintf("%s > ", pprint.Green.Sprint("rscc")))
 	terminal.Write([]byte(pprint.GetBanner()))
-	// terminal.Write([]byte(fmt.Sprintf("Active sessions: %d. Listening on %s\n", len(s.sm.ListSessions()), s.address)))
 
 	for {
 		cli := s.newCli(terminal, channel.Operator)
@@ -444,6 +444,15 @@ func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.O
 	app.Flags().MarkHidden("help")
 	app.PersistentFlags().BoolP("help", "h", false, "Print this help message")
 	app.PersistentFlags().MarkHidden("help")
+	app.SetHelpCommand(&cobra.Command{
+		Use:    "help",
+		Hidden: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cmd.Root().Help()
+		},
+	})
+
+	app.SetUsageFunc(utils.CobraHelp)
 
 	app.SetOut(terminal)
 	app.SetErr(terminal)
