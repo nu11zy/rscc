@@ -13,8 +13,9 @@ import (
 
 func (a *AgentCmd) newCmdInfo() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "info <id>",
+		Use:     "info",
 		Short:   "Get agent info",
+		Example: "agent info <id>",
 		Aliases: []string{"i"},
 		Args:    cobra.ExactArgs(1),
 		RunE:    a.cmdInfo,

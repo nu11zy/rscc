@@ -12,9 +12,9 @@ import (
 
 func (a *AgentCmd) newCmdRemove() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "remove <id>",
+		Use:     "remove",
 		Short:   "Remove agent",
-		Long:    "Remove agent\nWARNING: all active agents will no longer be able to connect to the server",
+		Example: "agent remove <id>",
 		Aliases: []string{"r", "rm"},
 		Args:    cobra.ExactArgs(1),
 		RunE:    a.cmdRemove,

@@ -10,6 +10,12 @@ import (
 )
 
 func CobraHelp(cmd *cobra.Command) error {
+	if cmd.HasExample() {
+		cmd.Println("EXAMPLE:")
+		cmd.Printf("  %s\n", cmd.Example)
+		cmd.Println()
+	}
+
 	if cmd.HasAvailableSubCommands() {
 		maxNameLen := 0
 		maxAliasesLen := 0
@@ -42,7 +48,7 @@ func CobraHelp(cmd *cobra.Command) error {
 		cmd.Println(cmd.Flags().FlagUsages())
 	}
 
-	if cmd.HasAvailableFlags() || cmd.HasAvailableSubCommands() {
+	if cmd.HasAvailableFlags() || cmd.HasAvailableSubCommands() || cmd.HasExample() {
 		cmd.Println("Use '-h / --help' for more information about a command")
 		cmd.Println()
 	}

@@ -11,8 +11,9 @@ import (
 
 func (o *OperatorCmd) newCmdRemove() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "remove <id / name>",
+		Use:     "remove",
 		Short:   "Remove operator",
+		Example: "operator remove <id / name>",
 		Aliases: []string{"r", "rm"},
 		Args:    cobra.ExactArgs(1),
 		PreRunE: o.checkAdmin,
