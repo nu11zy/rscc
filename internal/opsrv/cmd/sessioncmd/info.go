@@ -44,6 +44,6 @@ func (s *SessionCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Extra:"), session.Metadata.Extra)
 	}
 	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("└─ OS:"), session.Metadata.OSMeta)
-
+	cmd.Println()
 	return nil
 }

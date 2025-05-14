@@ -16,7 +16,7 @@ var (
 	Red    = color.New(color.FgRed)
 	Purple = color.New(color.FgMagenta)
 	Yellow = color.New(color.FgYellow)
-	Gray   = color.New(color.FgBlack)
+	Gray   = color.New(color.FgHiBlack)
 	Reset  = color.New(color.Reset)
 
 	SuccessPrefix = Green.Sprintf("[+]")

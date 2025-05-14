@@ -41,5 +41,6 @@ func (s *SessionCmd) cmdList(cmd *cobra.Command, args []string) error {
 	}
 
 	cmd.Println(pprint.Table([]string{"ID", "Username", "Hostname", "OS", "Created"}, rows))
+	cmd.Println()
 	return nil
 }

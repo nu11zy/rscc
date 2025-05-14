@@ -64,7 +64,6 @@ func (o *OperatorCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 	}
 	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Last Login:"), lastLogin)
 	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("└─ Public Key:"), operator.PublicKey)
-
 	cmd.Println()
 	return nil
 }
