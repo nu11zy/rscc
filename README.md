@@ -18,13 +18,13 @@ Since RSCC is based on SSH, it has the following features:
 
 **Also you can extend agent with your own SSH subsystems!**
 
-As an example, there is a [port scanner subsystem](./pkg/agent/internal/sshd/subsystems/pscan.go) that allows you to scan the target host for open ports from the agent.
+As an example, there is a [port scanner subsystem](pkg/agent/internal/sshd/subsystems/pscan.go) that allows you to scan the target host for open ports from the agent.
 
 <details>
-<summary>Example:</summary><br/>
+<summary>Example</summary><br/>
 
 ```sh
-ssh rscc+agent_id -s pscan -p 139,445,3389 10.10.10.10
+ssh rscc+agent_id -s pscan --ports 139,445,3389 --ips 10.10.10.10
 ```
 
 </details>
@@ -101,7 +101,7 @@ ssh rscc session list
 ### More examples
 
 <details>
-<summary>SOCKS5 Proxy:</summary><br/>
+<summary>SOCKS5 Proxy</summary><br/>
 
 ```sh
 ssh -D 9090 rscc+agent_id
@@ -112,7 +112,7 @@ Now you can use `127.0.0.1:9090` as SOCKS5 proxy.
 </details>
 
 <details>
-<summary>Transfer files:</summary><br/>
+<summary>Transfer files</summary><br/>
 
 SCP:
 
