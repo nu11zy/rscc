@@ -55,9 +55,7 @@ func HandleSSHConnection(conn net.Conn, address string, sshClientConfig *ssh.Cli
 	return nil
 }
 
-func handleJump(channel ssh.Channel, request <-chan *ssh.Request, sshServerConfig *ssh.ServerConfig) {
-	defer channel.Close()
-
+func handleJump(channel ssh.Channel, _ <-chan *ssh.Request, sshServerConfig *ssh.ServerConfig) {
 	// {{if .Debug}}
 	log.Printf("Jump channel accepted")
 	// {{end}}
@@ -122,6 +120,7 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 	defer channel.Close()
 
 	var isPty bool
+
 	for req := range request {
 		switch req.Type {
 		case "pty-req":
@@ -137,7 +136,7 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 				// {{if .Debug}}
 				log.Printf("Shell request received before PTY request")
 				// {{end}}
-				fmt.Fprintf(channel, "Only PTY requests are supported.\n")
+				channel.Write([]byte("Only PTY requests are supported.\n"))
 				req.Reply(true, nil)
 				return
 			}
@@ -168,7 +167,6 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 				// {{end}}
 				go subsystemFunc(channel, systemArgs)
 				req.Reply(true, nil)
-				return
 			} else {
 				// {{if .Debug}}
 				log.Printf("Subsystem not supported: %s", system)
@@ -180,8 +178,9 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 		default:
 			// {{if .Debug}}
 			log.Printf("Unknown request: %v", req.Type)
-			// {{end}}
+			// NOTE: channel.Write in Debug blog, as it has a lot of rubbish
 			channel.Write([]byte(fmt.Sprintf("Unknown request: %s\n", req.Type)))
+			// {{end}}
 			req.Reply(true, nil)
 		}
 	}
