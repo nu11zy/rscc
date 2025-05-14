@@ -111,15 +111,16 @@ Now you can use `127.0.0.1:9090` as SOCKS5 proxy.
 
 </details>
 
-<br/>
 <details>
 <summary>Transfer files:</summary><br/>
+
+SCP:
 
 ```sh
 scp /path/to/local/file rscc+agent_id:/path/to/remote/file
 ```
 
-or 
+SFTP:
 
 ```sh
 sftp rscc+agent_id
@@ -133,3 +134,4 @@ sftp rscc+agent_id
 - [ ] Add more subsystems *(execute-assembly, port forward, inject, etc)*
 - [ ] Webhooks for events
 - [ ] HTTP server for serving agents
+- [ ] More documentation
