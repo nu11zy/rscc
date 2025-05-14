@@ -50,18 +50,14 @@ func main() {
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
-		SilenceErrors: true,
-		SilenceUsage:  true,
 	}
 	appRoot.PersistentFlags().StringVar(&dbPath, "db", "rscc.db", "database path")
 	appRoot.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug mode")
 
 	appAdmin := &cobra.Command{
-		Use:           "admin [flags]",
-		Short:         "Create new admin",
-		RunE:          adminCmd,
-		SilenceErrors: true,
-		SilenceUsage:  true,
+		Use:   "admin [flags]",
+		Short: "Create new admin",
+		RunE:  adminCmd,
 	}
 	appAdmin.Flags().StringVarP(&operatorName, "name", "n", "", "operator name")
 	appAdmin.Flags().StringVarP(&publicKey, "key", "k", "", "operator public key")
@@ -70,11 +66,9 @@ func main() {
 	appRoot.AddCommand(appAdmin)
 
 	appStart := &cobra.Command{
-		Use:           "start [flags]",
-		Short:         "Start rscc",
-		RunE:          startCmd,
-		SilenceErrors: true,
-		SilenceUsage:  true,
+		Use:   "start [flags]",
+		Short: "Start rscc",
+		RunE:  startCmd,
 	}
 	appStart.Flags().IntVar(&operatorPort, "op", 55022, "operator listener port")
 	appStart.Flags().StringVar(&operatorHost, "oh", "0.0.0.0", "operator listener host")
