@@ -35,7 +35,7 @@ ssh rscc+agent_id -s pscan --ports 139,445,3389 --ips 10.10.10.10
 
 To use RSCC, you need to have following tools on server machine:
 
-- Go 1.20+ (https://go.dev/doc/install)
+- Go 1.24+ (https://go.dev/doc/install)
 - Garble (https://github.com/burrowers/garble)
 
 ### Installation
@@ -124,6 +124,29 @@ SFTP:
 
 ```sh
 sftp rscc+agent_id
+```
+
+</details>
+
+<details>
+<summary>Port forward subsystem</summary><br/>
+
+List forwarded ports:
+
+```sh
+ssh rscc+agent_id -s pfwd list
+```
+
+Forward local port 8080 to 1.1.1.1:80:
+
+```sh
+ssh rscc+agent_id -s pfwd start 8080:1.1.1.1:80
+```
+
+Stop port forward:
+
+```sh
+ssh rscc+agent_id -s pfwd stop 8080
 ```
 
 </details>
