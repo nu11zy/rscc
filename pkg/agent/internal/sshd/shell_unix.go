@@ -17,7 +17,37 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func handleShell(channel ssh.Channel) {
+type Shell struct {
+	ptyFile *os.File
+	width   int
+	height  int
+}
+
+func NewShell() *Shell {
+	return &Shell{
+		ptyFile: nil,
+		width:   80,
+		height:  24,
+	}
+}
+
+func (s *Shell) SetSize(width, height int) {
+	s.width = width
+	s.height = height
+	if s.ptyFile != nil {
+		err := pty.Setsize(s.ptyFile, &pty.Winsize{
+			Cols: uint16(width),
+			Rows: uint16(height),
+		})
+		if err != nil {
+			// {{if .Debug}}
+			log.Printf("Failed to set pty size: %v", err)
+			// {{end}}
+		}
+	}
+}
+
+func (s *Shell) handleShell(channel ssh.Channel) {
 	defer channel.Close()
 
 	var shell *exec.Cmd
@@ -35,7 +65,8 @@ func handleShell(channel ssh.Channel) {
 		return
 	}
 
-	ptyFile, err := pty.Start(shell)
+	var err error
+	s.ptyFile, err = pty.Start(shell)
 	if err != nil {
 		// {{if .Debug}}
 		log.Printf("Failed to start shell: %v", err)
@@ -43,10 +74,12 @@ func handleShell(channel ssh.Channel) {
 		fmt.Fprintf(channel, "Failed to start shell: %v\n", err)
 		return
 	}
-	defer ptyFile.Close()
+	defer s.ptyFile.Close()
 
-	go io.Copy(ptyFile, channel)
-	go io.Copy(channel, ptyFile)
+	s.SetSize(s.width, s.height)
+
+	go io.Copy(s.ptyFile, channel)
+	go io.Copy(channel, s.ptyFile)
 
 	if err := shell.Wait(); err != nil {
 		// {{if .Debug}}

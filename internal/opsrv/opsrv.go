@@ -2,7 +2,6 @@ package opsrv
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -326,34 +325,35 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 	lg := s.lg.Named("ssh")
 
 	isPty := false
-	var terminal *term.Terminal
+	terminal := term.NewTerminal(channel, "")
 	for req := range request {
 		lg.Debugf("Session request: %s", req.Type)
 		switch req.Type {
 		case "pty-req":
 			isPty = true
-			terminal = term.NewTerminal(channel, "")
-			if len(req.Payload) >= 12 {
-				width := int(binary.BigEndian.Uint32(req.Payload[4:8]))
-				height := int(binary.BigEndian.Uint32(req.Payload[8:12]))
-				terminal.SetSize(width, height)
+			p, err := sshd.ParsePtyReq(req)
+			if err != nil {
+				lg.Errorf("Failed to parse pty request: %v", err)
+				req.Reply(false, nil)
+				continue
 			}
+			lg.Infof("PTY request: %s - %dx%d (%dx%d)", p.Term, p.Width, p.Height, p.Columns, p.Rows)
+			terminal.SetSize(int(p.Width), int(p.Height))
 			req.Reply(true, nil)
 		case "window-change":
 			if len(req.Payload) < 8 {
 				lg.Warn("Window change request received with invalid payload")
-				terminal.SetSize(80, 24)
 				req.Reply(true, nil)
 				continue
 			}
-			width := int(binary.BigEndian.Uint32(req.Payload[0:4]))
-			height := int(binary.BigEndian.Uint32(req.Payload[4:8]))
-			terminal.SetSize(width, height)
+			width, height := sshd.ParseWindowChangeReq(req.Payload)
+			lg.Infof("Window change request: %dx%d", width, height)
+			terminal.SetSize(int(width), int(height))
 			req.Reply(true, nil)
 		case "shell":
 			if isPty {
-				req.Reply(true, nil)
 				go s.handleShell(channel, terminal)
+				req.Reply(true, nil)
 			} else {
 				lg.Warn("Shell request received before PTY request")
 				channel.Write([]byte("Only PTY is supported.\n"))

