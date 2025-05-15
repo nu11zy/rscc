@@ -2,6 +2,7 @@ package sshd
 
 import (
 	"agent/internal/sshd/subsystems"
+	"encoding/binary"
 	"fmt"
 	"io"
 
@@ -13,6 +14,13 @@ import (
 	"github.com/google/shlex"
 	"golang.org/x/crypto/ssh"
 )
+
+type ptyReq struct {
+	Term          string
+	Columns, Rows uint32
+	Width, Height uint32
+	Modes         string
+}
 
 func HandleSSHConnection(conn net.Conn, address string, sshClientConfig *ssh.ClientConfig, sshServerConfig *ssh.ServerConfig) error {
 	sshConn, chans, reqs, err := ssh.NewClientConn(conn, address, sshClientConfig)
@@ -120,17 +128,44 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 	defer channel.Close()
 
 	var isPty bool
-
+	var shell = NewShell()
 	for req := range request {
+		// {{if .Debug}}
+		log.Printf("Session request: %s", req.Type)
+		// {{end}}
 		switch req.Type {
 		case "pty-req":
 			isPty = true
+			p, err := parsePtyReq(req)
+			if err != nil {
+				// {{if .Debug}}
+				log.Printf("Failed to parse pty request: %v", err)
+				// {{end}}
+				req.Reply(false, nil)
+				continue
+			}
+			// {{if .Debug}}
+			log.Printf("PTY request: %s - %dx%d (%dx%d)", p.Term, p.Width, p.Height, p.Columns, p.Rows)
+			// {{end}}
+			shell.SetSize(int(p.Width), int(p.Height))
 			req.Reply(true, nil)
 		case "window-change":
+			if len(req.Payload) < 8 {
+				// {{if .Debug}}
+				log.Printf("Window change request received with invalid payload")
+				// {{end}}
+				req.Reply(true, nil)
+				continue
+			}
+			width, height := parseWindowChangeReq(req.Payload)
+			// {{if .Debug}}
+			log.Printf("Window change request: %dx%d", width, height)
+			// {{end}}
+			shell.SetSize(int(width), int(height))
 			req.Reply(true, nil)
 		case "shell":
 			if isPty {
-				go handleShell(channel)
+				go shell.handleShell(channel)
 				req.Reply(true, nil)
 			} else {
 				// {{if .Debug}}
@@ -178,10 +213,23 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 		default:
 			// {{if .Debug}}
 			log.Printf("Unknown request: %v", req.Type)
-			// NOTE: channel.Write in Debug blog, as it has a lot of rubbish
 			channel.Write([]byte(fmt.Sprintf("Unknown request: %s\n", req.Type)))
 			// {{end}}
 			req.Reply(true, nil)
 		}
 	}
+}
+
+func parsePtyReq(req *ssh.Request) (*ptyReq, error) {
+	var data ptyReq
+	if err := ssh.Unmarshal(req.Payload, &data); err != nil {
+		return nil, err
+	}
+	return &data, nil
+}
+
+func parseWindowChangeReq(req []byte) (uint32, uint32) {
+	width := binary.BigEndian.Uint32(req)
+	height := binary.BigEndian.Uint32(req[4:])
+	return width, height
 }
