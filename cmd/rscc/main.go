@@ -50,6 +50,7 @@ func main() {
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
+		SilenceUsage: true,
 	}
 	appRoot.PersistentFlags().StringVar(&dbPath, "db", "rscc.db", "database path")
 	appRoot.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug mode")
