@@ -1,14 +1,18 @@
 BIN_DIR=$(PWD)/bin
 
 release: ## Build release binaries
-	@echo "Building release binaries..."
+	@echo "Building release binaries"
 	@mkdir -p ${BIN_DIR}
 	@cd pkg/agent && zip -q -r ${BIN_DIR}/agent.zip .
 	@go build -o ${BIN_DIR}/rscc cmd/rscc/main.go
 
 gen-ent: ## Generate ent models
-	@echo "Generate ent models..."
+	@echo "Generate ent models"
 	@go generate $(PWD)/internal/database/ent
+
+agent-vendor: ## Update vendor for agent
+	@echo "Updating vendor for agent"
+	@cd pkg/agent && go mod tidy && go mod vendor
 
 clean:
 	@rm -rf ${BIN_DIR}

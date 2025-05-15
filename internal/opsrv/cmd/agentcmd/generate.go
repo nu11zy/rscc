@@ -54,7 +54,7 @@ func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd.Flags().Bool("pie", false, "generate a position independent executable")
 	cmd.Flags().Bool("garble", false, "use garble to obfuscate agent")
 	cmd.Flags().Bool("debug", false, "enable debug messages")
-	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, "subsystems to add to the agent (sftp, kill, pscan)")
+	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, "subsystems to add to the agent (sftp, kill, pscan, pfwd)")
 	cmd.MarkFlagsMutuallyExclusive("shared", "pie")
 	cmd.MarkFlagRequired("servers")
 

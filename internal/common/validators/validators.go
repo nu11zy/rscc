@@ -63,10 +63,13 @@ func ValidateGOARCH(goarch string) bool {
 	return slices.Contains(validGOARCH, goarch)
 }
 
+// ValidateSubsystem validates passed value with supported subsystems by agent
 func ValidateSybsystem(ss string) bool {
 	var validSS = []string{
 		"sftp",
 		"kill",
+		"pscan",
+		"pfwd",
 	}
 
 	return slices.Contains(validSS, ss)
