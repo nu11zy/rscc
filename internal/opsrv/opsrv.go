@@ -361,6 +361,7 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 				channel.CloseWithStatus(1)
 			}
 		case "exec":
+			terminal = term.NewTerminal(channel, "")
 			go s.handleExec(channel, terminal, string(req.Payload[4:]))
 			req.Reply(true, nil)
 		default:
