@@ -1,6 +1,6 @@
 module agent
 
-go 1.24.2
+go 1.23
 
 require (
 	github.com/aymanbagabas/go-pty v0.2.2

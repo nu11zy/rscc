@@ -1,6 +1,6 @@
 module rscc
 
-go 1.24.2
+go 1.23
 
 require (
 	github.com/go-faster/errors v0.7.1
