@@ -2,14 +2,16 @@ package database
 
 import (
 	"context"
+	"database/sql"
+	entsql "entgo.io/ent/dialect/sql"
 	"fmt"
 	"rscc/internal/common/logger"
 	"rscc/internal/database/ent"
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/operator"
+	"strings"
 
 	"entgo.io/ent/dialect"
-	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
 )
 
@@ -21,15 +23,30 @@ type Database struct {
 func NewDatabase(ctx context.Context, path string) (*Database, error) {
 	lg := logger.FromContext(ctx).Named("database")
 
+	// check if path is blank string
 	if path == "" {
 		return nil, fmt.Errorf("database path is required")
 	}
 
-	client, err := ent.Open(dialect.SQLite, fmt.Sprintf("file:%s?_fk=1&cache=shared", path))
+	// create connection to database
+	var d strings.Builder
+	d.WriteString("file:")
+	d.WriteString(path)
+	d.WriteString("?cache=shared&_fk=1")
+	lg.Debug("connection dsn", zap.String("dsn", d.String()))
+	db, err := sql.Open("sqlite3", d.String())
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return nil, err
 	}
+	// avoid "database is locked" errors
+	db.SetMaxOpenConns(1)
 
+	// create ent client
+	drv := entsql.OpenDB(dialect.SQLite, db)
+	client := ent.NewClient(ent.Driver(drv))
+	lg.Debug("connected to database")
+
+	// performs migrations
 	if err := client.Schema.Create(ctx); err != nil {
 		return nil, fmt.Errorf("failed to create schema: %w", err)
 	}
