@@ -21,8 +21,8 @@ func (s *SessionCmd) newCmdInfo() *cobra.Command {
 func (s *SessionCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 	id := args[0]
 
-	session, ok := s.sm.GetSession(id)
-	if !ok {
+	session := s.sm.GetSession(id)
+	if session == nil {
 		cmd.Println(pprint.Info("No sessions found"))
 		return nil
 	}

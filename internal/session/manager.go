@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"rscc/internal/common/logger"
 	"rscc/internal/database"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -80,7 +81,13 @@ func (s *SessionManager) CountSessions() int {
 	return len(s.sessions)
 }
 
-func (s *SessionManager) GetSession(id string) (*Session, bool) {
-	session, ok := s.sessions[id]
-	return session, ok
+// GetSession returns session if it exists by agent ID
+func (s *SessionManager) GetSession(id string) *Session {
+	sessions := s.ListSessions()
+	for _, v := range sessions {
+		if strings.HasPrefix(v.ID, id) {
+			return v
+		}
+	}
+	return nil
 }
