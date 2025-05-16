@@ -73,19 +73,13 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
-	sshTimeout := constants.SSHTimeout
-	if sshTimeout < 10 {
-		lg.Warnf("SSH timeout is less than 10 seconds, setting to 10 seconds")
-		sshTimeout = 10
-	}
-
 	opsrv := &OperatorServer{
 		db:         db,
 		sm:         sm,
 		address:    address,
 		listener:   nil,
 		sshConfig:  nil,
-		sshTimeout: sshTimeout,
+		sshTimeout: constants.SSHTimeout,
 		lg:         lg,
 	}
 
