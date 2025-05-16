@@ -38,7 +38,7 @@ func ParsePtyReq(req *ssh.Request) (*PtyReq, error) {
 }
 
 func ParseWindowChangeReq(req []byte) (uint32, uint32) {
-	width := binary.BigEndian.Uint32(req)
-	height := binary.BigEndian.Uint32(req[4:])
-	return width, height
+	columns := binary.BigEndian.Uint32(req)
+	rows := binary.BigEndian.Uint32(req[4:])
+	return columns, rows
 }

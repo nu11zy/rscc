@@ -145,9 +145,9 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 				continue
 			}
 			// {{if .Debug}}
-			log.Printf("PTY request: %s - %dx%d (%dx%d)", p.Term, p.Width, p.Height, p.Columns, p.Rows)
+			log.Printf("PTY request: %s - %dx%d", p.Term, p.Columns, p.Rows)
 			// {{end}}
-			shell.SetSize(int(p.Width), int(p.Height))
+			shell.SetSize(int(p.Columns), int(p.Rows))
 			req.Reply(true, nil)
 		case "window-change":
 			if len(req.Payload) < 8 {
@@ -157,11 +157,11 @@ func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
 				req.Reply(true, nil)
 				continue
 			}
-			width, height := parseWindowChangeReq(req.Payload)
+			columns, rows := parseWindowChangeReq(req.Payload)
 			// {{if .Debug}}
-			log.Printf("Window change request: %dx%d", width, height)
+			log.Printf("Window change request: %dx%d", columns, rows)
 			// {{end}}
-			shell.SetSize(int(width), int(height))
+			shell.SetSize(int(columns), int(rows))
 			req.Reply(true, nil)
 		case "shell":
 			if isPty {
@@ -229,7 +229,7 @@ func parsePtyReq(req *ssh.Request) (*ptyReq, error) {
 }
 
 func parseWindowChangeReq(req []byte) (uint32, uint32) {
-	width := binary.BigEndian.Uint32(req)
-	height := binary.BigEndian.Uint32(req[4:])
-	return width, height
+	columns := binary.BigEndian.Uint32(req)
+	rows := binary.BigEndian.Uint32(req[4:])
+	return columns, rows
 }
