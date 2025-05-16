@@ -337,8 +337,8 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 				req.Reply(false, nil)
 				continue
 			}
-			lg.Infof("PTY request: %s - %dx%d (%dx%d)", p.Term, p.Width, p.Height, p.Columns, p.Rows)
-			terminal.SetSize(int(p.Width), int(p.Height))
+			lg.Infof("PTY request: %s - %dx%d", p.Term, p.Columns, p.Rows)
+			terminal.SetSize(int(p.Columns), int(p.Rows))
 			req.Reply(true, nil)
 		case "window-change":
 			if len(req.Payload) < 8 {
@@ -346,9 +346,9 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 				req.Reply(true, nil)
 				continue
 			}
-			width, height := sshd.ParseWindowChangeReq(req.Payload)
-			lg.Infof("Window change request: %dx%d", width, height)
-			terminal.SetSize(int(width), int(height))
+			columns, rows := sshd.ParseWindowChangeReq(req.Payload)
+			lg.Infof("Window change request: %dx%d", columns, rows)
+			terminal.SetSize(int(columns), int(rows))
 			req.Reply(true, nil)
 		case "shell":
 			if isPty {
