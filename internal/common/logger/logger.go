@@ -15,7 +15,6 @@ type loggerKey struct{}
 var (
 	ctxLoggerKey = loggerKey{}
 	loggingLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
-	programStart = time.Now()
 
 	debugColor = color.New(color.FgHiBlack)
 	infoColor  = color.New(color.FgBlue)
@@ -86,16 +85,3 @@ func consoleTimeAbsEncoder() zapcore.TimeEncoder {
 		enc.AppendString(timeColor.Sprintf("%s", time.Now().Format("02/01/2006 15:04:05")))
 	}
 }
-
-/*
-func consoleTimeDeltaEncoder() zapcore.TimeEncoder {
-	return func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-		duration := t.Sub(programStart)
-		seconds := duration / time.Second
-		milliseconds := (duration % time.Second) / time.Millisecond
-		secColor := color.New(color.Faint)
-		msecColor := color.New(color.FgHiBlack)
-		enc.AppendString(secColor.Sprintf("%03d", seconds) + msecColor.Sprintf(".%02d", milliseconds/10))
-	}
-}
-*/

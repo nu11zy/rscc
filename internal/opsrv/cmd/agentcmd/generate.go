@@ -169,7 +169,7 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 
 	// Template agent
 	if err := templateAgent(tmpDir, builderConfig); err != nil {
-		return fmt.Errorf("failed to template agent: %s", err.Error())
+		return fmt.Errorf("failed to template agent: %w", err)
 	}
 
 	// Build agent
@@ -338,7 +338,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 	sshVersion := "SSH-2.0-OpenSSH_8.2"
 	name := builderConfig.Name
 	if builderConfig.OS == "windows" {
-		sshVersion = "SSH-2.0-OpenSSH_for_Windows_9.5"
+		sshVersion = constants.SshBannersWindows[utils.RandInt(len(constants.SshBannersWindows))]
 		if builderConfig.Shared {
 			name = fmt.Sprintf("%s.dll", name)
 		} else {
@@ -346,13 +346,13 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 		}
 	}
 	if builderConfig.OS == "darwin" {
-		sshVersion = "SSH-2.0-OpenSSH_9.9"
+		sshVersion = constants.SshBannersDarwin[utils.RandInt(len(constants.SshBannersDarwin))]
 		if builderConfig.Shared {
 			name = fmt.Sprintf("%s.dylib", name)
 		}
 	}
 	if builderConfig.OS == "linux" {
-		sshVersion = "SSH-2.0-OpenSSH_9.2"
+		sshVersion = constants.SshBannersLinux[utils.RandInt(len(constants.SshBannersLinux))]
 		if builderConfig.Shared {
 			name = fmt.Sprintf("%s.so", name)
 		}
