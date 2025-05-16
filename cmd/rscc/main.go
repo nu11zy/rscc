@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -127,8 +128,8 @@ func startCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if len(operators) == 0 {
-		lg.Errorf("Admin operator not found. Use `rscc admin` to create new admin operator.")
-		return fmt.Errorf("admin operator not found")
+		lg.Error("Admin operator not found. Use `rscc admin` to create new admin operator.")
+		return errors.New("admin operator not found")
 	}
 
 	// Start session manager

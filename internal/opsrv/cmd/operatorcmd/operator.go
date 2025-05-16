@@ -1,7 +1,7 @@
 package operatorcmd
 
 import (
-	"fmt"
+	"errors"
 	"rscc/internal/database"
 	"rscc/internal/sshd"
 
@@ -43,7 +43,7 @@ func NewOperatorCmd(db *database.Database, operator *sshd.OperatorSession) *Oper
 func (o *OperatorCmd) checkAdmin(cmd *cobra.Command, args []string) error {
 	_, ok := o.operator.Permissions.CriticalOptions["admin"]
 	if !ok {
-		return fmt.Errorf("permission denied")
+		return errors.New("permission denied")
 	}
 	return nil
 }

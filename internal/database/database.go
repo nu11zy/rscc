@@ -3,13 +3,15 @@ package database
 import (
 	"context"
 	"database/sql"
-	entsql "entgo.io/ent/dialect/sql"
+	"errors"
 	"fmt"
 	"rscc/internal/common/logger"
 	"rscc/internal/database/ent"
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/operator"
 	"strings"
+
+	entsql "entgo.io/ent/dialect/sql"
 
 	"entgo.io/ent/dialect"
 	"go.uber.org/zap"
@@ -25,7 +27,7 @@ func NewDatabase(ctx context.Context, path string) (*Database, error) {
 
 	// check if path is blank string
 	if path == "" {
-		return nil, fmt.Errorf("database path is required")
+		return nil, errors.New("database path is required")
 	}
 
 	// create connection to database
@@ -33,7 +35,7 @@ func NewDatabase(ctx context.Context, path string) (*Database, error) {
 	d.WriteString("file:")
 	d.WriteString(path)
 	d.WriteString("?cache=shared&_fk=1")
-	lg.Debug("connection dsn", zap.String("dsn", d.String()))
+	lg.Debugf("Connection DSN: %s", d.String())
 	db, err := sql.Open("sqlite3", d.String())
 	if err != nil {
 		return nil, err
@@ -44,13 +46,12 @@ func NewDatabase(ctx context.Context, path string) (*Database, error) {
 	// create ent client
 	drv := entsql.OpenDB(dialect.SQLite, db)
 	client := ent.NewClient(ent.Driver(drv))
-	lg.Debug("connected to database")
 
 	// performs migrations
 	if err := client.Schema.Create(ctx); err != nil {
 		return nil, fmt.Errorf("failed to create schema: %w", err)
 	}
-	lg.Infof("Using database `%s`", path)
+	lg.Infof("Use database on path %s", path)
 
 	return &Database{client: client, lg: lg}, nil
 }

@@ -18,6 +18,7 @@ import (
 	"rscc/internal/opsrv/cmd/sessioncmd"
 	"rscc/internal/session"
 	"rscc/internal/sshd"
+	"strconv"
 	"strings"
 	"time"
 
@@ -40,12 +41,12 @@ type OperatorServer struct {
 
 func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
-	address := fmt.Sprintf("%s:%d", host, port)
 
+	address := net.JoinHostPort(host, strconv.Itoa(port))
 	listener, err := db.GetListener(ctx, constants.OperatorListenerID)
 	if err != nil {
 		if ent.IsNotFound(err) {
-			lg.Info("Operator listener not found, creating new one")
+			lg.Info("Listener not found, creating new one")
 			keyPair, err := sshd.NewECDSAKey()
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate key pair: %w", err)
@@ -106,13 +107,14 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 		return fmt.Errorf("listener is not *net.TCPListener")
 	}
 	s.listener = tcpListener
-	s.lg.Infof("Operator listener started at %s", s.address)
+	s.lg.Infof("Listener started at %s", s.address)
 
 	go func() {
 		<-ctx.Done()
 		if err := s.CloseListener(); err != nil {
 			s.lg.Errorf("Failed to close listener: %v", err)
 		}
+		s.lg.Info("Stop listener")
 	}()
 
 	for {
@@ -125,8 +127,7 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 			if ne, ok := err.(net.Error); ok && ne.Timeout() {
 				continue
 			}
-			if errors.Is(err, net.ErrClosed) {
-				s.lg.Warn("Operator listener closed")
+			if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
 				return nil
 			}
 			s.lg.Errorf("Failed to accept connection: %v", err)
@@ -176,11 +177,13 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.Public
 
 // handleConnection handles new SSH connection
 func (s *OperatorServer) handleConnection(conn net.Conn) {
-	s.lg.Debugf("New TCP connection from %s", conn.RemoteAddr())
-	lg := s.lg.Named(fmt.Sprintf("(%s)", conn.RemoteAddr().String()))
+	lg := s.lg
+
+	lg.Debugf("New TCP connection from %s", conn.RemoteAddr().String())
 
 	// create connection with timeout
 	timeoutConn := network.NewTimeoutConn(conn, time.Duration(2*s.sshTimeout)*time.Second)
+	defer timeoutConn.Close()
 
 	// create new SSH connection
 	sshConn, chans, reqs, err := ssh.NewServerConn(timeoutConn, s.sshConfig)
@@ -190,10 +193,12 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	}
 	defer sshConn.Close()
 
+	// update logger
+	lg = lg.Named(fmt.Sprintf("[%s]", sshConn.User()))
+
 	// start keepalive process
 	stopKeepalive := make(chan struct{})
 	go func() {
-		lg.Debug("Starting keepalive process")
 		ticker := time.NewTicker(time.Duration(s.sshTimeout) * time.Second)
 		defer ticker.Stop()
 
@@ -205,7 +210,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 					sshConn.Close()
 					return
 				}
-				lg.Debug("Send keepalive@openssh.com request")
+				lg.Debug("Send keepalive request")
 			case <-stopKeepalive:
 				lg.Debug("Stop sending keepalive requests")
 				return
@@ -213,8 +218,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 		}
 	}()
 
-	lg.Infof("New SSH connection (%s)", sshConn.User())
-	lg.Debugf("SSH client version: %s", sshConn.ClientVersion())
+	lg.Infof("New SSH connection from %s (%s)", sshConn.RemoteAddr().String(), sshConn.ClientVersion())
 
 	operatorSession := &sshd.OperatorSession{
 		Username:    sshConn.User(),
@@ -235,37 +239,37 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	}
 
 	go ssh.DiscardRequests(reqs)
-	s.handleChannels(chans, operatorSession)
+	s.handleChannels(lg, chans, operatorSession)
 
 	// stop keepalive process
 	stopKeepalive <- struct{}{}
 
-	lg.Infof("SSH connection closed (%s)", sshConn.User())
+	lg.Infof("SSH connection closed from %s", sshConn.RemoteAddr())
 }
 
 // handleChannels handles SSH channels
-func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel, operatorSession *sshd.OperatorSession) {
-	lg := s.lg.Named("ssh")
-
-	for newChannel := range chans {
+func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan ssh.NewChannel, operatorSession *sshd.OperatorSession) {
+	for newChannel := range channels {
 		lg.Debugf("Requested channel: %s", newChannel.ChannelType())
 		switch newChannel.ChannelType() {
 		case "session":
+			subLg := lg.Named("session")
 			rawChannel, request, err := newChannel.Accept()
 			if err != nil {
 				lg.Errorf("Failed to accept channel: %v", err)
 				continue
 			}
 			channel := sshd.NewExtendedChannel(rawChannel, operatorSession)
-			go s.handleSession(channel, request)
+			go s.handleSession(subLg, channel, request)
 		case "direct-tcpip":
+			subLg := lg.Named("direct-tcpip")
 			extraData := newChannel.ExtraData()
 			channel, _, err := newChannel.Accept()
 			if err != nil {
 				lg.Errorf("Failed to accept channel: %v", err)
 				continue
 			}
-			go s.handleJump(channel, extraData)
+			go s.handleJump(subLg, channel, extraData)
 		default:
 			lg.Warnf("Unsupported channel type: %s", newChannel.ChannelType())
 			newChannel.Reject(ssh.UnknownChannelType, "unsupported channel type")
@@ -274,8 +278,7 @@ func (s *OperatorServer) handleChannels(chans <-chan ssh.NewChannel, operatorSes
 }
 
 // handleJump handles connection from operator to agent
-func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
-	lg := s.lg.Named("jmp")
+func (s *OperatorServer) handleJump(lg *zap.SugaredLogger, channel ssh.Channel, extraData []byte) {
 	defer channel.Close()
 
 	connData, err := sshd.GetExtraData(extraData)
@@ -283,7 +286,7 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 		lg.Errorf("Failed to get extra data: %v", err)
 		return
 	}
-	lg.Infof("Reverse SSH connection from %s:%d to %s:%d", connData.OriginatorIP, connData.OriginatorPort, connData.TargetHost, connData.TargetPort)
+	lg.Debugf("Reverse SSH connection from %s:%d to %s:%d", connData.OriginatorIP, connData.OriginatorPort, connData.TargetHost, connData.TargetPort)
 
 	// unknown format of string
 	splittedHost := strings.Split(string(connData.TargetHost), "+")
@@ -294,16 +297,21 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 	agentId := splittedHost[1]
 	session := s.sm.GetSession(agentId)
 	if session == nil {
-		lg.Warnf("Session not found: %s", agentId)
+		lg.Warnf("Session not found for proxyjump: %s", agentId)
 		return
 	}
-	lg.Infof("Session found: %s", session.ID)
+	lg.Debugf("Session found for proxyjump: %s", session.ID)
 
+	// update session
+	lg = lg.Named(fmt.Sprintf("[%s]", session.ID))
+
+	// custom ssh-jump SSH channel
 	sessionConn, sessionReqs, err := session.SSHConn.Conn.OpenChannel("ssh-jump", nil)
 	if err != nil {
-		lg.Errorf("Failed to open ssh-jump channel: %v", err)
+		lg.Errorf("Failed to open ssh-jump channel for proxyjump: %v", err)
 		return
 	}
+	lg.Info("Open ssh-jump channel for proxyjump")
 	defer sessionConn.Close()
 
 	go ssh.DiscardRequests(sessionReqs)
@@ -314,48 +322,50 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 }
 
 // handleSession handles SSH session channel
-func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-chan *ssh.Request) {
-	lg := s.lg.Named("ssh")
-
+func (s *OperatorServer) handleSession(lg *zap.SugaredLogger, channel *sshd.ExtendedChannel, request <-chan *ssh.Request) {
 	isPty := false
 	terminal := term.NewTerminal(channel, "")
 	for req := range request {
 		lg.Debugf("Session request: %s", req.Type)
 		switch req.Type {
 		case "pty-req":
+			subLg := lg.Named("pty-req")
 			isPty = true
 			p, err := sshd.ParsePtyReq(req)
 			if err != nil {
-				lg.Errorf("Failed to parse pty request: %v", err)
+				subLg.Errorf("Failed to parse pty request: %v", err)
 				req.Reply(false, nil)
 				continue
 			}
-			lg.Infof("PTY request: %s - %dx%d", p.Term, p.Columns, p.Rows)
+			subLg.Infof("%s %dx%d", p.Term, p.Columns, p.Rows)
 			terminal.SetSize(int(p.Columns), int(p.Rows))
 			req.Reply(true, nil)
 		case "window-change":
+			subLg := lg.Named("window-changed")
 			if len(req.Payload) < 8 {
-				lg.Warn("Window change request received with invalid payload")
+				subLg.Warn("window-change request received with malformed payload (<8 bytes)")
 				req.Reply(true, nil)
 				continue
 			}
 			columns, rows := sshd.ParseWindowChangeReq(req.Payload)
-			lg.Infof("Window change request: %dx%d", columns, rows)
+			subLg.Infof("%dx%d", columns, rows)
 			terminal.SetSize(int(columns), int(rows))
 			req.Reply(true, nil)
 		case "shell":
+			subLg := lg.Named("shell")
 			if isPty {
-				go s.handleShell(channel, terminal)
+				go s.handleShell(subLg, channel, terminal)
 				req.Reply(true, nil)
 			} else {
-				lg.Warn("Shell request received before PTY request")
+				subLg.Warn("Shell request received before PTY request")
 				channel.Write([]byte("Only PTY is supported.\n"))
 				req.Reply(true, nil)
 				channel.CloseWithStatus(1)
 			}
 		case "exec":
+			subLg := lg.Named("exec")
 			terminal = term.NewTerminal(channel, "")
-			go s.handleExec(channel, terminal, string(req.Payload[4:]))
+			go s.handleExec(subLg, channel, terminal, string(req.Payload[4:]))
 			req.Reply(true, nil)
 		default:
 			lg.Warnf("Unsupported session request: %s", req.Type)
@@ -365,10 +375,9 @@ func (s *OperatorServer) handleSession(channel *sshd.ExtendedChannel, request <-
 }
 
 // handleExec handles exec request
-func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, terminal *term.Terminal, command string) {
+func (s *OperatorServer) handleExec(lg *zap.SugaredLogger, channel *sshd.ExtendedChannel, terminal *term.Terminal, command string) {
 	defer channel.CloseWithStatus(0)
 
-	lg := s.lg.Named("exec")
 	lg.Debugf("Executing command: %s", command)
 
 	app := s.newCli(terminal, channel.Operator)
@@ -380,11 +389,10 @@ func (s *OperatorServer) handleExec(channel *sshd.ExtendedChannel, terminal *ter
 }
 
 // handleShell handles shell request
-func (s *OperatorServer) handleShell(channel *sshd.ExtendedChannel, terminal *term.Terminal) {
+func (s *OperatorServer) handleShell(lg *zap.SugaredLogger, channel *sshd.ExtendedChannel, terminal *term.Terminal) {
 	defer channel.CloseWithStatus(0)
 
-	lg := s.lg.Named("cli")
-	lg.Infof("Starting CLI for %s", channel.Operator.Username)
+	lg.Info("Starting rscc CLI")
 
 	terminal.SetPrompt(fmt.Sprintf("%s > ", pprint.Green.Sprint("rscc")))
 	terminal.Write([]byte(pprint.GetBanner()))
