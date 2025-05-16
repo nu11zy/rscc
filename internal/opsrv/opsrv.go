@@ -79,7 +79,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 		address:    address,
 		listener:   nil,
 		sshConfig:  nil,
-		sshTimeout: constants.SSHTimeout,
+		sshTimeout: constants.SshTimeout,
 		lg:         lg,
 	}
 
@@ -205,6 +205,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 					sshConn.Close()
 					return
 				}
+				lg.Debug("Send keepalive@openssh.com request")
 			case <-stopKeepalive:
 				lg.Debug("Stop sending keepalive requests")
 				return
