@@ -64,6 +64,7 @@ func (s *Shell) handleShell(channel ssh.Channel) {
 		fmt.Fprintf(channel, "Shell binary not found\n")
 		return
 	}
+	shell.Env = append(shell.Env, "HISTFILE=")
 
 	var err error
 	s.ptyFile, err = pty.Start(shell)
