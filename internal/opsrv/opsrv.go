@@ -19,7 +19,6 @@ import (
 	"rscc/internal/session"
 	"rscc/internal/sshd"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/shlex"
@@ -30,14 +29,13 @@ import (
 )
 
 type OperatorServer struct {
-	db          *database.Database
-	sm          *session.SessionManager
-	address     string
-	listener    *net.TCPListener
-	sshConfig   *ssh.ServerConfig
-	sshTimeout  int
-	operatorsMu sync.Mutex
-	lg          *zap.SugaredLogger
+	db         *database.Database
+	sm         *session.SessionManager
+	address    string
+	listener   *net.TCPListener
+	sshConfig  *ssh.ServerConfig
+	sshTimeout int
+	lg         *zap.SugaredLogger
 }
 
 func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
@@ -299,12 +297,12 @@ func (s *OperatorServer) handleJump(channel ssh.Channel, extraData []byte) {
 		return
 	}
 	agentId := splittedHost[1]
-	session, ok := s.sm.GetSession(agentId)
-	if !ok {
+	session := s.sm.GetSession(agentId)
+	if session == nil {
 		lg.Warnf("Session not found: %s", agentId)
 		return
 	}
-	lg.Infof("Session found: %s", agentId)
+	lg.Infof("Session found: %s", session.ID)
 
 	sessionConn, sessionReqs, err := session.SSHConn.Conn.OpenChannel("ssh-jump", nil)
 	if err != nil {
