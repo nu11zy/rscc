@@ -1,7 +1,5 @@
 github.com/Ne0nd0g/go-clr v1.0.3 h1:xt92wwuqY23ZSC7RuHD3mKu3K22Bk5NNbxI803vojK4=
 github.com/Ne0nd0g/go-clr v1.0.3/go.mod h1:TKYSQ/5xT25EvBUttAlUrzpR8yHuI0qTRK495I5xG/I=
-github.com/atsika/myproc v0.0.0-20240408133251-c4c8b33fc949 h1:zhQIY5gl3VJPR6EAC0ykbfL3CpyhJIkbST5FOJgUVGM=
-github.com/atsika/myproc v0.0.0-20240408133251-c4c8b33fc949/go.mod h1:/D2XOg/a3Uf8O/rgwZsY5tBWcdw5I6gGGMvoBOYuBZ8=
 github.com/aymanbagabas/go-pty v0.2.2 h1:YZREB4eSj+1xdbbItIokX0ekjjeifgJOA+ZvxU4/WM8=
 github.com/aymanbagabas/go-pty v0.2.2/go.mod h1:gfvlwH+0U66BCwxJREjJaAOEs9H1OFf3YFjI9WSiZ04=
 github.com/creack/pty v1.1.24 h1:bJrF4RRfyJnbTJqzRLHzcGaZK1NeM5kTC9jGgovnR1s=

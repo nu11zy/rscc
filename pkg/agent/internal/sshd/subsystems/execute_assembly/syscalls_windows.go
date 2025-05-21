@@ -1,6 +1,6 @@
 package executeassembly
 
-//go:generate go run github.com/atsika/mkwinsyscall@latest -output zsyscalls_windows.go syscalls_windows.go
+//go:generate go run golang.org/x/sys/windows/mkwinsyscall@latest -output zsyscalls_windows.go syscalls_windows.go
 
 //sys VirtualAllocEx(hProcess windows.Handle, lpAddress uintptr, dwSize uintptr, flAllocationType uint32, flProtect uint32) (addr uintptr, err error) = kernel32.VirtualAllocEx
 //sys WriteProcessMemory(hProcess windows.Handle, lpBaseAddress uintptr, lpBuffer *byte, nSize uintptr, lpNumberOfBytesWritten *uintptr) (err error) = kernel32.WriteProcessMemory
