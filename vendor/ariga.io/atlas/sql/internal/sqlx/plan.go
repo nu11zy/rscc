@@ -390,14 +390,6 @@ type SortOptions struct {
 	FuncDepV func(*schema.Func, *schema.View) bool
 	// FuncDepO reports if a function depends on the given object.
 	FuncDepO func(*schema.Func, schema.Object) bool
-	// ProcDepT reports if a procedure depends on the given table.
-	ProcDepT func(*schema.Proc, *schema.Table) bool
-	// ProcDepO reports if a procedure depends on the given object.
-	ProcDepO func(*schema.Proc, schema.Object) bool
-	// ViewDepT reports if a view depends on the given table.
-	ViewDepT func(*schema.View, *schema.Table) bool
-	// CompareFuncArgs set to true to compare function arguments.
-	CompareFuncArgs bool
 	// DefaultSchema defines the default schema (also known as "search_path") that
 	// is used by the database to search for objects if no qualifier is provided.
 	DefaultSchema string
@@ -422,17 +414,11 @@ func SortChanges(changes []schema.Change, opts *SortOptions) []schema.Change {
 	// To keep backwards compatibility with previous sorting and also in case we miss any dependency between changes
 	// (see, dependsOn function) we push views and drop changes to the end, unless there is a dependency requirement.
 	changes = append(other, append(views, drop...)...)
-	var (
-		hasE  = make(map[struct{ e1, e2 schema.Change }]bool)
-		edges = make(map[schema.Change][]schema.Change)
-	)
+	edges := make(map[schema.Change][]schema.Change)
 	for _, c1 := range changes {
 		for _, c2 := range changes {
-			// Skip checking dependencies between the same change. Also, if the inverse
-			// dependency is already added, skip it, as circular dependencies are not expected.
-			if c1 != c2 && !hasE[struct{ e1, e2 schema.Change }{c2, c1}] && dependsOn(c1, c2, V(opts)) {
+			if c1 != c2 && dependsOn(c1, c2, V(opts)) {
 				edges[c1] = append(edges[c1], c2)
-				hasE[struct{ e1, e2 schema.Change }{c1, c2}] = true
 			}
 		}
 	}
@@ -473,8 +459,7 @@ type (
 	// RowTyper can be implemented by a type to determine if its source
 	// is a regular table (e.g., row types).
 	RowTyper interface {
-		RowTypeT() *schema.Table
-		RowTypeV() *schema.View
+		RowType() *schema.Table
 	}
 )
 
@@ -595,14 +580,20 @@ func refTo(fks []*schema.ForeignKey, to *schema.Table) bool {
 	})
 }
 
-// typeDependsOnT reports if the declaration of type "t" depends on the table.
+// typeDependsOnT reports if the declaration of type t1 depends on the given change.
 func typeDependsOnT(t schema.Type, tt *schema.Table) bool {
 	rt, ok := schema.UnderlyingType(t).(RowTyper)
 	if !ok {
 		return false
 	}
-	rowT := rt.RowTypeT()
-	return rowT != nil && SameTable(rowT, tt)
+	return SameTable(rt.RowType(), tt)
+}
+
+// dependsOnT reports if t1 depends on t2.
+func dependsOnT(t1, t2 schema.Type) bool {
+	// Comparing might panic due to mismatch types.
+	defer func() { recover() }()
+	return t1 == t2 || schema.UnderlyingType(t1) == t2
 }
 
 // SameView reports if the two objects represent the same view.

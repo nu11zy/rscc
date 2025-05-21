@@ -70,6 +70,7 @@ func ValidateSybsystem(ss string) bool {
 		"kill",
 		"pscan",
 		"pfwd",
+		"executeassembly",
 	}
 
 	return slices.Contains(validSS, ss)

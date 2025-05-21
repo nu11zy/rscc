@@ -23,6 +23,8 @@ type (
 	crdbInspect struct{ inspect }
 	noLocker    interface {
 		migrate.Driver
+		migrate.Snapshoter
+		migrate.CleanChecker
 		schema.Normalizer
 	}
 	noLockDriver struct {

@@ -53,9 +53,10 @@ type (
 
 	// Column holds a specification for a column in an SQL table.
 	Column struct {
-		Name string          `spec:",name"`
-		Null bool            `spec:"null"`
-		Type *schemahcl.Type `spec:"type"`
+		Name    string          `spec:",name"`
+		Null    bool            `spec:"null"`
+		Type    *schemahcl.Type `spec:"type"`
+		Default cty.Value       `spec:"default"`
 		schemahcl.DefaultExtension
 		Range *hcl.Range `spec:",range"`
 	}
