@@ -46,7 +46,9 @@ type (
 )
 
 var _ interface {
+	migrate.Snapshoter
 	migrate.StmtScanner
+	migrate.CleanChecker
 	schema.TypeParseFormatter
 } = (*Driver)(nil)
 

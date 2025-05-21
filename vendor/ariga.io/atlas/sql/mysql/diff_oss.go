@@ -35,15 +35,6 @@ type diff struct {
 	}
 }
 
-// SupportChange reports if the change is supported by the differ.
-func (*diff) SupportChange(c schema.Change) bool {
-	switch c.(type) {
-	case *schema.RenameConstraint:
-		return false
-	}
-	return true
-}
-
 // SchemaAttrDiff returns a changeset for migrating schema attributes from one state to the other.
 func (d *diff) SchemaAttrDiff(from, to *schema.Schema) []schema.Change {
 	var (
@@ -272,33 +263,33 @@ func (d *diff) Normalize(from, to *schema.Table, opts *schema.DiffOptions) error
 
 // FindTable implements the DiffDriver.TableFinder method in order to provide
 // tables lookup that respect the "lower_case_table_names" system variable.
-func (d *diff) FindTable(s *schema.Schema, t1 *schema.Table) (*schema.Table, error) {
+func (d *diff) FindTable(s *schema.Schema, name string) (*schema.Table, error) {
 	switch d.lcnames {
 	// In mode 0: tables are stored as specified, and comparisons are case-sensitive.
 	case 0:
-		t2, ok := s.Table(t1.Name)
+		t, ok := s.Table(name)
 		if !ok {
-			return nil, &schema.NotExistError{Err: fmt.Errorf("table %q was not found", t1.Name)}
+			return nil, &schema.NotExistError{Err: fmt.Errorf("table %q was not found", name)}
 		}
-		return t2, nil
+		return t, nil
 	// In mode 1: the table are stored in lowercase, but they are still
 	// returned on inspection, because comparisons are not case-sensitive.
 	// In mode 2: the tables are stored as given but compared in lowercase.
 	// This option is not supported by Linux-based systems.
 	case 1, 2:
 		var matches []*schema.Table
-		for _, t2 := range s.Tables {
-			if strings.ToLower(t2.Name) == strings.ToLower(t1.Name) {
-				matches = append(matches, t2)
+		for _, t := range s.Tables {
+			if strings.ToLower(name) == strings.ToLower(t.Name) {
+				matches = append(matches, t)
 			}
 		}
 		switch n := len(matches); n {
 		case 0:
-			return nil, &schema.NotExistError{Err: fmt.Errorf("table %q was not found", t1.Name)}
+			return nil, &schema.NotExistError{Err: fmt.Errorf("table %q was not found", name)}
 		case 1:
 			return matches[0], nil
 		default:
-			return nil, fmt.Errorf("%d matches found for table %q", n, t1.Name)
+			return nil, fmt.Errorf("%d matches found for table %q", n, name)
 		}
 	default:
 		return nil, fmt.Errorf("unsupported 'lower_case_table_names' mode: %d", d.lcnames)

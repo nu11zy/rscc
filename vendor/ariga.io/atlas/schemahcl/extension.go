@@ -362,10 +362,7 @@ func setPtr(field reflect.Value, cv cty.Value) error {
 		}
 		switch t := cv.EncapsulatedValue().(type) {
 		case *RawExpr:
-			field.Set(reflect.ValueOf(&Type{
-				T:     t.X,
-				IsRaw: true,
-			}))
+			field.Set(reflect.ValueOf(&Type{T: t.X}))
 			return nil
 		case *Ref:
 			field.Set(reflect.ValueOf(&Type{
@@ -452,10 +449,8 @@ func (r *Resource) Scan(ext any) error {
 	}
 	v := indirect(reflect.ValueOf(ext))
 	for _, ft := range specFields(ext) {
-		if !ft.IsExported() {
-			continue
-		}
-		switch field := v.FieldByName(ft.Name); {
+		field := v.FieldByName(ft.Name)
+		switch {
 		case ft.omitempty() && isEmpty(field):
 		case ft.isName():
 			if field.Kind() != reflect.String {

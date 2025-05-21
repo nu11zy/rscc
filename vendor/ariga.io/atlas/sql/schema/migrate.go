@@ -249,7 +249,6 @@ type (
 	ModifyIndex struct {
 		From, To *Index
 		Change   ChangeKind
-		Extra    []Clause // Extra clauses and options.
 	}
 
 	// RenameIndex describes an index rename change.
@@ -306,11 +305,6 @@ type (
 	ModifyCheck struct {
 		From, To *Check
 		Change   ChangeKind
-	}
-
-	// RenameConstraint describes an constraint rename change.
-	RenameConstraint struct {
-		From, To Object // PK, FK, Unique, Check, etc.
 	}
 
 	// AddAttr describes an attribute addition.
@@ -694,7 +688,6 @@ func (*RenameColumn) change()     {}
 func (*AddForeignKey) change()    {}
 func (*DropForeignKey) change()   {}
 func (*ModifyForeignKey) change() {}
-func (*RenameConstraint) change() {}
 
 // clauses.
 func (*IfExists) clause()    {}

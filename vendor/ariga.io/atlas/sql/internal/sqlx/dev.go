@@ -17,7 +17,11 @@ import (
 // to interact with the development database.
 type DevDriver struct {
 	// A Driver connected to the dev database.
-	Driver migrate.Driver
+	Driver interface {
+		migrate.Driver
+		migrate.CleanChecker
+		migrate.Snapshoter
+	}
 	// PathObject allows providing a custom function to patch
 	// objects that hold a schema reference.
 	PatchObject func(*schema.Schema, schema.Object)

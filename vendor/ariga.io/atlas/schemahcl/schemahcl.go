@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -33,7 +32,6 @@ type (
 		validator        func() SchemaValidator
 		datasrc, initblk map[string]BlockFunc
 		typedblk         map[string]map[string]BlockFunc
-		lazyattrs        map[string]bool
 		// Optional context to pass to dynamic block handlers,
 		// such as data-sources, type-blocks, etc.
 		ctx     context.Context
@@ -613,13 +611,6 @@ func (s *State) toAttrs(ctx *hcl.EvalContext, opts *EvalOptions, hclAttrs hclsyn
 			scope = append(scope, hclAttr.Name)
 			nctx  = s.mayScopeContext(ctx, scope)
 		)
-		if path := strings.Join(scope, "."); s.config.lazyattrs[path] {
-			if err := opts.Validator.ValidateAttribute(ctx, hclAttr, ExprValue(hclAttr.Expr)); err != nil {
-				return nil, err
-			}
-			attrs = append(attrs, LazyExprAttr(nctx, hclAttr))
-			continue
-		}
 		value, diag := hclAttr.Expr.Value(nctx)
 		if diag.HasErrors() {
 			return nil, s.typeError(diag, scope)
@@ -654,7 +645,7 @@ func (s *State) toAttrs(ctx *hcl.EvalContext, opts *EvalOptions, hclAttrs hclsyn
 					}
 					v = cty.CapsuleVal(ctyRefType, &Ref{V: v.GetAttr("__ref").AsString()})
 				}
-				if vt != cty.NilType && !vt.Equals(v.Type()) {
+				if vt != cty.NilType && vt != v.Type() {
 					return nil, fmt.Errorf("%s: mixed list types used in %q attribute", hclAttr.SrcRange, hclAttr.Name)
 				}
 				vt = v.Type()
@@ -931,7 +922,7 @@ func (s *State) writeAttr(attr *Attr, body *hclwrite.Body) error {
 			body.SetAttributeRaw(attr.K, hclwrite.Tokens{
 				&hclwrite.Token{
 					Type:  hclsyntax.TokenOHeredoc,
-					Bytes: escapedHeredoc(attr.V.AsString()),
+					Bytes: []byte(attr.V.AsString()),
 				},
 			})
 		} else {
@@ -941,22 +932,6 @@ func (s *State) writeAttr(attr *Attr, body *hclwrite.Body) error {
 		body.SetAttributeValue(attr.K, attr.V)
 	}
 	return nil
-}
-
-// escapedHeredoc escapes template introducer symbol when marshaling heredoc.
-// See: hcl/hclwrite#escapeQuotedStringLit for reference.
-func escapedHeredoc(s string) []byte {
-	var b bytes.Buffer
-	for i, r := range s {
-		switch r {
-		case '$', '%':
-			if i < len(s)-1 && s[i+1] == '{' {
-				b.WriteRune(r)
-			}
-		}
-		b.WriteRune(r)
-	}
-	return b.Bytes()
 }
 
 func (s *State) findTypeSpec(t string) (*TypeSpec, bool) {
@@ -1225,73 +1200,4 @@ func typeFuncReqArgs(spec *TypeSpec) []*TypeAttr {
 		}
 	}
 	return args
-}
-
-// UseTraversal determines if the given attribute use the given traversal.
-func UseTraversal(x hclsyntax.Expression, tr hcl.Traversal) bool {
-	switch x := x.(type) {
-	case nil:
-		return false
-	case *hclsyntax.TemplateWrapExpr:
-		return UseTraversal(x.Wrapped, tr)
-	case *hclsyntax.TemplateJoinExpr:
-		return UseTraversal(x.Tuple, tr)
-	case *hclsyntax.TemplateExpr:
-		if slices.ContainsFunc(x.Parts, func(p hclsyntax.Expression) bool {
-			return UseTraversal(p, tr)
-		}) {
-			return true
-		}
-	case *hclsyntax.ConditionalExpr:
-		for _, x1 := range []hclsyntax.Expression{x.Condition, x.TrueResult, x.FalseResult} {
-			if UseTraversal(x1, tr) {
-				return true
-			}
-		}
-	case *hclsyntax.FunctionCallExpr:
-		if slices.ContainsFunc(x.Args, func(a hclsyntax.Expression) bool {
-			return UseTraversal(a, tr)
-		}) {
-			return true
-		}
-	case *hclsyntax.ScopeTraversalExpr:
-		if len(x.Traversal) != len(tr) {
-			return false
-		}
-		if len(x.Traversal) == 0 {
-			return true
-		}
-		r1, ok1 := x.Traversal[0].(hcl.TraverseRoot)
-		r2, ok2 := tr[0].(hcl.TraverseRoot)
-		if !ok1 || !ok2 || r1.Name != r2.Name {
-			return false
-		}
-		for i := 1; i < len(x.Traversal); i++ {
-			t1, ok1 := x.Traversal[i].(hcl.TraverseAttr)
-			t2, ok2 := tr[i].(hcl.TraverseAttr)
-			if !ok1 || !ok2 || t1.Name != t2.Name {
-				return false
-			}
-		}
-		return true
-	case *hclsyntax.RelativeTraversalExpr:
-		return UseTraversal(x.Source, tr)
-	case *hclsyntax.BinaryOpExpr:
-		return UseTraversal(x.LHS, tr) || UseTraversal(x.RHS, tr)
-	case *hclsyntax.UnaryOpExpr:
-		return UseTraversal(x.Val, tr)
-	case *hclsyntax.TupleConsExpr:
-		for _, e := range x.Exprs {
-			if UseTraversal(e, tr) {
-				return true
-			}
-		}
-	case *hclsyntax.ObjectConsExpr:
-		for _, item := range x.Items {
-			if UseTraversal(item.KeyExpr, tr) || UseTraversal(item.ValueExpr, tr) {
-				return true
-			}
-		}
-	}
-	return false
 }

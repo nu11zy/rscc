@@ -28,15 +28,6 @@ var DefaultDiff schema.Differ = &sqlx.Diff{DiffDriver: &diff{&conn{ExecQuerier: 
 // A diff provides a PostgreSQL implementation for sqlx.DiffDriver.
 type diff struct{ *conn }
 
-// SupportChange reports if the change is supported by the differ.
-func (*diff) SupportChange(c schema.Change) bool {
-	switch c.(type) {
-	case *schema.RenameConstraint:
-		return false
-	}
-	return true
-}
-
 // SchemaAttrDiff returns a changeset for migrating schema attributes from one state to the other.
 func (d *diff) SchemaAttrDiff(from, to *schema.Schema) []schema.Change {
 	var (
@@ -303,17 +294,17 @@ type DiffOptions struct {
 }
 
 // AnnotateChanges implements the sqlx.ChangeAnnotator interface.
-func (*diff) AnnotateChanges(changes []schema.Change, opts *schema.DiffOptions) ([]schema.Change, error) {
+func (*diff) AnnotateChanges(changes []schema.Change, opts *schema.DiffOptions) error {
 	var extra DiffOptions
 	switch ex := opts.Extra.(type) {
 	case nil:
-		return changes, nil
+		return nil
 	case schemahcl.DefaultExtension:
 		if err := ex.Extra.As(&extra); err != nil {
-			return nil, err
+			return err
 		}
 	default:
-		return nil, fmt.Errorf("postgres: unexpected DiffOptions.Extra type %T", opts.Extra)
+		return fmt.Errorf("postgres: unexpected DiffOptions.Extra type %T", opts.Extra)
 	}
 	for _, c := range changes {
 		m, ok := c.(*schema.ModifyTable)
@@ -333,7 +324,7 @@ func (*diff) AnnotateChanges(changes []schema.Change, opts *schema.DiffOptions) 
 			}
 		}
 	}
-	return changes, nil
+	return nil
 }
 
 func (d *diff) typeChanged(from, to *schema.Column) (bool, error) {
