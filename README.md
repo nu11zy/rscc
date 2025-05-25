@@ -52,19 +52,17 @@ make build
 
 ## Usage
 
-Before you start, you need to create admin user:
+### Server
+
+1. Add your public key to `authorized_keys` file in the current directory or `~/.ssh/authorized_keys`.
+
+2. Start **RSCC** server:
 
 ```sh
-./rscc admin -n <username> -k <public_key>
+./rscc
 ```
 
-Now you can start RSCC server:
-
-```sh
-./rscc start
-```
-
-After that, you need to update your SSH config (for example, `~/.ssh/config`):
+3. Update your SSH config (for example, `~/.ssh/config`):
 
 ```yml
 # Server config
@@ -80,22 +78,38 @@ Host rscc+*
   StrictHostKeyChecking no
 ```
 
-Now you can connect to RSCC server and generate agents or add operators:
+4. Connect to **RSCC** server:
 
 ```sh
 ssh rscc
 ```
 
-After agent is executed, you can connect to it:
+5. Generate agent (see `--help` for more options):
 
 ```sh
-ssh rscc+session_id
+rscc > agent generate -s "127.0.0.1:8080"
 ```
 
-**TIP:** You can quickly get `session_id` from RSCC server:
+6. Download agent to your machine (*web delivery is coming soon*):
+
+```sh
+scp rscc:/path/to/agent /path/to/local/file
+```
+
+### Target
+
+1. Drop agent to target machine and execute it:
+
+2. Get agent's session ID:
 
 ```sh
 ssh rscc session list
+```
+
+3. Connect to agent:
+
+```sh
+ssh rscc+session_id
 ```
 
 ### More examples
