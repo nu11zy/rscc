@@ -179,28 +179,6 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, incomingKey ss
 		}
 	}
 
-	// user, err := s.db.GetOperatorByName(ctx, conn.User())
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to get user: %w", err)
-	// }
-	// if user == nil {
-	// 	return nil, fmt.Errorf("user not found")
-	// }
-
-	// marshaledKey := string(ssh.MarshalAuthorizedKey(key))
-	// if user.PublicKey != strings.TrimSpace(marshaledKey) {
-	// 	s.lg.Warnf("User %s (%s) tried to connect with invalid key", conn.User(), conn.RemoteAddr())
-	// 	return nil, fmt.Errorf("invalid key")
-	// }
-
-	// if user.IsAdmin {
-	// 	return &ssh.Permissions{
-	// 		CriticalOptions: map[string]string{
-	// 			"admin": "admin",
-	// 		},
-	// 	}, nil
-	// }
-
 	s.lg.Warnf("User %s (%s) tried to connect with invalid key", conn.User(), conn.RemoteAddr())
 	return nil, fmt.Errorf("invalid key")
 }
@@ -382,6 +360,18 @@ func (s *OperatorServer) handleSession(lg *zap.SugaredLogger, channel *sshd.Exte
 			terminal = term.NewTerminal(channel, "")
 			go s.handleExec(subLg, channel, terminal, string(req.Payload[4:]))
 			req.Reply(true, nil)
+		case "subsystem":
+			subLg := lg.Named("subsystem")
+			system := string(req.Payload[4:])
+			subLg.Debugf("Subsystem request received: %s", system)
+
+			if system == "sftp" {
+				go sftpHandler(subLg, channel)
+				req.Reply(true, nil)
+			} else {
+				subLg.Warnf("Subsystem not supported: %s", system)
+				req.Reply(false, nil)
+			}
 		default:
 			lg.Warnf("Unsupported session request: %s", req.Type)
 			req.Reply(false, nil)

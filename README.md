@@ -93,7 +93,7 @@ rscc > agent generate -s "127.0.0.1:8080"
 6. Download agent to your machine (*web delivery is coming soon*):
 
 ```sh
-scp rscc:/path/to/agent /path/to/local/file
+scp rscc:<agent_name> /path/to/local/file
 ```
 
 ### Target
