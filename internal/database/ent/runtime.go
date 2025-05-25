@@ -5,7 +5,6 @@ package ent
 import (
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
-	"rscc/internal/database/ent/operator"
 	"rscc/internal/database/ent/schema"
 	"rscc/internal/database/ent/session"
 	"time"
@@ -83,24 +82,6 @@ func init() {
 	listenerDescID := listenerFields[0].Descriptor()
 	// listener.DefaultID holds the default value on creation for the id field.
 	listener.DefaultID = listenerDescID.Default.(func() string)
-	operatorFields := schema.Operator{}.Fields()
-	_ = operatorFields
-	// operatorDescName is the schema descriptor for name field.
-	operatorDescName := operatorFields[1].Descriptor()
-	// operator.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	operator.NameValidator = operatorDescName.Validators[0].(func(string) error)
-	// operatorDescPublicKey is the schema descriptor for public_key field.
-	operatorDescPublicKey := operatorFields[3].Descriptor()
-	// operator.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
-	operator.PublicKeyValidator = operatorDescPublicKey.Validators[0].(func(string) error)
-	// operatorDescIsAdmin is the schema descriptor for is_admin field.
-	operatorDescIsAdmin := operatorFields[4].Descriptor()
-	// operator.DefaultIsAdmin holds the default value on creation for the is_admin field.
-	operator.DefaultIsAdmin = operatorDescIsAdmin.Default.(bool)
-	// operatorDescID is the schema descriptor for id field.
-	operatorDescID := operatorFields[0].Descriptor()
-	// operator.DefaultID holds the default value on creation for the id field.
-	operator.DefaultID = operatorDescID.Default.(func() string)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescCreatedAt is the schema descriptor for created_at field.

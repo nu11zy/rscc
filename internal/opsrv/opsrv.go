@@ -1,11 +1,14 @@
 package opsrv
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/network"
@@ -14,7 +17,6 @@ import (
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/opsrv/cmd/agentcmd"
-	"rscc/internal/opsrv/cmd/operatorcmd"
 	"rscc/internal/opsrv/cmd/sessioncmd"
 	"rscc/internal/session"
 	"rscc/internal/sshd"
@@ -146,33 +148,61 @@ func (l *OperatorServer) CloseListener() error {
 }
 
 // publicKeyCallback is used to authenticate SSH connections
-func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	user, err := s.db.GetOperatorByName(ctx, conn.User())
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user: %w", err)
-	}
-	if user == nil {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	marshaledKey := string(ssh.MarshalAuthorizedKey(key))
-	if user.PublicKey != strings.TrimSpace(marshaledKey) {
-		s.lg.Warnf("User %s (%s) tried to connect with invalid key", conn.User(), conn.RemoteAddr())
-		return nil, fmt.Errorf("invalid key")
-	}
-
-	if user.IsAdmin {
-		return &ssh.Permissions{
-			CriticalOptions: map[string]string{
-				"admin": "admin",
-			},
-		}, nil
+func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, incomingKey ssh.PublicKey) (*ssh.Permissions, error) {
+	// Read authorized_keys from current directory or ~/.ssh/authorized_keys
+	var authorizedKeys []byte
+	if _, err := os.Stat("authorized_keys"); err == nil {
+		authorizedKeys, err = os.ReadFile("authorized_keys")
+		if err != nil {
+			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+		}
+	} else if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")); err == nil {
+		authorizedKeys, err = os.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+		}
+	} else {
+		return nil, fmt.Errorf("authorized_keys file not found")
 	}
 
-	return &ssh.Permissions{}, nil
+	// Parse authorized_keys
+	for len(authorizedKeys) > 0 {
+		storedKey, _, _, rest, err := ssh.ParseAuthorizedKey(authorizedKeys)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse authorized_keys: %w", err)
+		}
+		authorizedKeys = rest
+
+		if bytes.Equal(storedKey.Marshal(), incomingKey.Marshal()) {
+			s.lg.Infof("User %s (%s) successfully authenticated", conn.User(), conn.RemoteAddr())
+			return &ssh.Permissions{}, nil
+		}
+	}
+
+	// user, err := s.db.GetOperatorByName(ctx, conn.User())
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to get user: %w", err)
+	// }
+	// if user == nil {
+	// 	return nil, fmt.Errorf("user not found")
+	// }
+
+	// marshaledKey := string(ssh.MarshalAuthorizedKey(key))
+	// if user.PublicKey != strings.TrimSpace(marshaledKey) {
+	// 	s.lg.Warnf("User %s (%s) tried to connect with invalid key", conn.User(), conn.RemoteAddr())
+	// 	return nil, fmt.Errorf("invalid key")
+	// }
+
+	// if user.IsAdmin {
+	// 	return &ssh.Permissions{
+	// 		CriticalOptions: map[string]string{
+	// 			"admin": "admin",
+	// 		},
+	// 	}, nil
+	// }
+
+	s.lg.Warnf("User %s (%s) tried to connect with invalid key", conn.User(), conn.RemoteAddr())
+	return nil, fmt.Errorf("invalid key")
 }
 
 // handleConnection handles new SSH connection
@@ -188,6 +218,10 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	// create new SSH connection
 	sshConn, chans, reqs, err := ssh.NewServerConn(timeoutConn, s.sshConfig)
 	if err != nil {
+		if strings.Contains(err.Error(), "authorized_keys file not found") {
+			lg.Error("SSH handshake failed: authorized_keys file not found. Please create one in the current directory or ~/.ssh/authorized_keys")
+			return
+		}
 		lg.Errorf("SSH handshake failed: %v", err)
 		return
 	}
@@ -219,27 +253,8 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	}()
 
 	lg.Infof("New SSH connection from %s (%s)", sshConn.RemoteAddr().String(), sshConn.ClientVersion())
-
-	operatorSession := &sshd.OperatorSession{
-		Username:    sshConn.User(),
-		Permissions: sshConn.Permissions,
-	}
-
-	// Get operator and update last login
-	dbCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	operator, err := s.db.GetOperatorByName(dbCtx, sshConn.User())
-	if err != nil {
-		lg.Errorf("Failed to get operator: %v", err)
-		return
-	}
-	_, err = operator.Update().SetLastLogin(time.Now()).Save(dbCtx)
-	if err != nil {
-		lg.Errorf("Failed to update operator last login: %v", err)
-	}
-
 	go ssh.DiscardRequests(reqs)
-	s.handleChannels(lg, chans, operatorSession)
+	s.handleChannels(lg, chans)
 
 	// stop keepalive process
 	stopKeepalive <- struct{}{}
@@ -248,7 +263,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 }
 
 // handleChannels handles SSH channels
-func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan ssh.NewChannel, operatorSession *sshd.OperatorSession) {
+func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan ssh.NewChannel) {
 	for newChannel := range channels {
 		lg.Debugf("Requested channel: %s", newChannel.ChannelType())
 		switch newChannel.ChannelType() {
@@ -259,7 +274,7 @@ func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan s
 				lg.Errorf("Failed to accept channel: %v", err)
 				continue
 			}
-			channel := sshd.NewExtendedChannel(rawChannel, operatorSession)
+			channel := sshd.NewExtendedChannel(rawChannel)
 			go s.handleSession(subLg, channel, request)
 		case "direct-tcpip":
 			subLg := lg.Named("direct-tcpip")
@@ -380,7 +395,7 @@ func (s *OperatorServer) handleExec(lg *zap.SugaredLogger, channel *sshd.Extende
 
 	lg.Debugf("Executing command: %s", command)
 
-	app := s.newCli(terminal, channel.Operator)
+	app := s.newCli(terminal)
 	app.SetArgs(strings.Fields(command))
 
 	if err := app.Execute(); err != nil {
@@ -398,7 +413,7 @@ func (s *OperatorServer) handleShell(lg *zap.SugaredLogger, channel *sshd.Extend
 	terminal.Write([]byte(pprint.GetBanner()))
 
 	for {
-		cli := s.newCli(terminal, channel.Operator)
+		cli := s.newCli(terminal)
 
 		line, err := terminal.ReadLine()
 		if err != nil {
@@ -431,7 +446,7 @@ func (s *OperatorServer) handleShell(lg *zap.SugaredLogger, channel *sshd.Extend
 }
 
 // newCli creates new CLI instance for operator
-func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.OperatorSession) *cobra.Command {
+func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app := &cobra.Command{
 		Use:                "rscc",
 		Short:              "Reverse SSH command & control",
@@ -461,6 +476,5 @@ func (s *OperatorServer) newCli(terminal *term.Terminal, operatorSession *sshd.O
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
 	app.AddCommand(agentcmd.NewAgentCmd(s.db).Command)
-	app.AddCommand(operatorcmd.NewOperatorCmd(s.db, operatorSession).Command)
 	return app
 }

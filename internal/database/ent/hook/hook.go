@@ -32,18 +32,6 @@ func (f ListenerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ListenerMutation", m)
 }
 
-// The OperatorFunc type is an adapter to allow the use of ordinary
-// function as Operator mutator.
-type OperatorFunc func(context.Context, *ent.OperatorMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OperatorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OperatorMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OperatorMutation", m)
-}
-
 // The SessionFunc type is an adapter to allow the use of ordinary
 // function as Session mutator.
 type SessionFunc func(context.Context, *ent.SessionMutation) (ent.Value, error)

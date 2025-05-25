@@ -43,20 +43,6 @@ var (
 		Columns:    ListenersColumns,
 		PrimaryKey: []*schema.Column{ListenersColumns[0]},
 	}
-	// OperatorsColumns holds the columns for the "operators" table.
-	OperatorsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString, Unique: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
-		{Name: "last_login", Type: field.TypeTime, Nullable: true},
-		{Name: "public_key", Type: field.TypeString},
-		{Name: "is_admin", Type: field.TypeBool, Default: false},
-	}
-	// OperatorsTable holds the schema information for the "operators" table.
-	OperatorsTable = &schema.Table{
-		Name:       "operators",
-		Columns:    OperatorsColumns,
-		PrimaryKey: []*schema.Column{OperatorsColumns[0]},
-	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
@@ -81,7 +67,6 @@ var (
 	Tables = []*schema.Table{
 		AgentsTable,
 		ListenersTable,
-		OperatorsTable,
 		SessionsTable,
 	}
 )
