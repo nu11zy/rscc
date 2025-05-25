@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -44,41 +43,25 @@ func main() {
 	defer lg.Sync()
 	ctx = logger.WithLogger(ctx, lg)
 
-	appRoot := &cobra.Command{
-		Use:               "rscc [command]",
-		Short:             "Reverse SSH command & control",
-		PersistentPreRunE: preRun,
+	// Initialize root command
+	root := &cobra.Command{
+		Use:     "rscc",
+		Short:   "Reverse SSH command & control",
+		PreRunE: preRun,
+		RunE:    run,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
 		SilenceUsage: true,
 	}
-	appRoot.PersistentFlags().StringVar(&dbPath, "db", "rscc.db", "database path")
-	appRoot.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug mode")
+	root.Flags().IntVar(&operatorPort, "op", 55022, "operator listener port")
+	root.Flags().StringVar(&operatorHost, "oh", "0.0.0.0", "operator listener host")
+	root.Flags().IntVar(&agentPort, "ap", 8080, "agent listener port")
+	root.Flags().StringVar(&agentHost, "ah", "0.0.0.0", "agent listener host")
+	root.Flags().StringVar(&dbPath, "db", "rscc.db", "database path")
+	root.Flags().BoolVar(&debug, "debug", false, "enable debug mode")
 
-	appAdmin := &cobra.Command{
-		Use:   "admin [flags]",
-		Short: "Create new admin",
-		RunE:  adminCmd,
-	}
-	appAdmin.Flags().StringVarP(&operatorName, "name", "n", "", "operator name")
-	appAdmin.Flags().StringVarP(&publicKey, "key", "k", "", "operator public key")
-	appAdmin.MarkFlagRequired("name")
-	appAdmin.MarkFlagRequired("key")
-	appRoot.AddCommand(appAdmin)
-
-	appStart := &cobra.Command{
-		Use:   "start [flags]",
-		Short: "Start rscc",
-		RunE:  startCmd,
-	}
-	appStart.Flags().IntVar(&operatorPort, "op", 55022, "operator listener port")
-	appStart.Flags().StringVar(&operatorHost, "oh", "0.0.0.0", "operator listener host")
-	appStart.Flags().IntVar(&agentPort, "ap", 5522, "agent listener port")
-	appStart.Flags().StringVar(&agentHost, "ah", "0.0.0.0", "agent listener host")
-	appRoot.AddCommand(appStart)
-
-	if err := appRoot.ExecuteContext(ctx); err != nil {
+	if err := root.ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
 }
@@ -90,27 +73,7 @@ func preRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func adminCmd(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
-	lg := logger.FromContext(ctx)
-
-	db, err := database.NewDatabase(ctx, dbPath)
-	if err != nil {
-		lg.Errorf("Failed to initialize database: %v", err)
-		return err
-	}
-
-	user, err := db.CreateOperator(ctx, operatorName, publicKey, true)
-	if err != nil {
-		lg.Errorf("Failed to add operator: %v", err)
-		return err
-	}
-
-	lg.Infof("New admin operator `%s` with id `%s` created", user.Name, user.ID)
-	return nil
-}
-
-func startCmd(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	lg := logger.FromContext(ctx)
 
@@ -119,17 +82,6 @@ func startCmd(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		lg.Errorf("Failed to initialize database: %v", err)
 		return err
-	}
-
-	// Check if at least one operator exists
-	operators, err := db.GetAllOperators(ctx)
-	if err != nil {
-		lg.Errorf("Failed to get all operators: %v", err)
-		return err
-	}
-	if len(operators) == 0 {
-		lg.Error("Admin operator not found. Use `rscc admin` to create new admin operator.")
-		return errors.New("admin operator not found")
 	}
 
 	// Start session manager

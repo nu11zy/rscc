@@ -16,8 +16,6 @@ type Tx struct {
 	Agent *AgentClient
 	// Listener is the client for interacting with the Listener builders.
 	Listener *ListenerClient
-	// Operator is the client for interacting with the Operator builders.
-	Operator *OperatorClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 
@@ -153,7 +151,6 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Agent = NewAgentClient(tx.config)
 	tx.Listener = NewListenerClient(tx.config)
-	tx.Operator = NewOperatorClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
 }
 

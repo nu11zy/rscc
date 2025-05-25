@@ -6,22 +6,15 @@ type ExitStatus struct {
 	Status uint32
 }
 
-type OperatorSession struct {
-	Username    string
-	Permissions *ssh.Permissions
-}
-
 type ExtendedChannel struct {
 	ssh.Channel
 
-	Operator *OperatorSession
-	closed   bool
+	closed bool
 }
 
-func NewExtendedChannel(channel ssh.Channel, operator *OperatorSession) *ExtendedChannel {
+func NewExtendedChannel(channel ssh.Channel) *ExtendedChannel {
 	return &ExtendedChannel{
-		Channel:  channel,
-		Operator: operator,
+		Channel: channel,
 	}
 }
 

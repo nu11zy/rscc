@@ -13,7 +13,6 @@ import (
 
 	"rscc/internal/database/ent/agent"
 	"rscc/internal/database/ent/listener"
-	"rscc/internal/database/ent/operator"
 	"rscc/internal/database/ent/session"
 
 	"entgo.io/ent"
@@ -30,8 +29,6 @@ type Client struct {
 	Agent *AgentClient
 	// Listener is the client for interacting with the Listener builders.
 	Listener *ListenerClient
-	// Operator is the client for interacting with the Operator builders.
-	Operator *OperatorClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 }
@@ -47,7 +44,6 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Agent = NewAgentClient(c.config)
 	c.Listener = NewListenerClient(c.config)
-	c.Operator = NewOperatorClient(c.config)
 	c.Session = NewSessionClient(c.config)
 }
 
@@ -143,7 +139,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:   cfg,
 		Agent:    NewAgentClient(cfg),
 		Listener: NewListenerClient(cfg),
-		Operator: NewOperatorClient(cfg),
 		Session:  NewSessionClient(cfg),
 	}, nil
 }
@@ -166,7 +161,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:   cfg,
 		Agent:    NewAgentClient(cfg),
 		Listener: NewListenerClient(cfg),
-		Operator: NewOperatorClient(cfg),
 		Session:  NewSessionClient(cfg),
 	}, nil
 }
@@ -198,7 +192,6 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	c.Agent.Use(hooks...)
 	c.Listener.Use(hooks...)
-	c.Operator.Use(hooks...)
 	c.Session.Use(hooks...)
 }
 
@@ -207,7 +200,6 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Agent.Intercept(interceptors...)
 	c.Listener.Intercept(interceptors...)
-	c.Operator.Intercept(interceptors...)
 	c.Session.Intercept(interceptors...)
 }
 
@@ -218,8 +210,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Agent.mutate(ctx, m)
 	case *ListenerMutation:
 		return c.Listener.mutate(ctx, m)
-	case *OperatorMutation:
-		return c.Operator.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	default:
@@ -493,139 +483,6 @@ func (c *ListenerClient) mutate(ctx context.Context, m *ListenerMutation) (Value
 	}
 }
 
-// OperatorClient is a client for the Operator schema.
-type OperatorClient struct {
-	config
-}
-
-// NewOperatorClient returns a client for the Operator from the given config.
-func NewOperatorClient(c config) *OperatorClient {
-	return &OperatorClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `operator.Hooks(f(g(h())))`.
-func (c *OperatorClient) Use(hooks ...Hook) {
-	c.hooks.Operator = append(c.hooks.Operator, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `operator.Intercept(f(g(h())))`.
-func (c *OperatorClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Operator = append(c.inters.Operator, interceptors...)
-}
-
-// Create returns a builder for creating a Operator entity.
-func (c *OperatorClient) Create() *OperatorCreate {
-	mutation := newOperatorMutation(c.config, OpCreate)
-	return &OperatorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Operator entities.
-func (c *OperatorClient) CreateBulk(builders ...*OperatorCreate) *OperatorCreateBulk {
-	return &OperatorCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OperatorClient) MapCreateBulk(slice any, setFunc func(*OperatorCreate, int)) *OperatorCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OperatorCreateBulk{err: fmt.Errorf("calling to OperatorClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OperatorCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OperatorCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Operator.
-func (c *OperatorClient) Update() *OperatorUpdate {
-	mutation := newOperatorMutation(c.config, OpUpdate)
-	return &OperatorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OperatorClient) UpdateOne(o *Operator) *OperatorUpdateOne {
-	mutation := newOperatorMutation(c.config, OpUpdateOne, withOperator(o))
-	return &OperatorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OperatorClient) UpdateOneID(id string) *OperatorUpdateOne {
-	mutation := newOperatorMutation(c.config, OpUpdateOne, withOperatorID(id))
-	return &OperatorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Operator.
-func (c *OperatorClient) Delete() *OperatorDelete {
-	mutation := newOperatorMutation(c.config, OpDelete)
-	return &OperatorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OperatorClient) DeleteOne(o *Operator) *OperatorDeleteOne {
-	return c.DeleteOneID(o.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OperatorClient) DeleteOneID(id string) *OperatorDeleteOne {
-	builder := c.Delete().Where(operator.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OperatorDeleteOne{builder}
-}
-
-// Query returns a query builder for Operator.
-func (c *OperatorClient) Query() *OperatorQuery {
-	return &OperatorQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOperator},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Operator entity by its id.
-func (c *OperatorClient) Get(ctx context.Context, id string) (*Operator, error) {
-	return c.Query().Where(operator.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OperatorClient) GetX(ctx context.Context, id string) *Operator {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *OperatorClient) Hooks() []Hook {
-	return c.hooks.Operator
-}
-
-// Interceptors returns the client interceptors.
-func (c *OperatorClient) Interceptors() []Interceptor {
-	return c.inters.Operator
-}
-
-func (c *OperatorClient) mutate(ctx context.Context, m *OperatorMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OperatorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OperatorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OperatorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OperatorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Operator mutation op: %q", m.Op())
-	}
-}
-
 // SessionClient is a client for the Session schema.
 type SessionClient struct {
 	config
@@ -762,9 +619,9 @@ func (c *SessionClient) mutate(ctx context.Context, m *SessionMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Agent, Listener, Operator, Session []ent.Hook
+		Agent, Listener, Session []ent.Hook
 	}
 	inters struct {
-		Agent, Listener, Operator, Session []ent.Interceptor
+		Agent, Listener, Session []ent.Interceptor
 	}
 )
