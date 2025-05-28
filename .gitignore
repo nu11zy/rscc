@@ -1,6 +1,7 @@
 .DS_Store
 .vscode/
 bin/
+data/
 agents/
 *.db*
 *.zip

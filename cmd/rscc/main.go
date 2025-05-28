@@ -7,25 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"rscc/cmd/rscc/internal/cmd"
 	"rscc/internal/common/logger"
-	"rscc/internal/database"
-	"rscc/internal/listener"
-	"rscc/internal/opsrv"
-	"rscc/internal/session"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"golang.org/x/sync/errgroup"
-)
-
-var (
-	operatorPort int
-	operatorHost string
-	agentPort    int
-	agentHost    string
-	operatorName string
-	publicKey    string
-	dbPath       string
-	debug        bool
 )
 
 type Cmd struct{}
@@ -44,28 +30,31 @@ func main() {
 	ctx = logger.WithLogger(ctx, lg)
 
 	// Initialize root command
+	app := &cmd.Cmd{}
 	root := &cobra.Command{
 		Use:     "rscc",
 		Short:   "Reverse SSH command & control",
-		PreRunE: preRun,
-		RunE:    run,
+		PreRunE: app.Pre,
+		RunE:    app.Run,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
-		SilenceUsage: true,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
-	root.Flags().IntVar(&operatorPort, "op", 55022, "operator listener port")
-	root.Flags().StringVar(&operatorHost, "oh", "0.0.0.0", "operator listener host")
-	root.Flags().IntVar(&agentPort, "ap", 8080, "agent listener port")
-	root.Flags().StringVar(&agentHost, "ah", "0.0.0.0", "agent listener host")
-	root.Flags().StringVar(&dbPath, "db", "rscc.db", "database path")
-	root.Flags().BoolVar(&debug, "debug", false, "enable debug mode")
-
-	if err := root.ExecuteContext(ctx); err != nil {
+	// register flags
+	if err := app.RegisterFlags(root.PersistentFlags()); err != nil {
+		color.Red("%v", err)
 		os.Exit(1)
+	}
+	// execute program
+	if err := root.ExecuteContext(ctx); err != nil {
+		color.Red("%v", err)
+		os.Exit(2)
 	}
 }
 
+/*
 func preRun(cmd *cobra.Command, args []string) error {
 	if debug {
 		logger.SetDebug()
@@ -106,3 +95,4 @@ func run(cmd *cobra.Command, args []string) error {
 	g.Go(func() error { return agentListener.Start(ctx) })
 	return g.Wait()
 }
+*/

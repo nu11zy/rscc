@@ -31,20 +31,28 @@ import (
 	"golang.org/x/term"
 )
 
+// OperatorServerData holds related to operator's server settings
+type OperatorServerData struct {
+	Host     string
+	Port     int
+	BasePath string
+}
+
 type OperatorServer struct {
 	db         *database.Database
 	sm         *session.SessionManager
-	address    string
 	listener   *net.TCPListener
 	sshConfig  *ssh.ServerConfig
 	sshTimeout int
 	lg         *zap.SugaredLogger
+	data       *OperatorServerData
 }
 
-func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
+// NewOperatorServer returns prepared object of operator's server
+func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, data *OperatorServerData) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
 
-	address := net.JoinHostPort(host, strconv.Itoa(port))
+	// get keys for listener
 	listener, err := db.GetListener(ctx, constants.OperatorListenerID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -79,7 +87,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 	opsrv := &OperatorServer{
 		db:         db,
 		sm:         sm,
-		address:    address,
+		data:       data,
 		listener:   nil,
 		sshConfig:  nil,
 		sshTimeout: constants.SshTimeout,
@@ -98,7 +106,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 
 // Start starts operator's listener
 func (s *OperatorServer) Start(ctx context.Context) error {
-	listener, err := net.Listen("tcp", s.address)
+	listener, err := net.Listen("tcp", net.JoinHostPort(s.data.Host, strconv.Itoa(s.data.Port)))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
@@ -109,7 +117,7 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 		return fmt.Errorf("listener is not *net.TCPListener")
 	}
 	s.listener = tcpListener
-	s.lg.Infof("Listener started at %s", s.address)
+	s.lg.Infof("Listener started at %s", net.JoinHostPort(s.data.Host, strconv.Itoa(s.data.Port)))
 
 	go func() {
 		<-ctx.Done()
@@ -149,17 +157,23 @@ func (l *OperatorServer) CloseListener() error {
 
 // publicKeyCallback is used to authenticate SSH connections
 func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, incomingKey ssh.PublicKey) (*ssh.Permissions, error) {
-	// Read authorized_keys from current directory or ~/.ssh/authorized_keys
 	var authorizedKeys []byte
-	if _, err := os.Stat("authorized_keys"); err == nil {
-		authorizedKeys, err = os.ReadFile("authorized_keys")
+
+	// prpare paths for authorized_keys files
+	rsccAuthorizedKeysPath := filepath.Join(s.data.BasePath, "authorized_keys")
+	globalAuthorizedKeysPath := filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")
+
+	if _, err := os.Stat(rsccAuthorizedKeysPath); err == nil {
+		// read rscc authorized_keys in data directory
+		authorizedKeys, err = os.ReadFile(rsccAuthorizedKeysPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+			return nil, fmt.Errorf("failed to read %s: %w", rsccAuthorizedKeysPath, err)
 		}
-	} else if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")); err == nil {
-		authorizedKeys, err = os.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys"))
+	} else if _, err := os.Stat(globalAuthorizedKeysPath); err == nil {
+		// read authorized_keys from ~/.ssh/
+		authorizedKeys, err = os.ReadFile(globalAuthorizedKeysPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+			return nil, fmt.Errorf("failed to read %s: %w", globalAuthorizedKeysPath, err)
 		}
 	} else {
 		return nil, fmt.Errorf("authorized_keys file not found")
@@ -197,7 +211,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	sshConn, chans, reqs, err := ssh.NewServerConn(timeoutConn, s.sshConfig)
 	if err != nil {
 		if strings.Contains(err.Error(), "authorized_keys file not found") {
-			lg.Error("SSH handshake failed: authorized_keys file not found. Please create one in the current directory or ~/.ssh/authorized_keys")
+			lg.Errorf("SSH handshake failed: authorized_keys file not found. Please create one in the %s directory or int ~/.ssh/", s.data.BasePath)
 			return
 		}
 		lg.Errorf("SSH handshake failed: %v", err)
@@ -366,7 +380,7 @@ func (s *OperatorServer) handleSession(lg *zap.SugaredLogger, channel *sshd.Exte
 			subLg.Debugf("Subsystem request received: %s", system)
 
 			if system == "sftp" {
-				go sftpHandler(subLg, channel)
+				go sftpHandler(subLg, channel, s.data.BasePath)
 				req.Reply(true, nil)
 			} else {
 				subLg.Warnf("Subsystem not supported: %s", system)
@@ -465,6 +479,6 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.SetErr(terminal)
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
-	app.AddCommand(agentcmd.NewAgentCmd(s.db).Command)
+	app.AddCommand(agentcmd.NewAgentCmd(s.db, s.data.BasePath).Command)
 	return app
 }
