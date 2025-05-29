@@ -287,3 +287,13 @@ func (m *Multiplexer) GetHttpListener() net.Listener {
 	}
 	return nil
 }
+
+// GetTcpListener returns listener for TCP server
+func (m *Multiplexer) GetTcpListener() net.Listener {
+	for k, v := range m.mapper {
+		if k.Type() == protocols.TcpDownload {
+			return v
+		}
+	}
+	return nil
+}

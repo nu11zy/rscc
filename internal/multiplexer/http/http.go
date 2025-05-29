@@ -131,6 +131,7 @@ func (h *Http) httpDownloadRequest(w realhttp.ResponseWriter, r *realhttp.Reques
 				if !ent.IsNotFound(err) {
 					return errors.Wrap(err, "get agent by url from DB")
 				}
+				return h.plugPageWriter(w)
 			}
 		}
 	}
@@ -146,7 +147,7 @@ func (h *Http) httpDownloadRequest(w realhttp.ResponseWriter, r *realhttp.Reques
 
 	// update hits number
 	if err = h.db.UpdateAgentHits(r.Context(), agent.ID); err != nil {
-		return errors.Wrapf(err, "unable update agent %s hits number for binary: %v", agent.ID, err)
+		return errors.Wrapf(err, "unable update agent %s hits number for binary", agent.ID)
 	}
 
 	// write binary to client

@@ -8,6 +8,7 @@ import (
 	"rscc/internal/multiplexer"
 	"rscc/internal/multiplexer/http"
 	"rscc/internal/multiplexer/ssh"
+	"rscc/internal/multiplexer/tcp"
 	"rscc/internal/opsrv"
 	"rscc/internal/session"
 	"time"
@@ -89,12 +90,30 @@ func (c *Cmd) Run(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// tcp agent server
+	var tcpSrv *tcp.Tcp
+	if muxSrv.GetTcpListener() == nil {
+		lg.Warn("No TCP server will be served")
+	} else {
+		tcpConfig := &tcp.TcpConfig{
+			Listener: muxSrv.GetTcpListener(),
+			Timeout:  time.Duration(time.Duration(c.Timeout) * time.Second),
+		}
+		tcpSrv, err = tcp.NewServer(ctx, db, tcpConfig)
+		if err != nil {
+			return errors.Wrap(err, "failed to initialize agent's TCP server")
+		}
+	}
+
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error { return opSrv.Start(ctx) })
 	g.Go(func() error { return muxSrv.Start(ctx) })
 	g.Go(func() error { return sshSrv.Start(ctx) })
 	if httpSrv != nil {
 		g.Go(func() error { return httpSrv.Start(ctx) })
+	}
+	if tcpSrv != nil {
+		g.Go(func() error { return tcpSrv.Start(ctx) })
 	}
 	return g.Wait()
 }

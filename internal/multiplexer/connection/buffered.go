@@ -20,10 +20,17 @@ func NewBufferedConn(prefix []byte, conn net.Conn) *BufferedConn {
 }
 
 func (b *BufferedConn) Read(data []byte) (int, error) {
+	var err error
 	if len(b.prefix) > 0 {
 		n := copy(data, b.prefix)
 		b.prefix = b.prefix[n:]
-		return n, nil
+		if len(data)-n > 0 {
+			// if we havent exhausted the size of b, read some more
+			var actualRead int
+			actualRead, err = b.conn.Read(data[n:])
+			n += actualRead
+		}
+		return n, err
 	}
 	return b.conn.Read(data)
 }
