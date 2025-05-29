@@ -2,6 +2,7 @@ package multiplexer
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"rscc/internal/common/constants"
@@ -21,11 +22,11 @@ import (
 // MultiplexerConfig holds configuration to setup multiplexer
 type MultiplexerConfig struct {
 	// is HTTP download protocol can be used
-	IsHttpDownload bool
+	HttpDownloadEnabled bool
 	// is TCP download protocol can be used
-	IsTcpDownload bool
-	// is TLS transport can be used over HTTP
-	IsTls bool
+	TcpDownloadEnabled bool
+	// is TLS transport can be used under HTTP
+	TlsEnabled bool
 	// base directory path
 	BasePath string
 	// host to listen on
@@ -34,6 +35,10 @@ type MultiplexerConfig struct {
 	Port int
 	// Timeout for marking client as dead
 	Timeout time.Duration
+	// TLS cerficate with private key
+	TlsCertificate tls.Certificate
+	// TLS configuration for multiplexer
+	tlsConfig *tls.Config
 }
 
 // Multiplexer holds related to multiplexer info
@@ -68,13 +73,25 @@ func NewServer(ctx context.Context, config *MultiplexerConfig) (*Multiplexer, er
 	}
 	m.lg.Infof("Listener started at %s", net.JoinHostPort(m.config.Host, strconv.Itoa(m.config.Port)))
 
-	// Attach protocols on listener
+	// add SSH protocol
 	m.mapper[protocols.NewSshProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.Ssh)
-	if m.config.IsHttpDownload {
+	// add HTTP download protocol
+	if m.config.HttpDownloadEnabled {
 		m.mapper[protocols.NewHttpDownloadProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.HttpDownload)
 	}
-	if m.config.IsTcpDownload {
+	// add TCP download protocol
+	if m.config.TcpDownloadEnabled {
 		m.mapper[protocols.NewTcpDownloadProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.TcpDownload)
+	}
+	// add TLS protocol
+	if m.config.TlsEnabled {
+		m.config.tlsConfig = &tls.Config{
+			// minimum version for TLS
+			MinVersion: tls.VersionTLS10,
+		}
+		// add certificate to chain
+		m.config.tlsConfig.Certificates = append(m.config.tlsConfig.Certificates, m.config.TlsCertificate)
+		m.mapper[protocols.NewTlsProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.Tls)
 	}
 
 	return &m, nil
@@ -194,10 +211,18 @@ func (m *Multiplexer) unwrap(conn net.Conn) (net.Conn, protocols.Proto, error) {
 		return conn, proto, nil
 	} else {
 		// process next stage of procotol unwrapping
-		// TODO
+		switch proto.Type() {
+		case protocols.Tls:
+			// terminate TLS
+			tlsConn := tls.Server(conn, m.config.tlsConfig)
+			if err := tlsConn.Handshake(); err != nil {
+				return nil, protocols.NewTlsProto(), fmt.Errorf("tls handshake error: %v", err)
+			}
+			return m.unwrap(tlsConn)
+		default:
+			return nil, protocols.NewUnknownProto(), fmt.Errorf("unknown wrapped protocol %s", proto.Type())
+		}
 	}
-
-	return nil, protocols.NewUnknownProto(), fmt.Errorf("nothing usable protocol was found for %s", proto.Type())
 }
 
 // determine determines protocol used for connection

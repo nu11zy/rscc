@@ -44,13 +44,14 @@ func (c *Cmd) Run(cmd *cobra.Command, args []string) error {
 
 	// multiplexer listener
 	multiplexerData := &multiplexer.MultiplexerConfig{
-		Host:           c.MultiplexerHost,
-		Port:           int(c.MultiplexerPort),
-		BasePath:       c.DataDirectory,
-		IsHttpDownload: c.HttpDownload,
-		IsTcpDownload:  c.TcpDownload,
-		IsTls:          false,
-		Timeout:        time.Duration(time.Duration(c.Timeout) * time.Second),
+		Host:                c.MultiplexerHost,
+		Port:                int(c.MultiplexerPort),
+		BasePath:            c.DataDirectory,
+		HttpDownloadEnabled: c.HttpDownload,
+		TcpDownloadEnabled:  c.TcpDownload,
+		TlsEnabled:          c.TlsEnabled,
+		TlsCertificate:      c.TlsCertificate,
+		Timeout:             time.Duration(time.Duration(c.Timeout) * time.Second),
 	}
 	muxSrv, err := multiplexer.NewServer(ctx, multiplexerData)
 	if err != nil {

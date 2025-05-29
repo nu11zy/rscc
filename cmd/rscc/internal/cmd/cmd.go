@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	realhttp "net/http"
@@ -30,6 +31,10 @@ type Cmd struct {
 	HttpPlugPageBytes []byte
 	HttpDownload      bool
 	TcpDownload       bool
+	TlsEnabled        bool
+	TlsCertPath       string
+	TlsKeyPath        string
+	TlsCertificate    tls.Certificate
 }
 
 // RegisterFlags registers flags based on structure
@@ -46,6 +51,11 @@ func (c *Cmd) RegisterFlags(f *pflag.FlagSet) error {
 	f.StringVar(&c.HttpPlugPagePath, "plug-page-path", "", "path to custom plug page for HTTP server")
 	f.IntVar(&c.HttpPlugPageCode, "plug-page-code", 200, "http code to custom plug page for HTTP server")
 	f.BoolVar(&c.HttpDownload, "download-http", false, "enable HTTP delivery of agents")
+
+	// settings for TLS
+	f.BoolVar(&c.TlsEnabled, "tls", false, "enable TLS for HTTP server")
+	f.StringVar(&c.TlsCertPath, "tls-cert-path", "", "path to TLS certificate")
+	f.StringVar(&c.TlsKeyPath, "tls-key-path", "", "path to TLS private key")
 
 	// settings for TCP server
 	f.BoolVar(&c.TcpDownload, "download-tcp", false, "enable TCP delivery of agents")
@@ -150,6 +160,50 @@ func (c *Cmd) ValidateFlags(ctx context.Context) error {
 	} else {
 		if _, err := net.ResolveTCPAddr("tcp", net.JoinHostPort(c.MultiplexerHost, strconv.Itoa(int(c.MultiplexerPort)))); err != nil {
 			return errors.Wrap(err, "invalid multiplexer's address")
+		}
+	}
+
+	// validate tls
+	if c.TlsEnabled {
+		if c.TlsCertPath == "" && c.TlsKeyPath == "" {
+			// TODO: remove harcode
+			cert, err := utils.GenTlsCertificate("127.0.0.1")
+			if err != nil {
+				return errors.Wrap(err, "generate self-signed TLS certificate")
+			}
+			c.TlsCertificate = cert
+		} else {
+			// check if both TLS paths set
+			if c.TlsCertPath != "" {
+				if c.TlsKeyPath == "" {
+					return errors.New("specify TLS key path")
+				}
+				if ok, err := utils.IsFile(c.TlsCertPath); err != nil {
+					return errors.Wrap(err, "TLS certificate path")
+				} else {
+					if !ok {
+						return fmt.Errorf("TLS certificate path %s is not valid file", c.TlsCertPath)
+					}
+				}
+			}
+			if c.TlsKeyPath != "" {
+				if c.TlsCertPath == "" {
+					return errors.New("specify TLS certificate path")
+				}
+				if ok, err := utils.IsFile(c.TlsKeyPath); err != nil {
+					return errors.Wrap(err, "TLS key path")
+				} else {
+					if !ok {
+						return fmt.Errorf("TLS key path %s is not valid file", c.TlsCertPath)
+					}
+				}
+			}
+			// create TLS certificate chain
+			cert, err := tls.LoadX509KeyPair(c.TlsCertPath, c.TlsKeyPath)
+			if err != nil {
+				return errors.Wrap(err, "create TLS certifiacte chain")
+			}
+			c.TlsCertificate = cert
 		}
 	}
 	return nil
