@@ -114,6 +114,11 @@ func PublicKey(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
 }
 
+// URL applies equality check predicate on the "url" field. It's identical to URLEQ.
+func URL(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldURL, v))
+}
+
 // Hits applies equality check predicate on the "hits" field. It's identical to HitsEQ.
 func Hits(v int) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldHits, v))
@@ -552,6 +557,71 @@ func PublicKeyLT(v []byte) predicate.Agent {
 // PublicKeyLTE applies the LTE predicate on the "public_key" field.
 func PublicKeyLTE(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldLTE(FieldPublicKey, v))
+}
+
+// URLEQ applies the EQ predicate on the "url" field.
+func URLEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldURL, v))
+}
+
+// URLNEQ applies the NEQ predicate on the "url" field.
+func URLNEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldURL, v))
+}
+
+// URLIn applies the In predicate on the "url" field.
+func URLIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldURL, vs...))
+}
+
+// URLNotIn applies the NotIn predicate on the "url" field.
+func URLNotIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldURL, vs...))
+}
+
+// URLGT applies the GT predicate on the "url" field.
+func URLGT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldURL, v))
+}
+
+// URLGTE applies the GTE predicate on the "url" field.
+func URLGTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldURL, v))
+}
+
+// URLLT applies the LT predicate on the "url" field.
+func URLLT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldURL, v))
+}
+
+// URLLTE applies the LTE predicate on the "url" field.
+func URLLTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldURL, v))
+}
+
+// URLContains applies the Contains predicate on the "url" field.
+func URLContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldURL, v))
+}
+
+// URLHasPrefix applies the HasPrefix predicate on the "url" field.
+func URLHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldURL, v))
+}
+
+// URLHasSuffix applies the HasSuffix predicate on the "url" field.
+func URLHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldURL, v))
+}
+
+// URLEqualFold applies the EqualFold predicate on the "url" field.
+func URLEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldURL, v))
+}
+
+// URLContainsFold applies the ContainsFold predicate on the "url" field.
+func URLContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldURL, v))
 }
 
 // HitsEQ applies the EQ predicate on the "hits" field.

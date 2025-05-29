@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -27,16 +28,17 @@ import (
 )
 
 type BuilderConfig struct {
-	Name    string
-	OS      string
-	Arch    string
-	Servers []string
-	Shared  bool
-	Pie     bool
-	Garble  bool
-	Debug   bool
-	SS      []string
-	PrivKey []byte
+	Name      string
+	OS        string
+	Arch      string
+	Servers   []string
+	Shared    bool
+	Pie       bool
+	Garble    bool
+	Debug     bool
+	SS        []string
+	PrivKey   []byte
+	UrlPrefix string
 }
 
 func (a *AgentCmd) newCmdGenerate() *cobra.Command {
@@ -56,6 +58,7 @@ func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd.Flags().Bool("garble", false, "use garble to obfuscate agent")
 	cmd.Flags().Bool("debug", false, "enable debug messages")
 	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, "subsystems to add to the agent (sftp, kill, pscan, pfwd, executeassembly)")
+	cmd.Flags().StringP("url-prefix", "u", "/", "URL prefix for gathering agent from HTTP/TCP servers")
 	cmd.MarkFlagsMutuallyExclusive("shared", "pie")
 	cmd.MarkFlagRequired("servers")
 
@@ -100,6 +103,10 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	urlPrefix, err := cmd.Flags().GetString("url-prefix")
+	if err != nil {
+		return err
+	}
 
 	// Validate flags
 	if !validators.ValidateGOOS(goos) {
@@ -107,6 +114,9 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 	if !validators.ValidateGOARCH(goarch) {
 		return fmt.Errorf("invalid architecture: %s", goarch)
+	}
+	if urlPrefix == "" {
+		urlPrefix = "/"
 	}
 	for i, s := range servers {
 		servers[i] = strings.TrimSpace(s)
@@ -193,17 +203,24 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 	agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 
+	// prepare URL
+	url, err := url.JoinPath(urlPrefix, name)
+	if err != nil {
+		return errors.Wrap(err, "url joining")
+	}
+
 	// Add agent to database
-	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey)
+	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey, url)
 	if err != nil {
 		return errors.Wrap(err, "add agent to database")
 	}
 
 	cmd.Println(pprint.Success(
-		"Agent '%s' generated! [ID: %s, Path: %s]\n",
+		"Agent '%s' generated! [ID: %s, Path: %s, URL: %s]\n",
 		pprint.Green.Sprint(agent.Name),
 		pprint.Blue.Sprint(agent.ID),
 		pprint.Yellow.Sprint(agent.Path),
+		pprint.Yellow.Sprint(agent.URL),
 	))
 	return nil
 }

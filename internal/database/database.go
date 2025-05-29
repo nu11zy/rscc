@@ -81,7 +81,7 @@ func (db *Database) GetListener(ctx context.Context, id string) (*ent.Listener, 
 }
 
 // Agent
-func (db *Database) CreateAgent(ctx context.Context, name, os, arch string, servers []string, shared, pie, garble bool, subsystems []string, xxhash, path string, publicKey []byte) (*ent.Agent, error) {
+func (db *Database) CreateAgent(ctx context.Context, name, os, arch string, servers []string, shared, pie, garble bool, subsystems []string, xxhash, path string, publicKey []byte, url string) (*ent.Agent, error) {
 	agent, err := db.client.Agent.Create().
 		SetName(name).
 		SetOs(os).
@@ -94,6 +94,7 @@ func (db *Database) CreateAgent(ctx context.Context, name, os, arch string, serv
 		SetXxhash(xxhash).
 		SetPath(path).
 		SetPublicKey(publicKey).
+		SetURL(url).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create agent: %w", err)
@@ -119,6 +120,18 @@ func (db *Database) GetAgentByName(ctx context.Context, name string) (*ent.Agent
 
 func (db *Database) GetAgentByID(ctx context.Context, id string) (*ent.Agent, error) {
 	agent, err := db.client.Agent.Get(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent: %w", err)
+	}
+	return agent, nil
+}
+
+// GetAgentByUrl returns agent object filtered by URL
+func (db *Database) GetAgentByUrl(ctx context.Context, url string) (*ent.Agent, error) {
+	agent, err := db.client.Agent.
+		Query().
+		Where(agent.URLEQ(url)).
+		Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get agent: %w", err)
 	}

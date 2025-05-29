@@ -51,6 +51,7 @@ type AgentMutation struct {
 	xxhash           *string
 	_path            *string
 	public_key       *[]byte
+	url              *string
 	hits             *int
 	addhits          *int
 	clearedFields    map[string]struct{}
@@ -625,6 +626,42 @@ func (m *AgentMutation) ResetPublicKey() {
 	m.public_key = nil
 }
 
+// SetURL sets the "url" field.
+func (m *AgentMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *AgentMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *AgentMutation) ResetURL() {
+	m.url = nil
+}
+
 // SetHits sets the "hits" field.
 func (m *AgentMutation) SetHits(i int) {
 	m.hits = &i
@@ -715,7 +752,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 14)
 	if m.created_at != nil {
 		fields = append(fields, agent.FieldCreatedAt)
 	}
@@ -752,6 +789,9 @@ func (m *AgentMutation) Fields() []string {
 	if m.public_key != nil {
 		fields = append(fields, agent.FieldPublicKey)
 	}
+	if m.url != nil {
+		fields = append(fields, agent.FieldURL)
+	}
 	if m.hits != nil {
 		fields = append(fields, agent.FieldHits)
 	}
@@ -787,6 +827,8 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Path()
 	case agent.FieldPublicKey:
 		return m.PublicKey()
+	case agent.FieldURL:
+		return m.URL()
 	case agent.FieldHits:
 		return m.Hits()
 	}
@@ -822,6 +864,8 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldPath(ctx)
 	case agent.FieldPublicKey:
 		return m.OldPublicKey(ctx)
+	case agent.FieldURL:
+		return m.OldURL(ctx)
 	case agent.FieldHits:
 		return m.OldHits(ctx)
 	}
@@ -916,6 +960,13 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPublicKey(v)
+		return nil
+	case agent.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
 		return nil
 	case agent.FieldHits:
 		v, ok := value.(int)
@@ -1023,6 +1074,9 @@ func (m *AgentMutation) ResetField(name string) error {
 		return nil
 	case agent.FieldPublicKey:
 		m.ResetPublicKey()
+		return nil
+	case agent.FieldURL:
+		m.ResetURL()
 		return nil
 	case agent.FieldHits:
 		m.ResetHits()
