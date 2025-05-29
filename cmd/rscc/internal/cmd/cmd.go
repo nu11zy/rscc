@@ -10,9 +10,12 @@ import (
 	"rscc/internal/common/logger"
 	"rscc/internal/common/utils"
 	"rscc/internal/database"
+	"rscc/internal/multiplexer"
+	"rscc/internal/multiplexer/ssh"
 	"rscc/internal/opsrv"
 	"rscc/internal/session"
 	"strconv"
+	"time"
 
 	"github.com/go-faster/errors"
 	"github.com/spf13/cobra"
@@ -26,6 +29,7 @@ type Cmd struct {
 	MultiplexerHost string
 	MultiplexerPort uint16
 	DataDirectory   string
+	Timeout         uint
 	Debug           bool
 }
 
@@ -38,6 +42,9 @@ func (c *Cmd) RegisterFlags(f *pflag.FlagSet) error {
 	// settings for multiplexer
 	f.StringVar(&c.MultiplexerHost, "multiplexer-host", "0.0.0.0", "multiplexer host to listen on")
 	f.Uint16Var(&c.MultiplexerPort, "multiplexer-port", 8080, "multiplexer port to listen on")
+
+	// settings for timeout
+	f.UintVarP(&c.Timeout, "timeout", "t", 15, "timeout when client considered as dead")
 
 	// debug logging
 	f.BoolVarP(&c.Debug, "debug", "d", false, "enable debug logging")
@@ -68,11 +75,11 @@ func (c *Cmd) ValidateFlags(ctx context.Context) error {
 		// create data directory if not exists yet
 		if errors.Is(err, os.ErrNotExist) {
 			if err := os.Mkdir(c.DataDirectory, os.ModePerm); err != nil {
-				return errors.Wrap(err, fmt.Sprintf("unable create data directory %s", c.DataDirectory))
+				return errors.Wrapf(err, "unable create data directory %s", c.DataDirectory)
 			}
 			lg.Infof("Create data directory %s", c.DataDirectory)
 		} else {
-			return errors.Wrap(err, fmt.Sprintf("unable get information about %s", c.DataDirectory))
+			return errors.Wrapf(err, "unable get information about %s", c.DataDirectory)
 		}
 	} else {
 		if !isDir {
@@ -86,16 +93,21 @@ func (c *Cmd) ValidateFlags(ctx context.Context) error {
 		// create agents directory if not exists yet
 		if errors.Is(err, os.ErrNotExist) {
 			if err := os.Mkdir(agentDir, os.ModePerm); err != nil {
-				return errors.Wrap(err, fmt.Sprintf("unable create data directory %s", agentDir))
+				return errors.Wrapf(err, "unable create data directory %s", agentDir)
 			}
 			lg.Infof("Create data directory %s", agentDir)
 		} else {
-			return errors.Wrap(err, fmt.Sprintf("unable get information about %s", agentDir))
+			return errors.Wrapf(err, "unable get information about %s", agentDir)
 		}
 	} else {
 		if !isDir {
 			return fmt.Errorf("%s is not valid directory", agentDir)
 		}
+	}
+
+	// validate timeout
+	if c.Timeout == 0 || c.Timeout > constants.MaxClientTimeout {
+		return fmt.Errorf("specify timeout in range 1..%d", constants.MaxClientTimeout-1)
 	}
 
 	// validate operator's host
@@ -141,25 +153,47 @@ func (c *Cmd) Run(cmd *cobra.Command, args []string) error {
 	sm := session.NewSessionManager(ctx, db)
 
 	// operator listener
-	operatorData := &opsrv.OperatorServerData{
+	operatorData := &opsrv.OperatorServerConfig{
 		Host:     c.OperatorHost,
 		Port:     int(c.OperatorPort),
 		BasePath: c.DataDirectory,
 	}
-	opsrv, err := opsrv.NewOperatorServer(ctx, db, sm, operatorData)
+	opsrv, err := opsrv.NewServer(ctx, db, sm, operatorData)
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize operator's server")
 	}
 
-	// agent listener
-	//agentListener, err := listener.NewAgentListener(ctx, db, sm, agentHost, agentPort)
-	//if err != nil {
-	//	lg.Errorf("Failed to initialize agent listener: %v", err)
-	//	return err
-	//}
+	// multiplexer listener
+	multiplexerData := &multiplexer.MultiplexerConfig{
+		Host:           c.MultiplexerHost,
+		Port:           int(c.MultiplexerPort),
+		BasePath:       c.DataDirectory,
+		IsHttpDownload: false,
+		IsTcpDownload:  false,
+		IsTls:          false,
+		Timeout:        time.Duration(time.Duration(c.Timeout) * time.Second),
+	}
+	mux, err := multiplexer.NewServer(ctx, multiplexerData)
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize multiplexer's server")
+	}
+
+	// ssh agent listener
+	if mux.GetSshListener() == nil {
+		return fmt.Errorf("no suitable listener found for agent SSH server")
+	}
+	sshConfig := &ssh.SshConfig{
+		Listener: mux.GetSshListener(),
+		Timeout:  time.Duration(time.Duration(c.Timeout) * time.Second),
+	}
+	ssh, err := ssh.NewListener(ctx, db, sm, sshConfig)
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize agent's SSH server")
+	}
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error { return opsrv.Start(ctx) })
-	//g.Go(func() error { return agentListener.Start(ctx) })
+	g.Go(func() error { return mux.Start(ctx) })
+	g.Go(func() error { return ssh.Start(ctx) })
 	return g.Wait()
 }
