@@ -269,14 +269,7 @@ func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan s
 			channel := sshd.NewExtendedChannel(rawChannel)
 			go s.handleSession(subLg, channel, request)
 		case "direct-tcpip":
-			subLg := lg.Named("direct-tcpip")
-			extraData := newChannel.ExtraData()
-			channel, _, err := newChannel.Accept()
-			if err != nil {
-				lg.Errorf("Failed to accept channel: %v", err)
-				continue
-			}
-			go s.handleJump(subLg, channel, extraData)
+			go s.handleJump(lg.Named("direct-tcpip"), newChannel)
 		default:
 			lg.Warnf("Unsupported channel type: %s", newChannel.ChannelType())
 			newChannel.Reject(ssh.UnknownChannelType, "unsupported channel type")
@@ -285,45 +278,58 @@ func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan s
 }
 
 // handleJump handles connection from operator to agent
-func (s *OperatorServer) handleJump(lg *zap.SugaredLogger, channel ssh.Channel, extraData []byte) {
-	defer channel.Close()
-
-	connData, err := sshd.GetExtraData(extraData)
+func (s *OperatorServer) handleJump(lg *zap.SugaredLogger, newChannel ssh.NewChannel) {
+	// extract extra data to determine proxyjump target
+	connData, err := sshd.GetExtraData(newChannel.ExtraData())
 	if err != nil {
 		lg.Errorf("Failed to get extra data: %v", err)
 		return
 	}
 	lg.Debugf("Reverse SSH connection from %s:%d to %s:%d", connData.OriginatorIP, connData.OriginatorPort, connData.TargetHost, connData.TargetPort)
 
-	// unknown format of string
+	// get name of agent (partial)
 	splittedHost := strings.Split(string(connData.TargetHost), "+")
 	if len(splittedHost) != 2 {
-		lg.Warnf("Session not found for host: %s", connData.TargetHost)
+		lg.Warnf("Invalid format of host %s", connData.TargetHost)
+		newChannel.Reject(ssh.Prohibited, fmt.Sprintf("\n\nInvalid format for proxyjump '%s'\n", connData.TargetHost))
 		return
 	}
 	agentId := splittedHost[1]
 	session := s.sm.GetSession(agentId)
 	if session == nil {
 		lg.Warnf("Session not found for proxyjump: %s", agentId)
+		newChannel.Reject(ssh.Prohibited, fmt.Sprintf("\n\nNo clients matched '%s'\n", agentId))
 		return
 	}
 	lg.Debugf("Session found for proxyjump: %s", session.ID)
 
-	// update session
+	// update logger
 	lg = lg.Named(fmt.Sprintf("[%s]", session.ID))
 
 	// custom ssh-jump SSH channel
 	sessionConn, sessionReqs, err := session.SSHConn.Conn.OpenChannel("ssh-jump", nil)
 	if err != nil {
 		lg.Errorf("Failed to open ssh-jump channel for proxyjump: %v", err)
+		newChannel.Reject(ssh.ConnectionFailed, fmt.Sprintf("\n\n%v\n", err.Error()))
 		return
 	}
 	lg.Info("Open ssh-jump channel for proxyjump")
 	defer sessionConn.Close()
-
 	go ssh.DiscardRequests(sessionReqs)
+
+	// accept channel to process data forwarding
+	channel, channelRequests, err := newChannel.Accept()
+	if err != nil {
+		newChannel.Reject(ssh.ConnectionFailed, fmt.Sprintf("\n\n%v\n", err.Error()))
+		return
+	}
+	defer channel.Close()
+	go ssh.DiscardRequests(channelRequests)
+
+	// process data forwarding
 	go func() {
 		io.Copy(channel, sessionConn)
+		channel.Close()
 	}()
 	io.Copy(sessionConn, channel)
 }
