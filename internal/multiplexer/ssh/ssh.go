@@ -10,6 +10,7 @@ import (
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/network"
+	"rscc/internal/common/utils"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/session"
@@ -84,6 +85,8 @@ func NewListener(ctx context.Context, db *database.Database, sm *session.Session
 
 	// setup SSH
 	realsshConfig := &realssh.ServerConfig{
+		// random SSH banner
+		ServerVersion:     constants.SshBannersLinux[utils.RandInt(len(constants.SshBannersLinux))],
 		NoClientAuth:      false,
 		PublicKeyCallback: ssh.publicKeyCallback,
 	}
@@ -172,13 +175,12 @@ func (s *Ssh) handleConnection(conn net.Conn) {
 			for {
 				select {
 				case <-ticker.C:
-					lg.Debug("send keepalive request")
+					lg.Debug("Send keepalive request")
 					if _, _, err = sshConn.SendRequest("keepalive@openssh.com", true, []byte{}); err != nil {
 						lg.Warnf("Failed to send keepalive, assuming SSH client disconnected: %v", err)
 						sshConn.Close()
 						return
 					}
-					lg.Debug("Send keepalive request")
 				case <-stopKeepalive:
 					lg.Debug("Stop sending keepalive requests")
 					return
