@@ -37,8 +37,8 @@ type Ssh struct {
 	listener  net.Listener
 }
 
-// NewListener prepares environment for new SSHD listener
-func NewListener(ctx context.Context, db *database.Database, sm *session.SessionManager, config *SshConfig) (*Ssh, error) {
+// NewServer prepares environment for new agent's SSH server
+func NewServer(ctx context.Context, db *database.Database, sm *session.SessionManager, config *SshConfig) (*Ssh, error) {
 	lg := logger.FromContext(ctx).Named("ssh")
 
 	// get keys for listener
@@ -98,9 +98,7 @@ func NewListener(ctx context.Context, db *database.Database, sm *session.Session
 
 // Start starts sshd server
 func (s *Ssh) Start(ctx context.Context) error {
-	defer s.CloseListener()
-
-	s.lg.Infof("Start agent server")
+	s.lg.Infof("Start SSH server")
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -118,16 +116,14 @@ func (s *Ssh) Start(ctx context.Context) error {
 				s.lg.Errorf("Failed to accept connection: %v", err)
 				return err
 			}
-			if conn != nil {
-				go s.handleConnection(conn)
-			}
+			go s.handleConnection(conn)
 		}
 	})
 
 	g.Go(func() error {
 		<-ctx.Done()
-		if err := s.CloseListener(); err != nil {
-			s.lg.Warn("Close listener: %v", err)
+		if err := s.Stop(); err != nil {
+			s.lg.Warn("Stop server: %v", err)
 		}
 		s.lg.Info("Stop server")
 		return nil
@@ -136,8 +132,8 @@ func (s *Ssh) Start(ctx context.Context) error {
 	return g.Wait()
 }
 
-// CloseListener closes listener if it's active
-func (s *Ssh) CloseListener() error {
+// Stop closes listener if it's active
+func (s *Ssh) Stop() error {
 	if s.listener != nil {
 		return s.listener.Close()
 	}

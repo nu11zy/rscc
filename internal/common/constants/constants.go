@@ -13,5 +13,5 @@ const (
 	// number of maximum network awaiting clients
 	MaxNetworkClients = 1000
 	// number of bytes for reading from connection for protocol determination
-	ConnHeaderLength = 10
+	ConnHeaderLength = 16
 )

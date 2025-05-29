@@ -4,33 +4,32 @@ import (
 	"context"
 	"fmt"
 	"net"
+	realhttp "net/http"
 	"os"
 	"path/filepath"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/utils"
-	"rscc/internal/database"
-	"rscc/internal/multiplexer"
-	"rscc/internal/multiplexer/ssh"
-	"rscc/internal/opsrv"
-	"rscc/internal/session"
 	"strconv"
-	"time"
 
 	"github.com/go-faster/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"golang.org/x/sync/errgroup"
 )
 
 type Cmd struct {
-	OperatorHost    string
-	OperatorPort    uint16
-	MultiplexerHost string
-	MultiplexerPort uint16
-	DataDirectory   string
-	Timeout         uint
-	Debug           bool
+	OperatorHost      string
+	OperatorPort      uint16
+	MultiplexerHost   string
+	MultiplexerPort   uint16
+	DataDirectory     string
+	Timeout           uint
+	Debug             bool
+	HttpPlugPagePath  string
+	HttpPlugPageCode  int
+	HttpPlugPageBytes []byte
+	HttpDownload      bool
+	TcpDownload       bool
 }
 
 // RegisterFlags registers flags based on structure
@@ -42,6 +41,14 @@ func (c *Cmd) RegisterFlags(f *pflag.FlagSet) error {
 	// settings for multiplexer
 	f.StringVar(&c.MultiplexerHost, "multiplexer-host", "0.0.0.0", "multiplexer host to listen on")
 	f.Uint16Var(&c.MultiplexerPort, "multiplexer-port", 8080, "multiplexer port to listen on")
+
+	// settings for HTTP server
+	f.StringVar(&c.HttpPlugPagePath, "plug-page-path", "", "path to custom plug page for HTTP server")
+	f.IntVar(&c.HttpPlugPageCode, "plug-page-code", 200, "http code to custom plug page for HTTP server")
+	f.BoolVar(&c.HttpDownload, "download-http", false, "enable HTTP delivery of agents")
+
+	// settings for TCP server
+	f.BoolVar(&c.TcpDownload, "download-tcp", false, "enable TCP delivery of agents")
 
 	// settings for timeout
 	f.UintVarP(&c.Timeout, "timeout", "t", 15, "timeout when client considered as dead")
@@ -105,6 +112,24 @@ func (c *Cmd) ValidateFlags(ctx context.Context) error {
 		}
 	}
 
+	// validate plug page
+	if c.HttpPlugPagePath != "" {
+		c.HttpPlugPageBytes, err = os.ReadFile(c.HttpPlugPagePath)
+		if err != nil {
+			return errors.Wrapf(err, "get plug page by path %s", c.HttpPlugPagePath)
+		}
+		lg.Infof("Use plug page for HTTP server from path %s", c.HttpPlugPagePath)
+	} else {
+		// default plug page
+		c.HttpPlugPageBytes = []byte(constants.BadGatewayPage)
+		c.HttpPlugPageCode = 502
+	}
+
+	// validate plug page code by RFC
+	if realhttp.StatusText(c.HttpPlugPageCode) == "" {
+		return fmt.Errorf("specify valid plug page code, not %d", c.HttpPlugPageCode)
+	}
+
 	// validate timeout
 	if c.Timeout == 0 || c.Timeout > constants.MaxClientTimeout {
 		return fmt.Errorf("specify timeout in range 1..%d", constants.MaxClientTimeout-1)
@@ -136,64 +161,4 @@ func (c *Cmd) Pre(cmd *cobra.Command, args []string) error {
 		logger.SetDebug()
 	}
 	return c.ValidateFlags(cmd.Context())
-}
-
-func (c *Cmd) Run(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
-	lg := logger.FromContext(ctx)
-
-	// initialize database
-	db, err := database.NewDatabase(ctx, filepath.Join(c.DataDirectory, "rscc.db"))
-	if err != nil {
-		lg.Errorf("Failed to initialize database: %v", err)
-		return err
-	}
-
-	// create session manager
-	sm := session.NewSessionManager(ctx, db)
-
-	// operator listener
-	operatorData := &opsrv.OperatorServerConfig{
-		Host:     c.OperatorHost,
-		Port:     int(c.OperatorPort),
-		BasePath: c.DataDirectory,
-	}
-	opsrv, err := opsrv.NewServer(ctx, db, sm, operatorData)
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize operator's server")
-	}
-
-	// multiplexer listener
-	multiplexerData := &multiplexer.MultiplexerConfig{
-		Host:           c.MultiplexerHost,
-		Port:           int(c.MultiplexerPort),
-		BasePath:       c.DataDirectory,
-		IsHttpDownload: false,
-		IsTcpDownload:  false,
-		IsTls:          false,
-		Timeout:        time.Duration(time.Duration(c.Timeout) * time.Second),
-	}
-	mux, err := multiplexer.NewServer(ctx, multiplexerData)
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize multiplexer's server")
-	}
-
-	// ssh agent listener
-	if mux.GetSshListener() == nil {
-		return fmt.Errorf("no suitable listener found for agent SSH server")
-	}
-	sshConfig := &ssh.SshConfig{
-		Listener: mux.GetSshListener(),
-		Timeout:  time.Duration(time.Duration(c.Timeout) * time.Second),
-	}
-	ssh, err := ssh.NewListener(ctx, db, sm, sshConfig)
-	if err != nil {
-		return errors.Wrap(err, "failed to initialize agent's SSH server")
-	}
-
-	g, ctx := errgroup.WithContext(ctx)
-	g.Go(func() error { return opsrv.Start(ctx) })
-	g.Go(func() error { return mux.Start(ctx) })
-	g.Go(func() error { return ssh.Start(ctx) })
-	return g.Wait()
 }

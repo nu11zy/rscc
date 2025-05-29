@@ -70,6 +70,12 @@ func NewServer(ctx context.Context, config *MultiplexerConfig) (*Multiplexer, er
 
 	// Attach protocols on listener
 	m.mapper[protocols.NewSshProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.Ssh)
+	if m.config.IsHttpDownload {
+		m.mapper[protocols.NewHttpDownloadProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.HttpDownload)
+	}
+	if m.config.IsTcpDownload {
+		m.mapper[protocols.NewTcpDownloadProto()] = listener.NewMultiplexerListener(m.listener.Addr(), protocols.TcpDownload)
+	}
 
 	return &m, nil
 }
@@ -217,20 +223,23 @@ func (m *Multiplexer) determine(conn net.Conn) (net.Conn, protocols.Proto, error
 
 // Close closes multiplexer and related connections
 func (m *Multiplexer) Close() error {
-	// close queue with connections
-	close(m.queue)
 	// close multiplexer listeners
 	for k, v := range m.mapper {
 		if v != nil {
 			if err := v.Close(); err != nil {
-				m.lg.Warnf("close multiplexer listener for %s: %w", k, err)
+				m.lg.Warnf("close multiplexer listener for %s: %v", k, err)
 			}
 		}
 	}
 	// close main listener
 	if m.listener != nil {
-		return m.listener.Close()
+		if err := m.listener.Close(); err != nil {
+			m.lg.Warnf("close main listener for %s: %v", m.listener.Addr(), err)
+		}
 	}
+	// close queue with connections
+	close(m.queue)
+
 	return nil
 }
 
@@ -238,6 +247,16 @@ func (m *Multiplexer) Close() error {
 func (m *Multiplexer) GetSshListener() net.Listener {
 	for k, v := range m.mapper {
 		if k.Type() == protocols.Ssh {
+			return v
+		}
+	}
+	return nil
+}
+
+// GetHttpListener returns listener for any HTTP task
+func (m *Multiplexer) GetHttpListener() net.Listener {
+	for k, v := range m.mapper {
+		if k.Type() == protocols.HttpDownload {
 			return v
 		}
 	}

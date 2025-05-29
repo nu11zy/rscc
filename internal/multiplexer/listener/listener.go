@@ -33,7 +33,13 @@ func (m *MultiplexerListener) Accept() (net.Conn, error) {
 	if m.closed {
 		return nil, net.ErrClosed
 	}
-	return <-m.queue, nil
+	// this check must be for handling close(m.queue) in Close() function
+	// otherwise reciever get (nil, nil) and will be panic (e.g. on SSH/HTTP servers)
+	conn := <-m.queue
+	if conn == nil {
+		return nil, net.ErrClosed
+	}
+	return conn, nil
 }
 
 // Close closes multiplexer listener
