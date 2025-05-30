@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,20 +23,22 @@ import (
 	"text/template"
 
 	"github.com/cespare/xxhash/v2"
+	"github.com/go-faster/errors"
 	"github.com/spf13/cobra"
 )
 
 type BuilderConfig struct {
-	Name    string
-	OS      string
-	Arch    string
-	Servers []string
-	Shared  bool
-	Pie     bool
-	Garble  bool
-	Debug   bool
-	SS      []string
-	PrivKey []byte
+	Name      string
+	OS        string
+	Arch      string
+	Servers   []string
+	Shared    bool
+	Pie       bool
+	Garble    bool
+	Debug     bool
+	SS        []string
+	PrivKey   []byte
+	UrlPrefix string
 }
 
 func (a *AgentCmd) newCmdGenerate() *cobra.Command {
@@ -55,6 +58,7 @@ func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd.Flags().Bool("garble", false, "use garble to obfuscate agent")
 	cmd.Flags().Bool("debug", false, "enable debug messages")
 	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, "subsystems to add to the agent (sftp, kill, pscan, pfwd, executeassembly)")
+	cmd.Flags().StringP("url-prefix", "u", "/", "URL prefix for gathering agent from HTTP/TCP servers")
 	cmd.MarkFlagsMutuallyExclusive("shared", "pie")
 	cmd.MarkFlagRequired("servers")
 
@@ -99,6 +103,10 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	urlPrefix, err := cmd.Flags().GetString("url-prefix")
+	if err != nil {
+		return err
+	}
 
 	// Validate flags
 	if !validators.ValidateGOOS(goos) {
@@ -106,6 +114,9 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 	if !validators.ValidateGOARCH(goarch) {
 		return fmt.Errorf("invalid architecture: %s", goarch)
+	}
+	if urlPrefix == "" {
+		urlPrefix = "/"
 	}
 	for i, s := range servers {
 		servers[i] = strings.TrimSpace(s)
@@ -120,6 +131,7 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		}
 	}
 	name = strings.ReplaceAll(strings.TrimSpace(name), " ", "-")
+	agentPath := filepath.Join(a.baseDir, constants.AgentDir, name)
 
 	// Check database
 	agent, err := a.db.GetAgentByName(cmd.Context(), name)
@@ -128,8 +140,8 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Check if agent with same name already exists
-	if _, err := os.Stat(filepath.Join(constants.AgentDir, name)); !os.IsNotExist(err) {
-		cmd.Println(pprint.Warn("Agent `%s` not found in database, but file `%s` exists. File `%s` will be replaced", name, filepath.Join(constants.AgentDir, name), filepath.Join(constants.AgentDir, name)))
+	if _, err := os.Stat(agentPath); !os.IsNotExist(err) {
+		cmd.Println(pprint.Warn("Agent `%s` not found in database, but file `%s` exists. File `%s` will be replaced", name, agentPath, agentPath))
 	}
 
 	// Generate keys
@@ -179,30 +191,36 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		pprint.Bold.Sprint(goos),
 		pprint.Bold.Sprint(goarch),
 	))
-	name, err = buildAgent(tmpDir, builderConfig)
+	name, err = buildAgent(tmpDir, builderConfig, agentPath)
 	if err != nil {
-		return fmt.Errorf("failed to build agent: %w", err)
+		return errors.Wrap(err, "build agent")
 	}
 
 	// Get agent hash
-	agentPath := filepath.Join(constants.AgentDir, name)
 	agentBytes, err := os.ReadFile(agentPath)
 	if err != nil {
-		return fmt.Errorf("failed to read agent: %w", err)
+		return errors.Wrap(err, "read agent")
 	}
 	agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
 
-	// Add agent to database
-	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey)
+	// prepare URL
+	url, err := url.JoinPath(urlPrefix, name)
 	if err != nil {
-		return fmt.Errorf("failed to add agent to database: %w", err)
+		return errors.Wrap(err, "url joining")
+	}
+
+	// Add agent to database
+	agent, err = a.db.CreateAgent(cmd.Context(), name, goos, goarch, servers, shared, pie, garble, ss, agentHash, agentPath, pubKey, url)
+	if err != nil {
+		return errors.Wrap(err, "add agent to database")
 	}
 
 	cmd.Println(pprint.Success(
-		"Agent '%s' generated! [ID: %s, Path: %s]\n",
+		"Agent '%s' generated! [ID: %s, Path: %s, URL: %s]\n",
 		pprint.Green.Sprint(agent.Name),
 		pprint.Blue.Sprint(agent.ID),
 		pprint.Yellow.Sprint(agent.Path),
+		pprint.Yellow.Sprint(agent.URL),
 	))
 	return nil
 }
@@ -311,7 +329,7 @@ func templateAgent(tmpDir string, builderConfig BuilderConfig) error {
 	return nil
 }
 
-func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
+func buildAgent(tmpDir string, builderConfig BuilderConfig, outputPath string) (string, error) {
 	// Check go toolchain
 	goCmd := exec.Command("go", "version")
 	output, err := goCmd.CombinedOutput()
@@ -358,10 +376,6 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 		}
 	}
 
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("get current dir: %w", err)
-	}
 	privKeyBase64 := base64.RawStdEncoding.EncodeToString(builderConfig.PrivKey)
 	servers := strings.Join(builderConfig.Servers, ",")
 
@@ -403,7 +417,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 			"-literals",
 			"build",
 			"-o",
-			filepath.Join(currentDir, "agents", name),
+			outputPath,
 			"-mod=vendor",
 			"-trimpath",
 			fmt.Sprintf("-ldflags=%s", ldflags),
@@ -416,7 +430,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 			"go",
 			"build",
 			"-o",
-			filepath.Join(currentDir, "agents", name),
+			outputPath,
 			"-mod=vendor",
 			"-trimpath",
 			fmt.Sprintf("-ldflags=%s", ldflags),

@@ -9,17 +9,14 @@ import (
 type AgentCmd struct {
 	Command *cobra.Command
 	db      *database.Database
+	// used to control base directory instead of CWD
+	baseDir string
 }
 
-// + agent list
-// + agent generate --name <name> --os <os> --arch <arch> --server <server> --shared --pie --garble --ss <subsystem-list>
-// TODO: agent add --name <name> --key <public-key> --os <os> --arch <arch> --server <server> --shared --pie --garble --ss <subsystem-list> <path>
-// + agent remove <id>
-// + agent info <id>
-
-func NewAgentCmd(db *database.Database) *AgentCmd {
+func NewAgentCmd(db *database.Database, dir string) *AgentCmd {
 	agentCmd := &AgentCmd{
-		db: db,
+		db:      db,
+		baseDir: dir,
 	}
 
 	cmd := &cobra.Command{

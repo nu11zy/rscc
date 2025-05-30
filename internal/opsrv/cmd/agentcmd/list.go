@@ -44,7 +44,7 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 		hits := strconv.Itoa(agent.Hits)
 
 		// Check if agent file exists
-		agentBytes, err := os.ReadFile(filepath.Join(constants.AgentDir, agent.Name))
+		agentBytes, err := os.ReadFile(filepath.Join(a.baseDir, constants.AgentDir, agent.Name))
 		if err != nil {
 			if os.IsNotExist(err) {
 				rows[i] = []string{pprint.Blue.Sprint(id), pprint.Red.Sprint(name), osArch, servers, hits}

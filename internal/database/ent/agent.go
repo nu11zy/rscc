@@ -42,6 +42,8 @@ type Agent struct {
 	Path string `json:"path,omitempty"`
 	// PublicKey holds the value of the "public_key" field.
 	PublicKey []byte `json:"public_key,omitempty"`
+	// URL holds the value of the "url" field.
+	URL string `json:"url,omitempty"`
 	// Hits holds the value of the "hits" field.
 	Hits         int `json:"hits,omitempty"`
 	selectValues sql.SelectValues
@@ -58,7 +60,7 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case agent.FieldHits:
 			values[i] = new(sql.NullInt64)
-		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldXxhash, agent.FieldPath:
+		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldXxhash, agent.FieldPath, agent.FieldURL:
 			values[i] = new(sql.NullString)
 		case agent.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -159,6 +161,12 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				a.PublicKey = *value
 			}
+		case agent.FieldURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field url", values[i])
+			} else if value.Valid {
+				a.URL = value.String
+			}
 		case agent.FieldHits:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field hits", values[i])
@@ -236,6 +244,9 @@ func (a *Agent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("public_key=")
 	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
+	builder.WriteString(", ")
+	builder.WriteString("url=")
+	builder.WriteString(a.URL)
 	builder.WriteString(", ")
 	builder.WriteString("hits=")
 	builder.WriteString(fmt.Sprintf("%v", a.Hits))

@@ -31,20 +31,28 @@ import (
 	"golang.org/x/term"
 )
 
+// OperatorServerConfig holds related to operator's server settings
+type OperatorServerConfig struct {
+	Host     string
+	Port     int
+	BasePath string
+}
+
 type OperatorServer struct {
 	db         *database.Database
 	sm         *session.SessionManager
-	address    string
 	listener   *net.TCPListener
 	sshConfig  *ssh.ServerConfig
 	sshTimeout int
 	lg         *zap.SugaredLogger
+	config     *OperatorServerConfig
 }
 
-func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
+// NewServer returns prepared object of operator's server
+func NewServer(ctx context.Context, db *database.Database, sm *session.SessionManager, config *OperatorServerConfig) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
 
-	address := net.JoinHostPort(host, strconv.Itoa(port))
+	// get keys for listener
 	listener, err := db.GetListener(ctx, constants.OperatorListenerID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -79,7 +87,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 	opsrv := &OperatorServer{
 		db:         db,
 		sm:         sm,
-		address:    address,
+		config:     config,
 		listener:   nil,
 		sshConfig:  nil,
 		sshTimeout: constants.SshTimeout,
@@ -98,7 +106,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 
 // Start starts operator's listener
 func (s *OperatorServer) Start(ctx context.Context) error {
-	listener, err := net.Listen("tcp", s.address)
+	listener, err := net.Listen("tcp", net.JoinHostPort(s.config.Host, strconv.Itoa(s.config.Port)))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
@@ -109,7 +117,7 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 		return fmt.Errorf("listener is not *net.TCPListener")
 	}
 	s.listener = tcpListener
-	s.lg.Infof("Listener started at %s", s.address)
+	s.lg.Infof("Listener started at %s", net.JoinHostPort(s.config.Host, strconv.Itoa(s.config.Port)))
 
 	go func() {
 		<-ctx.Done()
@@ -149,17 +157,23 @@ func (l *OperatorServer) CloseListener() error {
 
 // publicKeyCallback is used to authenticate SSH connections
 func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, incomingKey ssh.PublicKey) (*ssh.Permissions, error) {
-	// Read authorized_keys from current directory or ~/.ssh/authorized_keys
 	var authorizedKeys []byte
-	if _, err := os.Stat("authorized_keys"); err == nil {
-		authorizedKeys, err = os.ReadFile("authorized_keys")
+
+	// prpare paths for authorized_keys files
+	rsccAuthorizedKeysPath := filepath.Join(s.config.BasePath, "authorized_keys")
+	globalAuthorizedKeysPath := filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")
+
+	if _, err := os.Stat(rsccAuthorizedKeysPath); err == nil {
+		// read rscc authorized_keys in data directory
+		authorizedKeys, err = os.ReadFile(rsccAuthorizedKeysPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+			return nil, fmt.Errorf("failed to read %s: %w", rsccAuthorizedKeysPath, err)
 		}
-	} else if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")); err == nil {
-		authorizedKeys, err = os.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys"))
+	} else if _, err := os.Stat(globalAuthorizedKeysPath); err == nil {
+		// read authorized_keys from ~/.ssh/
+		authorizedKeys, err = os.ReadFile(globalAuthorizedKeysPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+			return nil, fmt.Errorf("failed to read %s: %w", globalAuthorizedKeysPath, err)
 		}
 	} else {
 		return nil, fmt.Errorf("authorized_keys file not found")
@@ -197,7 +211,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	sshConn, chans, reqs, err := ssh.NewServerConn(timeoutConn, s.sshConfig)
 	if err != nil {
 		if strings.Contains(err.Error(), "authorized_keys file not found") {
-			lg.Error("SSH handshake failed: authorized_keys file not found. Please create one in the current directory or ~/.ssh/authorized_keys")
+			lg.Errorf("SSH handshake failed: authorized_keys file not found. Please create one in the %s directory or int ~/.ssh/", s.config.BasePath)
 			return
 		}
 		lg.Errorf("SSH handshake failed: %v", err)
@@ -255,14 +269,7 @@ func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan s
 			channel := sshd.NewExtendedChannel(rawChannel)
 			go s.handleSession(subLg, channel, request)
 		case "direct-tcpip":
-			subLg := lg.Named("direct-tcpip")
-			extraData := newChannel.ExtraData()
-			channel, _, err := newChannel.Accept()
-			if err != nil {
-				lg.Errorf("Failed to accept channel: %v", err)
-				continue
-			}
-			go s.handleJump(subLg, channel, extraData)
+			go s.handleJump(lg.Named("direct-tcpip"), newChannel)
 		default:
 			lg.Warnf("Unsupported channel type: %s", newChannel.ChannelType())
 			newChannel.Reject(ssh.UnknownChannelType, "unsupported channel type")
@@ -271,45 +278,58 @@ func (s *OperatorServer) handleChannels(lg *zap.SugaredLogger, channels <-chan s
 }
 
 // handleJump handles connection from operator to agent
-func (s *OperatorServer) handleJump(lg *zap.SugaredLogger, channel ssh.Channel, extraData []byte) {
-	defer channel.Close()
-
-	connData, err := sshd.GetExtraData(extraData)
+func (s *OperatorServer) handleJump(lg *zap.SugaredLogger, newChannel ssh.NewChannel) {
+	// extract extra data to determine proxyjump target
+	connData, err := sshd.GetExtraData(newChannel.ExtraData())
 	if err != nil {
 		lg.Errorf("Failed to get extra data: %v", err)
 		return
 	}
 	lg.Debugf("Reverse SSH connection from %s:%d to %s:%d", connData.OriginatorIP, connData.OriginatorPort, connData.TargetHost, connData.TargetPort)
 
-	// unknown format of string
+	// get name of agent (partial)
 	splittedHost := strings.Split(string(connData.TargetHost), "+")
 	if len(splittedHost) != 2 {
-		lg.Warnf("Session not found for host: %s", connData.TargetHost)
+		lg.Warnf("Invalid format of host %s", connData.TargetHost)
+		newChannel.Reject(ssh.Prohibited, fmt.Sprintf("\n\nInvalid format for proxyjump '%s'\n", connData.TargetHost))
 		return
 	}
 	agentId := splittedHost[1]
 	session := s.sm.GetSession(agentId)
 	if session == nil {
 		lg.Warnf("Session not found for proxyjump: %s", agentId)
+		newChannel.Reject(ssh.Prohibited, fmt.Sprintf("\n\nNo clients matched '%s'\n", agentId))
 		return
 	}
 	lg.Debugf("Session found for proxyjump: %s", session.ID)
 
-	// update session
+	// update logger
 	lg = lg.Named(fmt.Sprintf("[%s]", session.ID))
 
 	// custom ssh-jump SSH channel
 	sessionConn, sessionReqs, err := session.SSHConn.Conn.OpenChannel("ssh-jump", nil)
 	if err != nil {
 		lg.Errorf("Failed to open ssh-jump channel for proxyjump: %v", err)
+		newChannel.Reject(ssh.ConnectionFailed, fmt.Sprintf("\n\n%v\n", err.Error()))
 		return
 	}
 	lg.Info("Open ssh-jump channel for proxyjump")
 	defer sessionConn.Close()
-
 	go ssh.DiscardRequests(sessionReqs)
+
+	// accept channel to process data forwarding
+	channel, channelRequests, err := newChannel.Accept()
+	if err != nil {
+		newChannel.Reject(ssh.ConnectionFailed, fmt.Sprintf("\n\n%v\n", err.Error()))
+		return
+	}
+	defer channel.Close()
+	go ssh.DiscardRequests(channelRequests)
+
+	// process data forwarding
 	go func() {
 		io.Copy(channel, sessionConn)
+		channel.Close()
 	}()
 	io.Copy(sessionConn, channel)
 }
@@ -366,7 +386,7 @@ func (s *OperatorServer) handleSession(lg *zap.SugaredLogger, channel *sshd.Exte
 			subLg.Debugf("Subsystem request received: %s", system)
 
 			if system == "sftp" {
-				go sftpHandler(subLg, channel)
+				go sftpHandler(subLg, channel, s.config.BasePath)
 				req.Reply(true, nil)
 			} else {
 				subLg.Warnf("Subsystem not supported: %s", system)
@@ -465,6 +485,6 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.SetErr(terminal)
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
-	app.AddCommand(agentcmd.NewAgentCmd(s.db).Command)
+	app.AddCommand(agentcmd.NewAgentCmd(s.db, s.config.BasePath).Command)
 	return app
 }

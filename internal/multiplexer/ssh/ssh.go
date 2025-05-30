@@ -1,4 +1,4 @@
-package listener
+package ssh
 
 import (
 	"bytes"
@@ -10,38 +10,39 @@ import (
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/network"
+	"rscc/internal/common/utils"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/session"
 	"rscc/internal/sshd"
-	"strconv"
 	"time"
 
 	"go.uber.org/zap"
-	"golang.org/x/crypto/ssh"
+	realssh "golang.org/x/crypto/ssh"
 	"golang.org/x/sync/errgroup"
 )
 
-type AgentListener struct {
-	sm          *session.SessionManager
-	db          *database.Database
-	address     string
-	sshConfig   *ssh.ServerConfig
-	sshTimeout  int // timeout for SSH connection
-	lg          *zap.SugaredLogger
-	tcpListener *net.TCPListener
+type SshConfig struct {
+	Listener net.Listener
+	// Timeout for marking client as dead
+	Timeout time.Duration
 }
 
-const (
-	AgentListenerName = "agent"
-	AgentListenerID   = "00000001"
-)
+type Ssh struct {
+	lg        *zap.SugaredLogger
+	db        *database.Database
+	sm        *session.SessionManager
+	sshConfig *realssh.ServerConfig
+	config    *SshConfig
+	listener  net.Listener
+}
 
-func NewAgentListener(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*AgentListener, error) {
-	lg := logger.FromContext(ctx).Named("agent")
+// NewServer prepares environment for new agent's SSH server
+func NewServer(ctx context.Context, db *database.Database, sm *session.SessionManager, config *SshConfig) (*Ssh, error) {
+	lg := logger.FromContext(ctx).Named("ssh")
 
-	address := net.JoinHostPort(host, strconv.Itoa(port))
-	listener, err := db.GetListener(ctx, AgentListenerID)
+	// get keys for listener
+	listener, err := db.GetListener(ctx, constants.AgentListenerId)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			lg.Info("Listener not found, creating new one")
@@ -53,7 +54,12 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 			if err != nil {
 				return nil, fmt.Errorf("failed to get private key: %w", err)
 			}
-			listener, err = db.CreateListenerWithID(ctx, AgentListenerID, AgentListenerName, privateKey)
+			listener, err = db.CreateListenerWithID(
+				ctx,
+				constants.AgentListenerId,
+				constants.AgentListenerName,
+				privateKey,
+			)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create agent listener: %w", err)
 			}
@@ -62,57 +68,43 @@ func NewAgentListener(ctx context.Context, db *database.Database, sm *session.Se
 		}
 	}
 
-	agentListener := &AgentListener{
-		sm:          sm,
-		db:          db,
-		address:     address,
-		lg:          lg,
-		sshTimeout:  constants.SshTimeout,
-		tcpListener: nil,
-	}
-
-	sshConfig := &ssh.ServerConfig{
-		NoClientAuth:      false,
-		PublicKeyCallback: agentListener.publicKeyCallback,
-	}
-
-	signer, err := ssh.ParsePrivateKey(listener.PrivateKey)
+	// parse private key from DB
+	signer, err := realssh.ParsePrivateKey(listener.PrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
-	sshConfig.AddHostKey(signer)
 
-	agentListener.sshConfig = sshConfig
-	return agentListener, nil
+	ssh := &Ssh{
+		db:        db,
+		sm:        sm,
+		lg:        lg,
+		config:    config,
+		listener:  config.Listener,
+		sshConfig: nil,
+	}
+
+	// setup SSH
+	realsshConfig := &realssh.ServerConfig{
+		// random SSH banner
+		ServerVersion:     constants.SshBannersLinux[utils.RandInt(len(constants.SshBannersLinux))],
+		NoClientAuth:      false,
+		PublicKeyCallback: ssh.publicKeyCallback,
+	}
+	realsshConfig.AddHostKey(signer)
+
+	ssh.sshConfig = realsshConfig
+	return ssh, nil
 }
 
-// Start starts agent's listener
-func (l *AgentListener) Start(ctx context.Context) error {
-	listener, err := net.Listen("tcp", l.address)
-	if err != nil {
-		return fmt.Errorf("failed to listen: %w", err)
-	}
-	defer listener.Close()
-
-	tcpListener, ok := listener.(*net.TCPListener)
-	if !ok {
-		return errors.New("listener is not *net.TCPListener")
-	}
-	l.lg.Infof("Listener started at %s", l.address)
-
-	// save TCP listener
-	l.tcpListener = tcpListener
+// Start starts sshd server
+func (s *Ssh) Start(ctx context.Context) error {
+	s.lg.Infof("Start SSH server")
 
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
 		for {
-			// set timeout
-			if err := l.tcpListener.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
-				return fmt.Errorf("failed to set deadline: %w", err)
-			}
-
-			conn, err := l.tcpListener.Accept()
+			conn, err := s.listener.Accept()
 			if err != nil {
 				if ne, ok := err.(net.Error); ok && ne.Timeout() {
 					// avoid busy loop
@@ -121,44 +113,44 @@ func (l *AgentListener) Start(ctx context.Context) error {
 				if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
 					return nil
 				}
-				l.lg.Errorf("Failed to accept connection: %v", err)
+				s.lg.Errorf("Failed to accept connection: %v", err)
 				return err
 			}
-			go l.handleConnection(conn)
+			go s.handleConnection(conn)
 		}
 	})
 
 	g.Go(func() error {
 		<-ctx.Done()
-		if err := l.CloseListener(); err != nil {
-			l.lg.Warn("Close listener: %v", err)
+		if err := s.Stop(); err != nil {
+			s.lg.Warn("Stop server: %v", err)
 		}
-		l.lg.Info("Stop listener")
+		s.lg.Info("Stop server")
 		return nil
 	})
 
 	return g.Wait()
 }
 
-// CloseListener closes listener if it's active
-func (l *AgentListener) CloseListener() error {
-	if l.tcpListener != nil {
-		return l.tcpListener.Close()
+// Stop closes listener if it's active
+func (s *Ssh) Stop() error {
+	if s.listener != nil {
+		return s.listener.Close()
 	}
 	return nil
 }
 
-func (l *AgentListener) handleConnection(conn net.Conn) {
-	lg := l.lg
+func (s *Ssh) handleConnection(conn net.Conn) {
+	lg := s.lg
 
 	lg.Debugf("New TCP connection from %s", conn.RemoteAddr().String())
 
 	// create connection with timeout
-	timeoutConn := network.NewTimeoutConn(conn, time.Duration(2*l.sshTimeout)*time.Second)
+	timeoutConn := network.NewTimeoutConn(conn, 2*s.config.Timeout)
 	defer timeoutConn.Close()
 
 	// create new SSH connection
-	sshConn, chans, reqs, err := ssh.NewServerConn(timeoutConn, l.sshConfig)
+	sshConn, chans, reqs, err := realssh.NewServerConn(timeoutConn, s.sshConfig)
 	if err != nil {
 		lg.Errorf("SSH handshake failed: %v", err)
 		return
@@ -167,25 +159,24 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 
 	// chan to stop keepalive process in case of SSH termination
 	stopKeepalive := make(chan struct{}, 1)
-	if l.sshTimeout > 0 {
+	if s.config.Timeout > 0 {
 		// set x2 for timeout (after that time SSH client will be mark as stolen)
-		timeoutConn.Timeout = time.Duration(2*l.sshTimeout) * time.Second
+		timeoutConn.Timeout = 2 * s.config.Timeout
 
 		// send keepalive messages
 		go func() {
-			ticker := time.NewTicker(time.Duration(l.sshTimeout) * time.Second)
+			ticker := time.NewTicker(s.config.Timeout)
 			defer ticker.Stop()
 
 			for {
 				select {
 				case <-ticker.C:
-					lg.Debug("send keepalive request")
+					lg.Debug("Send keepalive request")
 					if _, _, err = sshConn.SendRequest("keepalive@openssh.com", true, []byte{}); err != nil {
 						lg.Warnf("Failed to send keepalive, assuming SSH client disconnected: %v", err)
 						sshConn.Close()
 						return
 					}
-					lg.Debug("Send keepalive request")
 				case <-stopKeepalive:
 					lg.Debug("Stop sending keepalive requests")
 					return
@@ -201,23 +192,23 @@ func (l *AgentListener) handleConnection(conn net.Conn) {
 	lg.Infof("New SSH connection from %s (%s)", sshConn.RemoteAddr(), sshConn.ClientVersion())
 
 	// create session
-	session, err := l.sm.AddSession(sshConn.User(), sshConn)
+	session, err := s.sm.AddSession(sshConn.User(), sshConn)
 	lg = lg.Named(fmt.Sprintf("[%s]", session.ID))
 	if err != nil {
 		lg.Errorf("Failed to add session: %v", err)
 		return
 	}
-	defer l.sm.RemoveSession(session)
+	defer s.sm.RemoveSession(session)
 
 	lg.Infof("New agent session %s@%s", session.Metadata.Username, session.Metadata.Hostname)
 
-	go ssh.DiscardRequests(reqs)
-	l.handleChannels(lg, chans)
+	go realssh.DiscardRequests(reqs)
+	s.handleChannels(lg, chans)
 
 	lg.Infof("SSH connection closed from %s", sshConn.RemoteAddr())
 }
 
-func (l *AgentListener) handleChannels(lg *zap.SugaredLogger, chans <-chan ssh.NewChannel) {
+func (s *Ssh) handleChannels(lg *zap.SugaredLogger, chans <-chan realssh.NewChannel) {
 	for newChannel := range chans {
 		lg.Debugf("Requested channel: %s", newChannel.ChannelType())
 		switch newChannel.ChannelType() {
@@ -228,15 +219,15 @@ func (l *AgentListener) handleChannels(lg *zap.SugaredLogger, chans <-chan ssh.N
 				lg.Errorf("Failed to accept channel: %v", err)
 				continue
 			}
-			go l.handleSession(subLg, channel, request)
+			go s.handleSession(subLg, channel, request)
 		default:
 			lg.Warnf("Unsupported channel type: %s", newChannel.ChannelType())
-			newChannel.Reject(ssh.UnknownChannelType, "unsupported channel type")
+			newChannel.Reject(realssh.UnknownChannelType, "unsupported channel type")
 		}
 	}
 }
 
-func (l *AgentListener) handleSession(lg *zap.SugaredLogger, _ ssh.Channel, request <-chan *ssh.Request) {
+func (s *Ssh) handleSession(lg *zap.SugaredLogger, _ realssh.Channel, request <-chan *realssh.Request) {
 	for req := range request {
 		lg.Debugf("Session request: %s", req.Type)
 		switch req.Type {
@@ -249,23 +240,23 @@ func (l *AgentListener) handleSession(lg *zap.SugaredLogger, _ ssh.Channel, requ
 	}
 }
 
-func (l *AgentListener) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
-	lg := l.lg.Named("ssh")
-	lg.Debugf("Public key callback for %s", conn.RemoteAddr())
+// publicKeyCallback is used to authenticate SSH connections
+func (s *Ssh) publicKeyCallback(conn realssh.ConnMetadata, incomingKey realssh.PublicKey) (*realssh.Permissions, error) {
+	s.lg.Debugf("Public key callback for %s", conn.RemoteAddr())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Check if public key matches any of the agents public keys
-	agents, err := l.db.GetAllAgents(ctx)
+	agents, err := s.db.GetAllAgents(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all agents: %w", err)
 	}
-	marshaledKey := ssh.MarshalAuthorizedKey(key)
+	marshaledKey := realssh.MarshalAuthorizedKey(incomingKey)
 	for _, agent := range agents {
 		if bytes.Equal(marshaledKey, agent.PublicKey) {
-			lg.Infof("Public key matches agent %s [id: %s]", agent.Name, agent.ID)
-			return &ssh.Permissions{
+			s.lg.Infof("Public key matches agent %s [id: %s]", agent.Name, agent.ID)
+			return &realssh.Permissions{
 				Extensions: map[string]string{
 					"id": agent.ID,
 				},

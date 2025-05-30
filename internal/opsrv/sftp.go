@@ -1,8 +1,8 @@
 package opsrv
 
 import (
-	"os"
 	"path/filepath"
+	"rscc/internal/common/constants"
 	"rscc/internal/sshd"
 
 	"go.uber.org/zap"
@@ -10,18 +10,13 @@ import (
 	"github.com/pkg/sftp"
 )
 
-func sftpHandler(lg *zap.SugaredLogger, channel *sshd.ExtendedChannel) {
+// sftpHandler serves SFTP requests for agents directory
+func sftpHandler(lg *zap.SugaredLogger, channel *sshd.ExtendedChannel, dataDir string) {
 	defer channel.CloseWithStatus(0)
-
-	currentDir, err := os.Getwd()
-	if err != nil {
-		lg.Errorf("Failed to get current directory: %v", err)
-		return
-	}
 
 	server, err := sftp.NewServer(
 		channel,
-		sftp.WithServerWorkingDirectory(filepath.Join(currentDir, "agents")),
+		sftp.WithServerWorkingDirectory(filepath.Join(dataDir, constants.AgentDir)),
 	)
 	if err != nil {
 		lg.Errorf("Failed to create SFTP server: %v", err)

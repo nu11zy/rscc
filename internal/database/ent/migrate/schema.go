@@ -23,6 +23,7 @@ var (
 		{Name: "xxhash", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "public_key", Type: field.TypeBytes},
+		{Name: "url", Type: field.TypeString},
 		{Name: "hits", Type: field.TypeInt, Default: 0},
 	}
 	// AgentsTable holds the schema information for the "agents" table.

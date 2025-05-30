@@ -60,8 +60,12 @@ func init() {
 	agentDescPublicKey := agentFields[12].Descriptor()
 	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
+	// agentDescURL is the schema descriptor for url field.
+	agentDescURL := agentFields[13].Descriptor()
+	// agent.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	agent.URLValidator = agentDescURL.Validators[0].(func(string) error)
 	// agentDescHits is the schema descriptor for hits field.
-	agentDescHits := agentFields[13].Descriptor()
+	agentDescHits := agentFields[14].Descriptor()
 	// agent.DefaultHits holds the default value on creation for the hits field.
 	agent.DefaultHits = agentDescHits.Default.(int)
 	// agentDescID is the schema descriptor for id field.
