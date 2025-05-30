@@ -159,7 +159,7 @@ func (m *Multiplexer) UnwrapLoop() error {
 			defer atomic.AddInt32(&awaitingConnections, -1)
 
 			// unwrap data in connection
-			newConn, proto, err := m.unwrap(conn)
+			newConn, proto, err := m.unwrap(conn, 0)
 			if err != nil {
 				if conn != nil {
 					conn.Close()
@@ -193,7 +193,12 @@ func (m *Multiplexer) UnwrapLoop() error {
 }
 
 // unwrap unwraps data from connection to underlay protocol
-func (m *Multiplexer) unwrap(conn net.Conn) (net.Conn, protocols.Proto, error) {
+func (m *Multiplexer) unwrap(conn net.Conn, unwrapAttempts int) (net.Conn, protocols.Proto, error) {
+	// check if unwrap count more then N (prevents infinity loop)
+	if unwrapAttempts > constants.MaxUnwrapAttempts {
+		return nil, protocols.NewUnknownProto(), fmt.Errorf("detected more then %d attempts of protocol unwrapping", unwrapAttempts)
+	}
+
 	// set deadline for waiting of first N bytes
 	conn.SetDeadline(time.Now().Add(2 * time.Second))
 
@@ -218,7 +223,7 @@ func (m *Multiplexer) unwrap(conn net.Conn) (net.Conn, protocols.Proto, error) {
 			if err := tlsConn.Handshake(); err != nil {
 				return nil, protocols.NewTlsProto(), fmt.Errorf("tls handshake error: %v", err)
 			}
-			return m.unwrap(tlsConn)
+			return m.unwrap(tlsConn, unwrapAttempts+1)
 		default:
 			return nil, protocols.NewUnknownProto(), fmt.Errorf("unknown wrapped protocol %s", proto.Type())
 		}

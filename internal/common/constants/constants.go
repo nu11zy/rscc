@@ -14,4 +14,6 @@ const (
 	MaxNetworkClients = 1000
 	// number of bytes for reading from connection for protocol determination
 	ConnHeaderLength = 16
+	// maximum number of unwrapping
+	MaxUnwrapAttempts = 8
 )
