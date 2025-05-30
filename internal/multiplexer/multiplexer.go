@@ -269,7 +269,6 @@ func (m *Multiplexer) Close() error {
 	}
 	// close queue with connections
 	close(m.queue)
-
 	return nil
 }
 
