@@ -7,8 +7,9 @@ import (
 )
 
 type AgentCmd struct {
-	Command *cobra.Command
-	db      *database.Database
+	Command  *cobra.Command
+	db       *database.Database
+	dataPath string
 }
 
 // + agent list
@@ -17,9 +18,10 @@ type AgentCmd struct {
 // + agent remove <id>
 // + agent info <id>
 
-func NewAgentCmd(db *database.Database) *AgentCmd {
+func NewAgentCmd(db *database.Database, dataPath string) *AgentCmd {
 	agentCmd := &AgentCmd{
-		db: db,
+		db:       db,
+		dataPath: dataPath,
 	}
 
 	cmd := &cobra.Command{

@@ -121,6 +121,32 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 	name = strings.ReplaceAll(strings.TrimSpace(name), " ", "-")
 
+	// Set extension
+	switch goos {
+	case "windows":
+		if shared {
+			if !strings.HasSuffix(name, ".dll") {
+				name = fmt.Sprintf("%s.dll", name)
+			}
+		} else {
+			if !strings.HasSuffix(name, ".exe") {
+				name = fmt.Sprintf("%s.exe", name)
+			}
+		}
+	case "darwin":
+		if shared {
+			if !strings.HasSuffix(name, ".dylib") {
+				name = fmt.Sprintf("%s.dylib", name)
+			}
+		}
+	case "linux":
+		if shared {
+			if !strings.HasSuffix(name, ".so") {
+				name = fmt.Sprintf("%s.so", name)
+			}
+		}
+	}
+
 	// Check database
 	agent, err := a.db.GetAgentByName(cmd.Context(), name)
 	if err == nil && agent != nil {
@@ -128,8 +154,9 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Check if agent with same name already exists
-	if _, err := os.Stat(filepath.Join(constants.AgentDir, name)); !os.IsNotExist(err) {
-		cmd.Println(pprint.Warn("Agent `%s` not found in database, but file `%s` exists. File `%s` will be replaced", name, filepath.Join(constants.AgentDir, name), filepath.Join(constants.AgentDir, name)))
+	agentPath := filepath.Join(a.dataPath, constants.AgentDir, name)
+	if _, err := os.Stat(agentPath); !os.IsNotExist(err) {
+		cmd.Println(pprint.Warn("Agent `%s` not found in database, but file `%s` exists. File `%s` will be replaced", name, agentPath, agentPath))
 	}
 
 	// Generate keys
@@ -179,13 +206,12 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		pprint.Bold.Sprint(goos),
 		pprint.Bold.Sprint(goarch),
 	))
-	name, err = buildAgent(tmpDir, builderConfig)
-	if err != nil {
+	if err := buildAgent(tmpDir, builderConfig, a.dataPath); err != nil {
 		return fmt.Errorf("failed to build agent: %w", err)
 	}
 
 	// Get agent hash
-	agentPath := filepath.Join(constants.AgentDir, name)
+	agentPath = filepath.Join(a.dataPath, constants.AgentDir, name)
 	agentBytes, err := os.ReadFile(agentPath)
 	if err != nil {
 		return fmt.Errorf("failed to read agent: %w", err)
@@ -311,15 +337,15 @@ func templateAgent(tmpDir string, builderConfig BuilderConfig) error {
 	return nil
 }
 
-func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
+func buildAgent(tmpDir string, builderConfig BuilderConfig, dataPath string) error {
 	// Check go toolchain
 	goCmd := exec.Command("go", "version")
 	output, err := goCmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("check go version: %w", err)
+		return fmt.Errorf("check go version: %w", err)
 	}
 	if !strings.Contains(string(output), "go version") {
-		return "", fmt.Errorf("go toolchain not found (install from https://go.dev/doc/install)")
+		return fmt.Errorf("go toolchain not found (install from https://go.dev/doc/install)")
 	}
 
 	// Check garble
@@ -327,41 +353,25 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 		garbleCmd := exec.Command("garble", "version")
 		output, err = garbleCmd.CombinedOutput()
 		if err != nil {
-			return "", fmt.Errorf("check garble version: %w", err)
+			return fmt.Errorf("check garble version: %w", err)
 		}
 		if !strings.Contains(string(output), "Build settings") {
-			return "", fmt.Errorf("garble not found (install from https://github.com/burrowers/garble)")
+			return fmt.Errorf("garble not found (install from https://github.com/burrowers/garble)")
 		}
 	}
 
 	// Rename agent
 	sshVersion := "SSH-2.0-OpenSSH_8.2"
-	name := builderConfig.Name
 	if builderConfig.OS == "windows" {
 		sshVersion = constants.SshBannersWindows[utils.RandInt(len(constants.SshBannersWindows))]
-		if builderConfig.Shared {
-			name = fmt.Sprintf("%s.dll", name)
-		} else {
-			name = fmt.Sprintf("%s.exe", name)
-		}
 	}
 	if builderConfig.OS == "darwin" {
 		sshVersion = constants.SshBannersDarwin[utils.RandInt(len(constants.SshBannersDarwin))]
-		if builderConfig.Shared {
-			name = fmt.Sprintf("%s.dylib", name)
-		}
 	}
 	if builderConfig.OS == "linux" {
 		sshVersion = constants.SshBannersLinux[utils.RandInt(len(constants.SshBannersLinux))]
-		if builderConfig.Shared {
-			name = fmt.Sprintf("%s.so", name)
-		}
 	}
 
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("get current dir: %w", err)
-	}
 	privKeyBase64 := base64.RawStdEncoding.EncodeToString(builderConfig.PrivKey)
 	servers := strings.Join(builderConfig.Servers, ",")
 
@@ -403,7 +413,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 			"-literals",
 			"build",
 			"-o",
-			filepath.Join(currentDir, "agents", name),
+			filepath.Join(dataPath, constants.AgentDir, builderConfig.Name),
 			"-mod=vendor",
 			"-trimpath",
 			fmt.Sprintf("-ldflags=%s", ldflags),
@@ -416,7 +426,7 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 			"go",
 			"build",
 			"-o",
-			filepath.Join(currentDir, "agents", name),
+			filepath.Join(dataPath, constants.AgentDir, builderConfig.Name),
 			"-mod=vendor",
 			"-trimpath",
 			fmt.Sprintf("-ldflags=%s", ldflags),
@@ -435,8 +445,8 @@ func buildAgent(tmpDir string, builderConfig BuilderConfig) (string, error) {
 		if len(output) > 0 {
 			err = fmt.Errorf("%w:\n%s", err, string(output))
 		}
-		return "", err
+		return err
 	}
 
-	return name, nil
+	return nil
 }
