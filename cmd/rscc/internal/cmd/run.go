@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"path/filepath"
+	"rscc/internal/agentmux"
 	"rscc/internal/common/logger"
 	"rscc/internal/database"
 	"rscc/internal/opsrv"
@@ -39,8 +40,21 @@ func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Create agent mux
+	agentMuxParams := &agentmux.AgentMuxParams{
+		Host:     c.AgentHost,
+		Port:     c.AgentPort,
+		DataPath: c.DataPath,
+	}
+	agentMux, err := agentmux.NewAgentMux(ctx, agentMuxParams)
+	if err != nil {
+		lg.Errorf("Failed to initialize agent mux: %v", err)
+		return err
+	}
+
 	// Start
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error { return opsrv.Start(ctx) })
+	g.Go(func() error { return agentMux.Start(ctx) })
 	return g.Wait()
 }

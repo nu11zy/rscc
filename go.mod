@@ -13,6 +13,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/pkg/sftp v1.13.9
 	github.com/spf13/cobra v1.9.1
+	github.com/spf13/pflag v1.0.6
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.38.0
 	golang.org/x/sync v0.14.0
@@ -40,7 +41,6 @@ require (
 	github.com/ncruces/go-strftime v0.1.9 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
