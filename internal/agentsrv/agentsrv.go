@@ -1,17 +1,16 @@
-package agentmux
+package agentsrv
 
 import (
 	"bufio"
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"net"
-	"rscc/internal/agentmux/protocols"
+	"rscc/internal/agentsrv/mux"
+	"rscc/internal/agentsrv/mux/tls"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
-	"rscc/internal/common/utils"
 	"strconv"
 	"time"
 
@@ -26,6 +25,7 @@ type AgentMux struct {
 	tcpListener *net.TCPListener
 	address     string
 	dataPath    string
+	mux         *mux.Mux
 	lg          *zap.SugaredLogger
 }
 
@@ -38,25 +38,20 @@ type AgentMuxParams struct {
 }
 
 func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error) {
-	lg := logger.FromContext(ctx).Named("mux")
+	lg := logger.FromContext(ctx).Named("agent")
 
 	address := net.JoinHostPort(params.Host, strconv.Itoa(params.Port))
 
-	var err error
-	var cert tls.Certificate
-	if params.TlsCertPath != "" && params.TlsKeyPath != "" {
-		cert, err = tls.LoadX509KeyPair(params.TlsCertPath, params.TlsKeyPath)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load TLS certificate: %w", err)
-		}
-	} else { // generate self-signed certificate
-		lg.Warnf("No TLS certificate provided, generating self-signed certificate")
-		cert, err = utils.GenTlsCertificate("127.0.0.1")
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate self-signed certificate: %w", err)
-		}
+	muxConfig := &mux.MuxConfig{
+		TlsConfig: &tls.ProtocolConfig{
+			TlsCertPath: params.TlsCertPath,
+			TlsKeyPath:  params.TlsKeyPath,
+		},
 	}
-	protocols.SetTlsCertificate(cert)
+	mux, err := mux.NewMux(lg, muxConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create mux: %w", err)
+	}
 
 	return &AgentMux{
 		connQueue: make(chan net.Conn),
@@ -64,6 +59,7 @@ func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error)
 		address:   address,
 		dataPath:  params.DataPath,
 		lg:        lg,
+		mux:       mux,
 	}, nil
 }
 
@@ -183,7 +179,7 @@ func (pc *peekableConn) Read(b []byte) (n int, err error) {
 	return pc.reader.Read(b)
 }
 
-func (a *AgentMux) unwrapConnection(conn net.Conn) (*protocols.Protocol, net.Conn, error) {
+func (a *AgentMux) unwrapConnection(conn net.Conn) (mux.Protocol, net.Conn, error) {
 	lg := a.lg
 
 	for i := 0; i < constants.MaxUnwrapDepth; i++ {
@@ -192,29 +188,24 @@ func (a *AgentMux) unwrapConnection(conn net.Conn) (*protocols.Protocol, net.Con
 			return nil, nil, fmt.Errorf("determine protocol: %w", err)
 		}
 
-		if protocol.IsUnwrapped {
-			lg.Debugf("Successfully unwrapped %s protocol from %s", protocol.Name, conn.RemoteAddr())
+		if protocol.IsUnwrapped() {
+			lg.Debugf("Successfully unwrapped %s protocol from %s", protocol.GetName(), conn.RemoteAddr())
 			return protocol, conn, nil
 		}
 
-		if protocol.Unwrap != nil {
-			lg.Debugf("Unwrapping %s protocol from %s", protocol.Name, conn.RemoteAddr())
-			conn, err = protocol.Unwrap(&peekableConn{
-				Conn:   conn,
-				reader: reader,
-			})
-			if err != nil {
-				return nil, nil, fmt.Errorf("unwrap %s protocol: %w", protocol.Name, err)
-			}
-		} else {
-			return nil, nil, fmt.Errorf("unwrapping %s protocol is not implemented", protocol.Name)
+		conn, err = protocol.Unwrap(&peekableConn{
+			Conn:   conn,
+			reader: reader,
+		})
+		if err != nil {
+			return nil, nil, fmt.Errorf("unwrap %s protocol: %w", protocol.GetName(), err)
 		}
 	}
 
 	return nil, nil, fmt.Errorf("max unwrap depth reached")
 }
 
-func (a *AgentMux) determineProtocol(conn net.Conn) (*protocols.Protocol, io.Reader, error) {
+func (a *AgentMux) determineProtocol(conn net.Conn) (mux.Protocol, io.Reader, error) {
 	lg := a.lg
 	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
 	defer conn.SetReadDeadline(time.Time{})
@@ -231,13 +222,18 @@ func (a *AgentMux) determineProtocol(conn net.Conn) (*protocols.Protocol, io.Rea
 		return nil, nil, fmt.Errorf("unable to peek at connection: %w", err)
 	}
 
-	protocol := protocols.GetProtocol(header)
+	// protocol := protocols.GetProtocol(header)
+	// if protocol == nil {
+	// 	return nil, nil, fmt.Errorf("unknown protocol: %v", header)
+	// }
+
+	protocol := a.mux.GetProtocol(header)
 	if protocol == nil {
 		return nil, nil, fmt.Errorf("unknown protocol: %v", header)
 	}
 
 	lg.Debugf("Header: %v", header)
-	lg.Debugf("Protocol: %s (unwrapped: %t)", protocol.Name, protocol.IsUnwrapped)
+	lg.Debugf("Protocol: %s (unwrapped: %t)", protocol.GetName(), protocol.IsUnwrapped())
 
 	return protocol, reader, nil
 }

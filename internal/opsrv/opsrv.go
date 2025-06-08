@@ -104,7 +104,7 @@ func NewServer(ctx context.Context, params *OperatorServerParams) (*OperatorServ
 	}
 
 	sshConfig := &ssh.ServerConfig{
-		NoClientAuth:      false,
+		NoClientAuth:      true, // TODO: set to false
 		PublicKeyCallback: opsrv.publicKeyCallback,
 	}
 	sshConfig.AddHostKey(signer)
