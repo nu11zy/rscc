@@ -1,6 +1,8 @@
 package tcp
 
 import (
+	"context"
+	"fmt"
 	"net"
 
 	"go.uber.org/zap"
@@ -33,4 +35,12 @@ func (p *Protocol) IsUnwrapped() bool {
 func (p *Protocol) Unwrap(conn net.Conn) (net.Conn, error) {
 	p.lg.Warn("TCP protocol does not implement unwrap. Returning original connection")
 	return conn, nil
+}
+
+func (p *Protocol) Handle(conn net.Conn) error {
+	return fmt.Errorf("tcp protocol does not implement handling")
+}
+
+func (p *Protocol) HandleLoop(ctx context.Context) error {
+	return nil
 }

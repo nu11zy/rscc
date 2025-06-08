@@ -78,6 +78,9 @@ func (a *AgentMux) Start(ctx context.Context) error {
 
 	g, ctx := errgroup.WithContext(ctx)
 
+	// Start mux
+	g.Go(func() error { return a.mux.Start(ctx) })
+
 	// Accept connections
 	g.Go(func() error { return a.acceptLoop(ctx) })
 
@@ -149,19 +152,20 @@ func (a *AgentMux) unwrapLoop(ctx context.Context) error {
 			}
 
 			go func(conn net.Conn) {
-				// Simulate a long-running connection
-				// TODO: Pass unwrapped connection to the handler for the protocol
-				_, _, err := a.unwrapConnection(conn)
+				defer a.connSem.Release(1)
+
+				protocol, conn, err := a.unwrapConnection(conn)
 				if err != nil {
 					lg.Errorf("Failed to unwrap connection: %v", err)
 					conn.Close()
-					a.connSem.Release(1)
 					return
 				}
-				time.Sleep(time.Second * 10)
-				lg.Debugf("Closing connection from %s", conn.RemoteAddr())
-				conn.Close()
-				a.connSem.Release(1)
+
+				if err := protocol.Handle(conn); err != nil {
+					lg.Errorf("Failed to handle connection: %v", err)
+					conn.Close()
+					return
+				}
 			}(conn)
 
 		case <-ctx.Done():

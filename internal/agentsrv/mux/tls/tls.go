@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -67,4 +68,12 @@ func (p *Protocol) Unwrap(conn net.Conn) (net.Conn, error) {
 		return nil, fmt.Errorf("tls handshake failed: %w", err)
 	}
 	return tlsConn, nil
+}
+
+func (p *Protocol) Handle(conn net.Conn) error {
+	return fmt.Errorf("tls protocol does not implement handling")
+}
+
+func (p *Protocol) HandleLoop(ctx context.Context) error {
+	return nil
 }
