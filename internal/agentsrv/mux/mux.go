@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"net"
 	"rscc/internal/agentsrv/mux/http"
 	"rscc/internal/agentsrv/mux/ssh"
 	"rscc/internal/agentsrv/mux/tcp"
 	"rscc/internal/agentsrv/mux/tls"
+	"rscc/internal/common/network"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -18,9 +18,9 @@ type Protocol interface {
 	GetName() string
 	GetHeader() [][]byte
 	IsUnwrapped() bool
-	Unwrap(conn net.Conn) (net.Conn, error)
-	Handle(conn net.Conn) error
-	HandleLoop(ctx context.Context) error
+	Unwrap(conn *network.BufferedConn) (*network.BufferedConn, error)
+	Handle(conn *network.BufferedConn) error
+	StartListener(ctx context.Context) error
 }
 
 type Mux struct {
@@ -29,7 +29,8 @@ type Mux struct {
 }
 
 type MuxConfig struct {
-	TlsConfig *tls.ProtocolConfig
+	TlsConfig  *tls.ProtocolConfig
+	HttpConfig *http.ProtocolConfig
 }
 
 func NewMux(lg *zap.SugaredLogger, config *MuxConfig) (*Mux, error) {
@@ -50,7 +51,7 @@ func NewMux(lg *zap.SugaredLogger, config *MuxConfig) (*Mux, error) {
 		return nil, fmt.Errorf("failed to create TLS protocol: %w", err)
 	}
 
-	httpProtocol, err := http.NewProtocol(lg)
+	httpProtocol, err := http.NewProtocol(lg, config.HttpConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP protocol: %w", err)
 	}
@@ -79,7 +80,7 @@ func (m *Mux) Start(ctx context.Context) error {
 	for _, protocol := range m.protocols {
 		if protocol.IsUnwrapped() {
 			g.Go(func() error {
-				return protocol.HandleLoop(ctx)
+				return protocol.StartListener(ctx)
 			})
 		}
 	}

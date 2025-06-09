@@ -22,8 +22,10 @@ var (
 		{Name: "subsystems", Type: field.TypeJSON},
 		{Name: "xxhash", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
-		{Name: "public_key", Type: field.TypeBytes},
+		{Name: "url", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "hits", Type: field.TypeInt, Default: 0},
+		{Name: "downloads", Type: field.TypeInt, Default: 0},
+		{Name: "public_key", Type: field.TypeBytes},
 	}
 	// AgentsTable holds the schema information for the "agents" table.
 	AgentsTable = &schema.Table{

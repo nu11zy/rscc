@@ -1,6 +1,7 @@
 package network
 
 import (
+	"bufio"
 	"net"
 	"time"
 )
@@ -37,4 +38,24 @@ func (t *TimeoutConn) Write(b []byte) (int, error) {
 		t.Conn.SetDeadline(time.Now().Add(t.Timeout))
 	}
 	return t.Conn.Write(b)
+}
+
+type BufferedConn struct {
+	net.Conn
+	reader *bufio.Reader
+}
+
+func NewBufferedConn(conn net.Conn) *BufferedConn {
+	return &BufferedConn{
+		Conn:   conn,
+		reader: bufio.NewReader(conn),
+	}
+}
+
+func (c *BufferedConn) Read(b []byte) (int, error) {
+	return c.reader.Read(b)
+}
+
+func (c *BufferedConn) Peek(n int) ([]byte, error) {
+	return c.reader.Peek(n)
 }

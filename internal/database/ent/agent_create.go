@@ -118,9 +118,17 @@ func (ac *AgentCreate) SetPath(s string) *AgentCreate {
 	return ac
 }
 
-// SetPublicKey sets the "public_key" field.
-func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
-	ac.mutation.SetPublicKey(b)
+// SetURL sets the "url" field.
+func (ac *AgentCreate) SetURL(s string) *AgentCreate {
+	ac.mutation.SetURL(s)
+	return ac
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableURL(s *string) *AgentCreate {
+	if s != nil {
+		ac.SetURL(*s)
+	}
 	return ac
 }
 
@@ -135,6 +143,26 @@ func (ac *AgentCreate) SetNillableHits(i *int) *AgentCreate {
 	if i != nil {
 		ac.SetHits(*i)
 	}
+	return ac
+}
+
+// SetDownloads sets the "downloads" field.
+func (ac *AgentCreate) SetDownloads(i int) *AgentCreate {
+	ac.mutation.SetDownloads(i)
+	return ac
+}
+
+// SetNillableDownloads sets the "downloads" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableDownloads(i *int) *AgentCreate {
+	if i != nil {
+		ac.SetDownloads(*i)
+	}
+	return ac
+}
+
+// SetPublicKey sets the "public_key" field.
+func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
+	ac.mutation.SetPublicKey(b)
 	return ac
 }
 
@@ -211,6 +239,10 @@ func (ac *AgentCreate) defaults() {
 		v := agent.DefaultHits
 		ac.mutation.SetHits(v)
 	}
+	if _, ok := ac.mutation.Downloads(); !ok {
+		v := agent.DefaultDownloads
+		ac.mutation.SetDownloads(v)
+	}
 	if _, ok := ac.mutation.ID(); !ok {
 		v := agent.DefaultID()
 		ac.mutation.SetID(v)
@@ -277,6 +309,12 @@ func (ac *AgentCreate) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Agent.path": %w`, err)}
 		}
 	}
+	if _, ok := ac.mutation.Hits(); !ok {
+		return &ValidationError{Name: "hits", err: errors.New(`ent: missing required field "Agent.hits"`)}
+	}
+	if _, ok := ac.mutation.Downloads(); !ok {
+		return &ValidationError{Name: "downloads", err: errors.New(`ent: missing required field "Agent.downloads"`)}
+	}
 	if _, ok := ac.mutation.PublicKey(); !ok {
 		return &ValidationError{Name: "public_key", err: errors.New(`ent: missing required field "Agent.public_key"`)}
 	}
@@ -284,9 +322,6 @@ func (ac *AgentCreate) check() error {
 		if err := agent.PublicKeyValidator(v); err != nil {
 			return &ValidationError{Name: "public_key", err: fmt.Errorf(`ent: validator failed for field "Agent.public_key": %w`, err)}
 		}
-	}
-	if _, ok := ac.mutation.Hits(); !ok {
-		return &ValidationError{Name: "hits", err: errors.New(`ent: missing required field "Agent.hits"`)}
 	}
 	return nil
 }
@@ -367,13 +402,21 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_spec.SetField(agent.FieldPath, field.TypeString, value)
 		_node.Path = value
 	}
-	if value, ok := ac.mutation.PublicKey(); ok {
-		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)
-		_node.PublicKey = value
+	if value, ok := ac.mutation.URL(); ok {
+		_spec.SetField(agent.FieldURL, field.TypeString, value)
+		_node.URL = value
 	}
 	if value, ok := ac.mutation.Hits(); ok {
 		_spec.SetField(agent.FieldHits, field.TypeInt, value)
 		_node.Hits = value
+	}
+	if value, ok := ac.mutation.Downloads(); ok {
+		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
+		_node.Downloads = value
+	}
+	if value, ok := ac.mutation.PublicKey(); ok {
+		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)
+		_node.PublicKey = value
 	}
 	return _node, _spec
 }

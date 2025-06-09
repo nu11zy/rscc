@@ -35,10 +35,14 @@ const (
 	FieldXxhash = "xxhash"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
-	// FieldPublicKey holds the string denoting the public_key field in the database.
-	FieldPublicKey = "public_key"
+	// FieldURL holds the string denoting the url field in the database.
+	FieldURL = "url"
 	// FieldHits holds the string denoting the hits field in the database.
 	FieldHits = "hits"
+	// FieldDownloads holds the string denoting the downloads field in the database.
+	FieldDownloads = "downloads"
+	// FieldPublicKey holds the string denoting the public_key field in the database.
+	FieldPublicKey = "public_key"
 	// Table holds the table name of the agent in the database.
 	Table = "agents"
 )
@@ -57,8 +61,10 @@ var Columns = []string{
 	FieldSubsystems,
 	FieldXxhash,
 	FieldPath,
-	FieldPublicKey,
+	FieldURL,
 	FieldHits,
+	FieldDownloads,
+	FieldPublicKey,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -92,10 +98,12 @@ var (
 	XxhashValidator func(string) error
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
 	PathValidator func(string) error
-	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
-	PublicKeyValidator func([]byte) error
 	// DefaultHits holds the default value on creation for the "hits" field.
 	DefaultHits int
+	// DefaultDownloads holds the default value on creation for the "downloads" field.
+	DefaultDownloads int
+	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
+	PublicKeyValidator func([]byte) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -153,7 +161,17 @@ func ByPath(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPath, opts...).ToFunc()
 }
 
+// ByURL orders the results by the url field.
+func ByURL(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
 // ByHits orders the results by the hits field.
 func ByHits(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldHits, opts...).ToFunc()
+}
+
+// ByDownloads orders the results by the downloads field.
+func ByDownloads(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDownloads, opts...).ToFunc()
 }

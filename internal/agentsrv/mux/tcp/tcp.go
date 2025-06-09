@@ -3,7 +3,7 @@ package tcp
 import (
 	"context"
 	"fmt"
-	"net"
+	"rscc/internal/common/network"
 
 	"go.uber.org/zap"
 )
@@ -32,15 +32,15 @@ func (p *Protocol) IsUnwrapped() bool {
 	return true
 }
 
-func (p *Protocol) Unwrap(conn net.Conn) (net.Conn, error) {
+func (p *Protocol) Unwrap(bufferedConn *network.BufferedConn) (*network.BufferedConn, error) {
 	p.lg.Warn("TCP protocol does not implement unwrap. Returning original connection")
-	return conn, nil
+	return bufferedConn, nil
 }
 
-func (p *Protocol) Handle(conn net.Conn) error {
+func (p *Protocol) Handle(bufferedConn *network.BufferedConn) error {
 	return fmt.Errorf("tcp protocol does not implement handling")
 }
 
-func (p *Protocol) HandleLoop(ctx context.Context) error {
+func (p *Protocol) StartListener(ctx context.Context) error {
 	return nil
 }

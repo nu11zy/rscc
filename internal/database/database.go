@@ -125,8 +125,24 @@ func (db *Database) GetAgentByID(ctx context.Context, id string) (*ent.Agent, er
 	return agent, nil
 }
 
+func (db *Database) GetAgentByURL(ctx context.Context, url string) (*ent.Agent, error) {
+	agent, err := db.client.Agent.Query().Where(agent.URL(url)).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get agent: %w", err)
+	}
+	return agent, nil
+}
+
+func (db *Database) UpdateAgentURL(ctx context.Context, id, url string) error {
+	return db.client.Agent.UpdateOneID(id).SetURL(url).Exec(ctx)
+}
+
 func (db *Database) UpdateAgentHits(ctx context.Context, id string) error {
 	return db.client.Agent.UpdateOneID(id).AddHits(1).Exec(ctx)
+}
+
+func (db *Database) UpdateAgentDownloads(ctx context.Context, id string) error {
+	return db.client.Agent.UpdateOneID(id).AddDownloads(1).Exec(ctx)
 }
 
 func (db *Database) DeleteAgent(ctx context.Context, id string) error {

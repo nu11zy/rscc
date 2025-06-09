@@ -50,9 +50,12 @@ type AgentMutation struct {
 	appendsubsystems []string
 	xxhash           *string
 	_path            *string
-	public_key       *[]byte
+	url              *string
 	hits             *int
 	addhits          *int
+	downloads        *int
+	adddownloads     *int
+	public_key       *[]byte
 	clearedFields    map[string]struct{}
 	done             bool
 	oldValue         func(context.Context) (*Agent, error)
@@ -589,40 +592,53 @@ func (m *AgentMutation) ResetPath() {
 	m._path = nil
 }
 
-// SetPublicKey sets the "public_key" field.
-func (m *AgentMutation) SetPublicKey(b []byte) {
-	m.public_key = &b
+// SetURL sets the "url" field.
+func (m *AgentMutation) SetURL(s string) {
+	m.url = &s
 }
 
-// PublicKey returns the value of the "public_key" field in the mutation.
-func (m *AgentMutation) PublicKey() (r []byte, exists bool) {
-	v := m.public_key
+// URL returns the value of the "url" field in the mutation.
+func (m *AgentMutation) URL() (r string, exists bool) {
+	v := m.url
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldPublicKey returns the old "public_key" field's value of the Agent entity.
+// OldURL returns the old "url" field's value of the Agent entity.
 // If the Agent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldPublicKey(ctx context.Context) (v []byte, err error) {
+func (m *AgentMutation) OldURL(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPublicKey requires an ID field in the mutation")
+		return v, errors.New("OldURL requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPublicKey: %w", err)
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
 	}
-	return oldValue.PublicKey, nil
+	return oldValue.URL, nil
 }
 
-// ResetPublicKey resets all changes to the "public_key" field.
-func (m *AgentMutation) ResetPublicKey() {
-	m.public_key = nil
+// ClearURL clears the value of the "url" field.
+func (m *AgentMutation) ClearURL() {
+	m.url = nil
+	m.clearedFields[agent.FieldURL] = struct{}{}
+}
+
+// URLCleared returns if the "url" field was cleared in this mutation.
+func (m *AgentMutation) URLCleared() bool {
+	_, ok := m.clearedFields[agent.FieldURL]
+	return ok
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *AgentMutation) ResetURL() {
+	m.url = nil
+	delete(m.clearedFields, agent.FieldURL)
 }
 
 // SetHits sets the "hits" field.
@@ -681,6 +697,98 @@ func (m *AgentMutation) ResetHits() {
 	m.addhits = nil
 }
 
+// SetDownloads sets the "downloads" field.
+func (m *AgentMutation) SetDownloads(i int) {
+	m.downloads = &i
+	m.adddownloads = nil
+}
+
+// Downloads returns the value of the "downloads" field in the mutation.
+func (m *AgentMutation) Downloads() (r int, exists bool) {
+	v := m.downloads
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDownloads returns the old "downloads" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldDownloads(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDownloads is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDownloads requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDownloads: %w", err)
+	}
+	return oldValue.Downloads, nil
+}
+
+// AddDownloads adds i to the "downloads" field.
+func (m *AgentMutation) AddDownloads(i int) {
+	if m.adddownloads != nil {
+		*m.adddownloads += i
+	} else {
+		m.adddownloads = &i
+	}
+}
+
+// AddedDownloads returns the value that was added to the "downloads" field in this mutation.
+func (m *AgentMutation) AddedDownloads() (r int, exists bool) {
+	v := m.adddownloads
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDownloads resets all changes to the "downloads" field.
+func (m *AgentMutation) ResetDownloads() {
+	m.downloads = nil
+	m.adddownloads = nil
+}
+
+// SetPublicKey sets the "public_key" field.
+func (m *AgentMutation) SetPublicKey(b []byte) {
+	m.public_key = &b
+}
+
+// PublicKey returns the value of the "public_key" field in the mutation.
+func (m *AgentMutation) PublicKey() (r []byte, exists bool) {
+	v := m.public_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicKey returns the old "public_key" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldPublicKey(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublicKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublicKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicKey: %w", err)
+	}
+	return oldValue.PublicKey, nil
+}
+
+// ResetPublicKey resets all changes to the "public_key" field.
+func (m *AgentMutation) ResetPublicKey() {
+	m.public_key = nil
+}
+
 // Where appends a list predicates to the AgentMutation builder.
 func (m *AgentMutation) Where(ps ...predicate.Agent) {
 	m.predicates = append(m.predicates, ps...)
@@ -715,7 +823,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 15)
 	if m.created_at != nil {
 		fields = append(fields, agent.FieldCreatedAt)
 	}
@@ -749,11 +857,17 @@ func (m *AgentMutation) Fields() []string {
 	if m._path != nil {
 		fields = append(fields, agent.FieldPath)
 	}
-	if m.public_key != nil {
-		fields = append(fields, agent.FieldPublicKey)
+	if m.url != nil {
+		fields = append(fields, agent.FieldURL)
 	}
 	if m.hits != nil {
 		fields = append(fields, agent.FieldHits)
+	}
+	if m.downloads != nil {
+		fields = append(fields, agent.FieldDownloads)
+	}
+	if m.public_key != nil {
+		fields = append(fields, agent.FieldPublicKey)
 	}
 	return fields
 }
@@ -785,10 +899,14 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Xxhash()
 	case agent.FieldPath:
 		return m.Path()
-	case agent.FieldPublicKey:
-		return m.PublicKey()
+	case agent.FieldURL:
+		return m.URL()
 	case agent.FieldHits:
 		return m.Hits()
+	case agent.FieldDownloads:
+		return m.Downloads()
+	case agent.FieldPublicKey:
+		return m.PublicKey()
 	}
 	return nil, false
 }
@@ -820,10 +938,14 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldXxhash(ctx)
 	case agent.FieldPath:
 		return m.OldPath(ctx)
-	case agent.FieldPublicKey:
-		return m.OldPublicKey(ctx)
+	case agent.FieldURL:
+		return m.OldURL(ctx)
 	case agent.FieldHits:
 		return m.OldHits(ctx)
+	case agent.FieldDownloads:
+		return m.OldDownloads(ctx)
+	case agent.FieldPublicKey:
+		return m.OldPublicKey(ctx)
 	}
 	return nil, fmt.Errorf("unknown Agent field %s", name)
 }
@@ -910,12 +1032,12 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPath(v)
 		return nil
-	case agent.FieldPublicKey:
-		v, ok := value.([]byte)
+	case agent.FieldURL:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetPublicKey(v)
+		m.SetURL(v)
 		return nil
 	case agent.FieldHits:
 		v, ok := value.(int)
@@ -923,6 +1045,20 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetHits(v)
+		return nil
+	case agent.FieldDownloads:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDownloads(v)
+		return nil
+	case agent.FieldPublicKey:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicKey(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Agent field %s", name)
@@ -935,6 +1071,9 @@ func (m *AgentMutation) AddedFields() []string {
 	if m.addhits != nil {
 		fields = append(fields, agent.FieldHits)
 	}
+	if m.adddownloads != nil {
+		fields = append(fields, agent.FieldDownloads)
+	}
 	return fields
 }
 
@@ -945,6 +1084,8 @@ func (m *AgentMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case agent.FieldHits:
 		return m.AddedHits()
+	case agent.FieldDownloads:
+		return m.AddedDownloads()
 	}
 	return nil, false
 }
@@ -961,6 +1102,13 @@ func (m *AgentMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddHits(v)
 		return nil
+	case agent.FieldDownloads:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDownloads(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Agent numeric field %s", name)
 }
@@ -968,7 +1116,11 @@ func (m *AgentMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AgentMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(agent.FieldURL) {
+		fields = append(fields, agent.FieldURL)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -981,6 +1133,11 @@ func (m *AgentMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AgentMutation) ClearField(name string) error {
+	switch name {
+	case agent.FieldURL:
+		m.ClearURL()
+		return nil
+	}
 	return fmt.Errorf("unknown Agent nullable field %s", name)
 }
 
@@ -1021,11 +1178,17 @@ func (m *AgentMutation) ResetField(name string) error {
 	case agent.FieldPath:
 		m.ResetPath()
 		return nil
-	case agent.FieldPublicKey:
-		m.ResetPublicKey()
+	case agent.FieldURL:
+		m.ResetURL()
 		return nil
 	case agent.FieldHits:
 		m.ResetHits()
+		return nil
+	case agent.FieldDownloads:
+		m.ResetDownloads()
+		return nil
+	case agent.FieldPublicKey:
+		m.ResetPublicKey()
 		return nil
 	}
 	return fmt.Errorf("unknown Agent field %s", name)

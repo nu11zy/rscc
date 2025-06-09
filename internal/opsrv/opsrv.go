@@ -133,7 +133,7 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 		if err := s.CloseListener(); err != nil {
 			s.lg.Errorf("Failed to close listener: %v", err)
 		}
-		s.lg.Info("Stop listener")
+		s.lg.Warn("Operator listener closed")
 	}()
 
 	for {
@@ -482,6 +482,6 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.SetErr(terminal)
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
-	app.AddCommand(agentcmd.NewAgentCmd(s.db, s.dataPath).Command)
+	app.AddCommand(agentcmd.NewAgentCmd(s.db, s.dataPath, s.address).Command)
 	return app
 }

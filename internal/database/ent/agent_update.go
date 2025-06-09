@@ -27,6 +27,26 @@ func (au *AgentUpdate) Where(ps ...predicate.Agent) *AgentUpdate {
 	return au
 }
 
+// SetURL sets the "url" field.
+func (au *AgentUpdate) SetURL(s string) *AgentUpdate {
+	au.mutation.SetURL(s)
+	return au
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (au *AgentUpdate) SetNillableURL(s *string) *AgentUpdate {
+	if s != nil {
+		au.SetURL(*s)
+	}
+	return au
+}
+
+// ClearURL clears the value of the "url" field.
+func (au *AgentUpdate) ClearURL() *AgentUpdate {
+	au.mutation.ClearURL()
+	return au
+}
+
 // SetHits sets the "hits" field.
 func (au *AgentUpdate) SetHits(i int) *AgentUpdate {
 	au.mutation.ResetHits()
@@ -45,6 +65,27 @@ func (au *AgentUpdate) SetNillableHits(i *int) *AgentUpdate {
 // AddHits adds i to the "hits" field.
 func (au *AgentUpdate) AddHits(i int) *AgentUpdate {
 	au.mutation.AddHits(i)
+	return au
+}
+
+// SetDownloads sets the "downloads" field.
+func (au *AgentUpdate) SetDownloads(i int) *AgentUpdate {
+	au.mutation.ResetDownloads()
+	au.mutation.SetDownloads(i)
+	return au
+}
+
+// SetNillableDownloads sets the "downloads" field if the given value is not nil.
+func (au *AgentUpdate) SetNillableDownloads(i *int) *AgentUpdate {
+	if i != nil {
+		au.SetDownloads(*i)
+	}
+	return au
+}
+
+// AddDownloads adds i to the "downloads" field.
+func (au *AgentUpdate) AddDownloads(i int) *AgentUpdate {
+	au.mutation.AddDownloads(i)
 	return au
 }
 
@@ -89,11 +130,23 @@ func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.URL(); ok {
+		_spec.SetField(agent.FieldURL, field.TypeString, value)
+	}
+	if au.mutation.URLCleared() {
+		_spec.ClearField(agent.FieldURL, field.TypeString)
+	}
 	if value, ok := au.mutation.Hits(); ok {
 		_spec.SetField(agent.FieldHits, field.TypeInt, value)
 	}
 	if value, ok := au.mutation.AddedHits(); ok {
 		_spec.AddField(agent.FieldHits, field.TypeInt, value)
+	}
+	if value, ok := au.mutation.Downloads(); ok {
+		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
+	}
+	if value, ok := au.mutation.AddedDownloads(); ok {
+		_spec.AddField(agent.FieldDownloads, field.TypeInt, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -115,6 +168,26 @@ type AgentUpdateOne struct {
 	mutation *AgentMutation
 }
 
+// SetURL sets the "url" field.
+func (auo *AgentUpdateOne) SetURL(s string) *AgentUpdateOne {
+	auo.mutation.SetURL(s)
+	return auo
+}
+
+// SetNillableURL sets the "url" field if the given value is not nil.
+func (auo *AgentUpdateOne) SetNillableURL(s *string) *AgentUpdateOne {
+	if s != nil {
+		auo.SetURL(*s)
+	}
+	return auo
+}
+
+// ClearURL clears the value of the "url" field.
+func (auo *AgentUpdateOne) ClearURL() *AgentUpdateOne {
+	auo.mutation.ClearURL()
+	return auo
+}
+
 // SetHits sets the "hits" field.
 func (auo *AgentUpdateOne) SetHits(i int) *AgentUpdateOne {
 	auo.mutation.ResetHits()
@@ -133,6 +206,27 @@ func (auo *AgentUpdateOne) SetNillableHits(i *int) *AgentUpdateOne {
 // AddHits adds i to the "hits" field.
 func (auo *AgentUpdateOne) AddHits(i int) *AgentUpdateOne {
 	auo.mutation.AddHits(i)
+	return auo
+}
+
+// SetDownloads sets the "downloads" field.
+func (auo *AgentUpdateOne) SetDownloads(i int) *AgentUpdateOne {
+	auo.mutation.ResetDownloads()
+	auo.mutation.SetDownloads(i)
+	return auo
+}
+
+// SetNillableDownloads sets the "downloads" field if the given value is not nil.
+func (auo *AgentUpdateOne) SetNillableDownloads(i *int) *AgentUpdateOne {
+	if i != nil {
+		auo.SetDownloads(*i)
+	}
+	return auo
+}
+
+// AddDownloads adds i to the "downloads" field.
+func (auo *AgentUpdateOne) AddDownloads(i int) *AgentUpdateOne {
+	auo.mutation.AddDownloads(i)
 	return auo
 }
 
@@ -207,11 +301,23 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 			}
 		}
 	}
+	if value, ok := auo.mutation.URL(); ok {
+		_spec.SetField(agent.FieldURL, field.TypeString, value)
+	}
+	if auo.mutation.URLCleared() {
+		_spec.ClearField(agent.FieldURL, field.TypeString)
+	}
 	if value, ok := auo.mutation.Hits(); ok {
 		_spec.SetField(agent.FieldHits, field.TypeInt, value)
 	}
 	if value, ok := auo.mutation.AddedHits(); ok {
 		_spec.AddField(agent.FieldHits, field.TypeInt, value)
+	}
+	if value, ok := auo.mutation.Downloads(); ok {
+		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
+	}
+	if value, ok := auo.mutation.AddedDownloads(); ok {
+		_spec.AddField(agent.FieldDownloads, field.TypeInt, value)
 	}
 	_node = &Agent{config: auo.config}
 	_spec.Assign = _node.assignValues

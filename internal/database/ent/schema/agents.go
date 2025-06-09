@@ -28,8 +28,10 @@ func (Agent) Fields() []ent.Field {
 		field.Strings("subsystems").Immutable().Default([]string{}),
 		field.String("xxhash").Immutable().NotEmpty(),
 		field.String("path").Immutable().NotEmpty(),
-		field.Bytes("public_key").Immutable().NotEmpty(),
+		field.String("url").Unique().Optional(),
 		field.Int("hits").Default(0),
+		field.Int("downloads").Default(0),
+		field.Bytes("public_key").Immutable().NotEmpty(),
 	}
 }
 

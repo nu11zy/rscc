@@ -9,6 +9,7 @@ import (
 type AgentCmd struct {
 	Command  *cobra.Command
 	db       *database.Database
+	addr     string
 	dataPath string
 }
 
@@ -18,10 +19,11 @@ type AgentCmd struct {
 // + agent remove <id>
 // + agent info <id>
 
-func NewAgentCmd(db *database.Database, dataPath string) *AgentCmd {
+func NewAgentCmd(db *database.Database, dataPath, addr string) *AgentCmd {
 	agentCmd := &AgentCmd{
 		db:       db,
 		dataPath: dataPath,
+		addr:     addr,
 	}
 
 	cmd := &cobra.Command{
@@ -36,5 +38,6 @@ func NewAgentCmd(db *database.Database, dataPath string) *AgentCmd {
 	cmd.AddCommand(agentCmd.newCmdGenerate())
 	cmd.AddCommand(agentCmd.newCmdInfo())
 	cmd.AddCommand(agentCmd.newCmdRemove())
+	cmd.AddCommand(agentCmd.newCmdServe())
 	return agentCmd
 }

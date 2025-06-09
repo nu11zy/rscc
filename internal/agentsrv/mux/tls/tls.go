@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"net"
+	"rscc/internal/common/network"
 	"rscc/internal/common/utils"
 
 	"go.uber.org/zap"
@@ -40,8 +40,13 @@ func NewProtocol(lg *zap.SugaredLogger, config *ProtocolConfig) (*Protocol, erro
 	}
 
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
+		MinVersion: tls.VersionTLS10,
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+		},
 	}
+	tlsConfig.Certificates = append(tlsConfig.Certificates, cert)
 
 	return &Protocol{
 		lg:        lg,
@@ -61,19 +66,20 @@ func (p *Protocol) IsUnwrapped() bool {
 	return false
 }
 
-func (p *Protocol) Unwrap(conn net.Conn) (net.Conn, error) {
-	p.lg.Debugf("Unwrapping TLS connection from %s", conn.RemoteAddr())
-	tlsConn := tls.Server(conn, p.tlsConfig)
+func (p *Protocol) Unwrap(bufferedConn *network.BufferedConn) (*network.BufferedConn, error) {
+	p.lg.Debugf("Unwrapping TLS connection from %s", bufferedConn.RemoteAddr())
+	tlsConn := tls.Server(bufferedConn, p.tlsConfig)
 	if err := tlsConn.Handshake(); err != nil {
 		return nil, fmt.Errorf("tls handshake failed: %w", err)
 	}
-	return tlsConn, nil
+	p.lg.Debugf("TLS handshake successful")
+	return network.NewBufferedConn(tlsConn), nil
 }
 
-func (p *Protocol) Handle(conn net.Conn) error {
+func (p *Protocol) Handle(conn *network.BufferedConn) error {
 	return fmt.Errorf("tls protocol does not implement handling")
 }
 
-func (p *Protocol) HandleLoop(ctx context.Context) error {
+func (p *Protocol) StartListener(ctx context.Context) error {
 	return nil
 }

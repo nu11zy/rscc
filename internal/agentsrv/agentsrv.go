@@ -1,16 +1,18 @@
 package agentsrv
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net"
 	"rscc/internal/agentsrv/mux"
+	"rscc/internal/agentsrv/mux/http"
 	"rscc/internal/agentsrv/mux/tls"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
+	"rscc/internal/common/network"
+	"rscc/internal/database"
 	"strconv"
 	"time"
 
@@ -30,11 +32,13 @@ type AgentMux struct {
 }
 
 type AgentMuxParams struct {
-	Host        string
-	Port        int
-	DataPath    string
-	TlsCertPath string
-	TlsKeyPath  string
+	Host         string
+	Port         int
+	DataPath     string
+	TlsCertPath  string
+	TlsKeyPath   string
+	HtmlPagePath string
+	Db           *database.Database
 }
 
 func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error) {
@@ -46,6 +50,10 @@ func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error)
 		TlsConfig: &tls.ProtocolConfig{
 			TlsCertPath: params.TlsCertPath,
 			TlsKeyPath:  params.TlsKeyPath,
+		},
+		HttpConfig: &http.ProtocolConfig{
+			Db:           params.Db,
+			HtmlPagePath: params.HtmlPagePath,
 		},
 	}
 	mux, err := mux.NewMux(lg, muxConfig)
@@ -93,7 +101,7 @@ func (a *AgentMux) Start(ctx context.Context) error {
 		if err := a.closeListener(); err != nil {
 			lg.Errorf("Failed to close listener: %v", err)
 		}
-		lg.Info("Stop listener")
+		lg.Warn("Agent listener closed")
 		return ctx.Err()
 	})
 
@@ -154,16 +162,18 @@ func (a *AgentMux) unwrapLoop(ctx context.Context) error {
 			go func(conn net.Conn) {
 				defer a.connSem.Release(1)
 
-				protocol, conn, err := a.unwrapConnection(conn)
+				bufferedConn := network.NewBufferedConn(conn)
+				protocol, unwrappedConn, err := a.unwrapConnection(bufferedConn)
 				if err != nil {
 					lg.Errorf("Failed to unwrap connection: %v", err)
-					conn.Close()
+					bufferedConn.Close()
 					return
 				}
 
-				if err := protocol.Handle(conn); err != nil {
+				if err := protocol.Handle(unwrappedConn); err != nil {
 					lg.Errorf("Failed to handle connection: %v", err)
-					conn.Close()
+					unwrappedConn.Close()
+					bufferedConn.Close()
 					return
 				}
 			}(conn)
@@ -174,33 +184,21 @@ func (a *AgentMux) unwrapLoop(ctx context.Context) error {
 	}
 }
 
-type peekableConn struct {
-	net.Conn
-	reader io.Reader
-}
-
-func (pc *peekableConn) Read(b []byte) (n int, err error) {
-	return pc.reader.Read(b)
-}
-
-func (a *AgentMux) unwrapConnection(conn net.Conn) (mux.Protocol, net.Conn, error) {
+func (a *AgentMux) unwrapConnection(bufferedConn *network.BufferedConn) (mux.Protocol, *network.BufferedConn, error) {
 	lg := a.lg
 
 	for i := 0; i < constants.MaxUnwrapDepth; i++ {
-		protocol, reader, err := a.determineProtocol(conn)
+		protocol, err := a.determineProtocol(bufferedConn)
 		if err != nil {
 			return nil, nil, fmt.Errorf("determine protocol: %w", err)
 		}
 
 		if protocol.IsUnwrapped() {
-			lg.Debugf("Successfully unwrapped %s protocol from %s", protocol.GetName(), conn.RemoteAddr())
-			return protocol, conn, nil
+			lg.Debugf("Successfully unwrapped %s protocol from %s", protocol.GetName(), bufferedConn.RemoteAddr())
+			return protocol, bufferedConn, nil
 		}
 
-		conn, err = protocol.Unwrap(&peekableConn{
-			Conn:   conn,
-			reader: reader,
-		})
+		bufferedConn, err = protocol.Unwrap(bufferedConn)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unwrap %s protocol: %w", protocol.GetName(), err)
 		}
@@ -209,35 +207,30 @@ func (a *AgentMux) unwrapConnection(conn net.Conn) (mux.Protocol, net.Conn, erro
 	return nil, nil, fmt.Errorf("max unwrap depth reached")
 }
 
-func (a *AgentMux) determineProtocol(conn net.Conn) (mux.Protocol, io.Reader, error) {
+func (a *AgentMux) determineProtocol(bufferedConn *network.BufferedConn) (mux.Protocol, error) {
 	lg := a.lg
-	conn.SetReadDeadline(time.Now().Add(time.Second * 5))
-	defer conn.SetReadDeadline(time.Time{})
 
-	reader := bufio.NewReader(conn)
-	header, err := reader.Peek(16)
+	bufferedConn.SetReadDeadline(time.Now().Add(time.Second * 5))
+	defer bufferedConn.SetReadDeadline(time.Time{})
+
+	header, err := bufferedConn.Peek(16)
 	if err != nil {
 		if err == io.EOF {
-			return nil, nil, fmt.Errorf("connection closed")
+			return nil, fmt.Errorf("connection closed")
 		}
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-			return nil, nil, fmt.Errorf("connection timed out")
+			return nil, fmt.Errorf("connection timed out")
 		}
-		return nil, nil, fmt.Errorf("unable to peek at connection: %w", err)
+		return nil, fmt.Errorf("unable to peek at connection: %w", err)
 	}
-
-	// protocol := protocols.GetProtocol(header)
-	// if protocol == nil {
-	// 	return nil, nil, fmt.Errorf("unknown protocol: %v", header)
-	// }
 
 	protocol := a.mux.GetProtocol(header)
 	if protocol == nil {
-		return nil, nil, fmt.Errorf("unknown protocol: %v", header)
+		return nil, fmt.Errorf("unknown protocol: %v", header)
 	}
 
 	lg.Debugf("Header: %v", header)
 	lg.Debugf("Protocol: %s (unwrapped: %t)", protocol.GetName(), protocol.IsUnwrapped())
 
-	return protocol, reader, nil
+	return protocol, nil
 }

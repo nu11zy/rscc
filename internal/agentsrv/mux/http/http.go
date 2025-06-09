@@ -2,24 +2,56 @@ package http
 
 import (
 	"context"
-	"net"
-	"net/http"
+	realhttp "net/http"
+	"rscc/internal/common/network"
+	"rscc/internal/database"
+	"time"
 
 	"go.uber.org/zap"
 )
 
+// TODO: Improve logging
 type Protocol struct {
-	queue chan net.Conn
-	lg    *zap.SugaredLogger
+	queue        chan *network.BufferedConn
+	listener     network.QueueListener
+	server       *realhttp.Server
+	fileServer   realhttp.Handler
+	htmlPagePath string
+	db           *database.Database
+	lg           *zap.SugaredLogger
 }
 
-func NewProtocol(lg *zap.SugaredLogger) (*Protocol, error) {
+type ProtocolConfig struct {
+	Db           *database.Database
+	HtmlPagePath string
+}
+
+func NewProtocol(lg *zap.SugaredLogger, config *ProtocolConfig) (*Protocol, error) {
 	lg = lg.Named("http")
 
-	return &Protocol{
-		queue: make(chan net.Conn, 128),
-		lg:    lg,
-	}, nil
+	queue := make(chan *network.BufferedConn, 128)
+	listener := network.NewQueueListener(queue)
+
+	protocol := &Protocol{
+		queue:        queue,
+		listener:     listener,
+		htmlPagePath: config.HtmlPagePath,
+		db:           config.Db,
+		lg:           lg,
+	}
+
+	httpmux := realhttp.NewServeMux()
+	httpmux.HandleFunc("/", protocol.RequestHandler)
+
+	if protocol.htmlPagePath != "" {
+		protocol.fileServer = realhttp.FileServer(realhttp.Dir(protocol.htmlPagePath))
+	}
+
+	protocol.server = &realhttp.Server{
+		Handler: httpmux,
+	}
+
+	return protocol, nil
 }
 
 func (p *Protocol) GetName() string {
@@ -28,15 +60,15 @@ func (p *Protocol) GetName() string {
 
 func (p *Protocol) GetHeader() [][]byte {
 	return [][]byte{
-		[]byte(http.MethodConnect),
-		[]byte(http.MethodDelete),
-		[]byte(http.MethodGet),
-		[]byte(http.MethodHead),
-		[]byte(http.MethodOptions),
-		[]byte(http.MethodPatch),
-		[]byte(http.MethodPost),
-		[]byte(http.MethodPut),
-		[]byte(http.MethodTrace),
+		[]byte(realhttp.MethodConnect),
+		[]byte(realhttp.MethodDelete),
+		[]byte(realhttp.MethodGet),
+		[]byte(realhttp.MethodHead),
+		[]byte(realhttp.MethodOptions),
+		[]byte(realhttp.MethodPatch),
+		[]byte(realhttp.MethodPost),
+		[]byte(realhttp.MethodPut),
+		[]byte(realhttp.MethodTrace),
 	}
 }
 
@@ -44,27 +76,37 @@ func (p *Protocol) IsUnwrapped() bool {
 	return true
 }
 
-func (p *Protocol) Unwrap(conn net.Conn) (net.Conn, error) {
+func (p *Protocol) Unwrap(bufferedConn *network.BufferedConn) (*network.BufferedConn, error) {
 	p.lg.Warn("HTTP protocol does not implement unwrap. Returning original connection")
-	return conn, nil
+	return bufferedConn, nil
 }
 
-func (p *Protocol) Handle(conn net.Conn) error {
-	p.lg.Debugf("New HTTP connection from %s", conn.RemoteAddr())
-	p.queue <- conn
+func (p *Protocol) Handle(bufferedConn *network.BufferedConn) error {
+	p.lg.Debugf("New HTTP connection from %s", bufferedConn.RemoteAddr())
+	p.queue <- bufferedConn
 	return nil
 }
 
-func (p *Protocol) HandleLoop(ctx context.Context) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case conn := <-p.queue:
-			conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+func (p *Protocol) StartListener(ctx context.Context) error {
+	go func() {
+		<-ctx.Done()
 
-			conn.Close()
-			p.lg.Debugf("Closed HTTP connection from %s", conn.RemoteAddr())
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := p.server.Shutdown(shutdownCtx); err != nil {
+			p.lg.Errorf("Failed to shutdown HTTP listener: %v", err)
+			return
 		}
+
+		p.lg.Warn("HTTP listener closed")
+	}()
+
+	p.lg.Info("HTTP listener started")
+	err := p.server.Serve(p.listener)
+	if err != nil && err != realhttp.ErrServerClosed {
+		return err
 	}
+
+	return nil
 }
