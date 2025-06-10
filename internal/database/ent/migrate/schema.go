@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "comment", Type: field.TypeString, Nullable: true},
 		{Name: "os", Type: field.TypeString},
 		{Name: "arch", Type: field.TypeString},
 		{Name: "servers", Type: field.TypeJSON},
@@ -23,7 +24,7 @@ var (
 		{Name: "xxhash", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "url", Type: field.TypeString, Unique: true, Nullable: true},
-		{Name: "hits", Type: field.TypeInt, Default: 0},
+		{Name: "callbacks", Type: field.TypeInt, Default: 0},
 		{Name: "downloads", Type: field.TypeInt, Default: 0},
 		{Name: "public_key", Type: field.TypeBytes},
 	}

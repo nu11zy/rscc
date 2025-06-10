@@ -29,7 +29,7 @@ type ProtocolConfig struct {
 func NewProtocol(lg *zap.SugaredLogger, config *ProtocolConfig) (*Protocol, error) {
 	lg = lg.Named("http")
 
-	queue := make(chan *network.BufferedConn, 128)
+	queue := make(chan *network.BufferedConn)
 	listener := network.NewQueueListener(queue)
 
 	protocol := &Protocol{

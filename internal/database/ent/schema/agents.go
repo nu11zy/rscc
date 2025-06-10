@@ -19,6 +19,7 @@ func (Agent) Fields() []ent.Field {
 		field.String("id").DefaultFunc(utils.GenID).Immutable().Unique(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.String("name").Immutable().Unique().NotEmpty(),
+		field.String("comment").Optional(),
 		field.String("os").Immutable().NotEmpty(),
 		field.String("arch").Immutable().NotEmpty(),
 		field.Strings("servers").Immutable(),
@@ -29,7 +30,7 @@ func (Agent) Fields() []ent.Field {
 		field.String("xxhash").Immutable().NotEmpty(),
 		field.String("path").Immutable().NotEmpty(),
 		field.String("url").Unique().Optional(),
-		field.Int("hits").Default(0),
+		field.Int("callbacks").Default(0),
 		field.Int("downloads").Default(0),
 		field.Bytes("public_key").Immutable().NotEmpty(),
 	}

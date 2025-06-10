@@ -17,6 +17,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldComment holds the string denoting the comment field in the database.
+	FieldComment = "comment"
 	// FieldOs holds the string denoting the os field in the database.
 	FieldOs = "os"
 	// FieldArch holds the string denoting the arch field in the database.
@@ -37,8 +39,8 @@ const (
 	FieldPath = "path"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
-	// FieldHits holds the string denoting the hits field in the database.
-	FieldHits = "hits"
+	// FieldCallbacks holds the string denoting the callbacks field in the database.
+	FieldCallbacks = "callbacks"
 	// FieldDownloads holds the string denoting the downloads field in the database.
 	FieldDownloads = "downloads"
 	// FieldPublicKey holds the string denoting the public_key field in the database.
@@ -52,6 +54,7 @@ var Columns = []string{
 	FieldID,
 	FieldCreatedAt,
 	FieldName,
+	FieldComment,
 	FieldOs,
 	FieldArch,
 	FieldServers,
@@ -62,7 +65,7 @@ var Columns = []string{
 	FieldXxhash,
 	FieldPath,
 	FieldURL,
-	FieldHits,
+	FieldCallbacks,
 	FieldDownloads,
 	FieldPublicKey,
 }
@@ -98,8 +101,8 @@ var (
 	XxhashValidator func(string) error
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
 	PathValidator func(string) error
-	// DefaultHits holds the default value on creation for the "hits" field.
-	DefaultHits int
+	// DefaultCallbacks holds the default value on creation for the "callbacks" field.
+	DefaultCallbacks int
 	// DefaultDownloads holds the default value on creation for the "downloads" field.
 	DefaultDownloads int
 	// PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
@@ -124,6 +127,11 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByComment orders the results by the comment field.
+func ByComment(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldComment, opts...).ToFunc()
 }
 
 // ByOs orders the results by the os field.
@@ -166,9 +174,9 @@ func ByURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURL, opts...).ToFunc()
 }
 
-// ByHits orders the results by the hits field.
-func ByHits(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldHits, opts...).ToFunc()
+// ByCallbacks orders the results by the callbacks field.
+func ByCallbacks(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCallbacks, opts...).ToFunc()
 }
 
 // ByDownloads orders the results by the downloads field.

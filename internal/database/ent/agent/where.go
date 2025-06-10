@@ -74,6 +74,11 @@ func Name(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldName, v))
 }
 
+// Comment applies equality check predicate on the "comment" field. It's identical to CommentEQ.
+func Comment(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldComment, v))
+}
+
 // Os applies equality check predicate on the "os" field. It's identical to OsEQ.
 func Os(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldOs, v))
@@ -114,9 +119,9 @@ func URL(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldURL, v))
 }
 
-// Hits applies equality check predicate on the "hits" field. It's identical to HitsEQ.
-func Hits(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldHits, v))
+// Callbacks applies equality check predicate on the "callbacks" field. It's identical to CallbacksEQ.
+func Callbacks(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldCallbacks, v))
 }
 
 // Downloads applies equality check predicate on the "downloads" field. It's identical to DownloadsEQ.
@@ -232,6 +237,81 @@ func NameEqualFold(v string) predicate.Agent {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldName, v))
+}
+
+// CommentEQ applies the EQ predicate on the "comment" field.
+func CommentEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldComment, v))
+}
+
+// CommentNEQ applies the NEQ predicate on the "comment" field.
+func CommentNEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldComment, v))
+}
+
+// CommentIn applies the In predicate on the "comment" field.
+func CommentIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldComment, vs...))
+}
+
+// CommentNotIn applies the NotIn predicate on the "comment" field.
+func CommentNotIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldComment, vs...))
+}
+
+// CommentGT applies the GT predicate on the "comment" field.
+func CommentGT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldComment, v))
+}
+
+// CommentGTE applies the GTE predicate on the "comment" field.
+func CommentGTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldComment, v))
+}
+
+// CommentLT applies the LT predicate on the "comment" field.
+func CommentLT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldComment, v))
+}
+
+// CommentLTE applies the LTE predicate on the "comment" field.
+func CommentLTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldComment, v))
+}
+
+// CommentContains applies the Contains predicate on the "comment" field.
+func CommentContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldComment, v))
+}
+
+// CommentHasPrefix applies the HasPrefix predicate on the "comment" field.
+func CommentHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldComment, v))
+}
+
+// CommentHasSuffix applies the HasSuffix predicate on the "comment" field.
+func CommentHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldComment, v))
+}
+
+// CommentIsNil applies the IsNil predicate on the "comment" field.
+func CommentIsNil() predicate.Agent {
+	return predicate.Agent(sql.FieldIsNull(FieldComment))
+}
+
+// CommentNotNil applies the NotNil predicate on the "comment" field.
+func CommentNotNil() predicate.Agent {
+	return predicate.Agent(sql.FieldNotNull(FieldComment))
+}
+
+// CommentEqualFold applies the EqualFold predicate on the "comment" field.
+func CommentEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldComment, v))
+}
+
+// CommentContainsFold applies the ContainsFold predicate on the "comment" field.
+func CommentContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldComment, v))
 }
 
 // OsEQ applies the EQ predicate on the "os" field.
@@ -599,44 +679,44 @@ func URLContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldURL, v))
 }
 
-// HitsEQ applies the EQ predicate on the "hits" field.
-func HitsEQ(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldHits, v))
+// CallbacksEQ applies the EQ predicate on the "callbacks" field.
+func CallbacksEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldCallbacks, v))
 }
 
-// HitsNEQ applies the NEQ predicate on the "hits" field.
-func HitsNEQ(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldNEQ(FieldHits, v))
+// CallbacksNEQ applies the NEQ predicate on the "callbacks" field.
+func CallbacksNEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldCallbacks, v))
 }
 
-// HitsIn applies the In predicate on the "hits" field.
-func HitsIn(vs ...int) predicate.Agent {
-	return predicate.Agent(sql.FieldIn(FieldHits, vs...))
+// CallbacksIn applies the In predicate on the "callbacks" field.
+func CallbacksIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldCallbacks, vs...))
 }
 
-// HitsNotIn applies the NotIn predicate on the "hits" field.
-func HitsNotIn(vs ...int) predicate.Agent {
-	return predicate.Agent(sql.FieldNotIn(FieldHits, vs...))
+// CallbacksNotIn applies the NotIn predicate on the "callbacks" field.
+func CallbacksNotIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldCallbacks, vs...))
 }
 
-// HitsGT applies the GT predicate on the "hits" field.
-func HitsGT(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldGT(FieldHits, v))
+// CallbacksGT applies the GT predicate on the "callbacks" field.
+func CallbacksGT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldCallbacks, v))
 }
 
-// HitsGTE applies the GTE predicate on the "hits" field.
-func HitsGTE(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldGTE(FieldHits, v))
+// CallbacksGTE applies the GTE predicate on the "callbacks" field.
+func CallbacksGTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldCallbacks, v))
 }
 
-// HitsLT applies the LT predicate on the "hits" field.
-func HitsLT(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldLT(FieldHits, v))
+// CallbacksLT applies the LT predicate on the "callbacks" field.
+func CallbacksLT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldCallbacks, v))
 }
 
-// HitsLTE applies the LTE predicate on the "hits" field.
-func HitsLTE(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldLTE(FieldHits, v))
+// CallbacksLTE applies the LTE predicate on the "callbacks" field.
+func CallbacksLTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldCallbacks, v))
 }
 
 // DownloadsEQ applies the EQ predicate on the "downloads" field.

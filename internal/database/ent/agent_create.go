@@ -40,6 +40,20 @@ func (ac *AgentCreate) SetName(s string) *AgentCreate {
 	return ac
 }
 
+// SetComment sets the "comment" field.
+func (ac *AgentCreate) SetComment(s string) *AgentCreate {
+	ac.mutation.SetComment(s)
+	return ac
+}
+
+// SetNillableComment sets the "comment" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableComment(s *string) *AgentCreate {
+	if s != nil {
+		ac.SetComment(*s)
+	}
+	return ac
+}
+
 // SetOs sets the "os" field.
 func (ac *AgentCreate) SetOs(s string) *AgentCreate {
 	ac.mutation.SetOs(s)
@@ -132,16 +146,16 @@ func (ac *AgentCreate) SetNillableURL(s *string) *AgentCreate {
 	return ac
 }
 
-// SetHits sets the "hits" field.
-func (ac *AgentCreate) SetHits(i int) *AgentCreate {
-	ac.mutation.SetHits(i)
+// SetCallbacks sets the "callbacks" field.
+func (ac *AgentCreate) SetCallbacks(i int) *AgentCreate {
+	ac.mutation.SetCallbacks(i)
 	return ac
 }
 
-// SetNillableHits sets the "hits" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableHits(i *int) *AgentCreate {
+// SetNillableCallbacks sets the "callbacks" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableCallbacks(i *int) *AgentCreate {
 	if i != nil {
-		ac.SetHits(*i)
+		ac.SetCallbacks(*i)
 	}
 	return ac
 }
@@ -235,9 +249,9 @@ func (ac *AgentCreate) defaults() {
 		v := agent.DefaultSubsystems
 		ac.mutation.SetSubsystems(v)
 	}
-	if _, ok := ac.mutation.Hits(); !ok {
-		v := agent.DefaultHits
-		ac.mutation.SetHits(v)
+	if _, ok := ac.mutation.Callbacks(); !ok {
+		v := agent.DefaultCallbacks
+		ac.mutation.SetCallbacks(v)
 	}
 	if _, ok := ac.mutation.Downloads(); !ok {
 		v := agent.DefaultDownloads
@@ -309,8 +323,8 @@ func (ac *AgentCreate) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Agent.path": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Hits(); !ok {
-		return &ValidationError{Name: "hits", err: errors.New(`ent: missing required field "Agent.hits"`)}
+	if _, ok := ac.mutation.Callbacks(); !ok {
+		return &ValidationError{Name: "callbacks", err: errors.New(`ent: missing required field "Agent.callbacks"`)}
 	}
 	if _, ok := ac.mutation.Downloads(); !ok {
 		return &ValidationError{Name: "downloads", err: errors.New(`ent: missing required field "Agent.downloads"`)}
@@ -366,6 +380,10 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_spec.SetField(agent.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := ac.mutation.Comment(); ok {
+		_spec.SetField(agent.FieldComment, field.TypeString, value)
+		_node.Comment = value
+	}
 	if value, ok := ac.mutation.Os(); ok {
 		_spec.SetField(agent.FieldOs, field.TypeString, value)
 		_node.Os = value
@@ -406,9 +424,9 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
-	if value, ok := ac.mutation.Hits(); ok {
-		_spec.SetField(agent.FieldHits, field.TypeInt, value)
-		_node.Hits = value
+	if value, ok := ac.mutation.Callbacks(); ok {
+		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
+		_node.Callbacks = value
 	}
 	if value, ok := ac.mutation.Downloads(); ok {
 		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)

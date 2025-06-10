@@ -39,6 +39,7 @@ type AgentMutation struct {
 	id               *string
 	created_at       *time.Time
 	name             *string
+	comment          *string
 	os               *string
 	arch             *string
 	servers          *[]string
@@ -51,8 +52,8 @@ type AgentMutation struct {
 	xxhash           *string
 	_path            *string
 	url              *string
-	hits             *int
-	addhits          *int
+	callbacks        *int
+	addcallbacks     *int
 	downloads        *int
 	adddownloads     *int
 	public_key       *[]byte
@@ -236,6 +237,55 @@ func (m *AgentMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *AgentMutation) ResetName() {
 	m.name = nil
+}
+
+// SetComment sets the "comment" field.
+func (m *AgentMutation) SetComment(s string) {
+	m.comment = &s
+}
+
+// Comment returns the value of the "comment" field in the mutation.
+func (m *AgentMutation) Comment() (r string, exists bool) {
+	v := m.comment
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldComment returns the old "comment" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldComment(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldComment is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldComment requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldComment: %w", err)
+	}
+	return oldValue.Comment, nil
+}
+
+// ClearComment clears the value of the "comment" field.
+func (m *AgentMutation) ClearComment() {
+	m.comment = nil
+	m.clearedFields[agent.FieldComment] = struct{}{}
+}
+
+// CommentCleared returns if the "comment" field was cleared in this mutation.
+func (m *AgentMutation) CommentCleared() bool {
+	_, ok := m.clearedFields[agent.FieldComment]
+	return ok
+}
+
+// ResetComment resets all changes to the "comment" field.
+func (m *AgentMutation) ResetComment() {
+	m.comment = nil
+	delete(m.clearedFields, agent.FieldComment)
 }
 
 // SetOs sets the "os" field.
@@ -641,60 +691,60 @@ func (m *AgentMutation) ResetURL() {
 	delete(m.clearedFields, agent.FieldURL)
 }
 
-// SetHits sets the "hits" field.
-func (m *AgentMutation) SetHits(i int) {
-	m.hits = &i
-	m.addhits = nil
+// SetCallbacks sets the "callbacks" field.
+func (m *AgentMutation) SetCallbacks(i int) {
+	m.callbacks = &i
+	m.addcallbacks = nil
 }
 
-// Hits returns the value of the "hits" field in the mutation.
-func (m *AgentMutation) Hits() (r int, exists bool) {
-	v := m.hits
+// Callbacks returns the value of the "callbacks" field in the mutation.
+func (m *AgentMutation) Callbacks() (r int, exists bool) {
+	v := m.callbacks
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldHits returns the old "hits" field's value of the Agent entity.
+// OldCallbacks returns the old "callbacks" field's value of the Agent entity.
 // If the Agent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentMutation) OldHits(ctx context.Context) (v int, err error) {
+func (m *AgentMutation) OldCallbacks(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHits is only allowed on UpdateOne operations")
+		return v, errors.New("OldCallbacks is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHits requires an ID field in the mutation")
+		return v, errors.New("OldCallbacks requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHits: %w", err)
+		return v, fmt.Errorf("querying old value for OldCallbacks: %w", err)
 	}
-	return oldValue.Hits, nil
+	return oldValue.Callbacks, nil
 }
 
-// AddHits adds i to the "hits" field.
-func (m *AgentMutation) AddHits(i int) {
-	if m.addhits != nil {
-		*m.addhits += i
+// AddCallbacks adds i to the "callbacks" field.
+func (m *AgentMutation) AddCallbacks(i int) {
+	if m.addcallbacks != nil {
+		*m.addcallbacks += i
 	} else {
-		m.addhits = &i
+		m.addcallbacks = &i
 	}
 }
 
-// AddedHits returns the value that was added to the "hits" field in this mutation.
-func (m *AgentMutation) AddedHits() (r int, exists bool) {
-	v := m.addhits
+// AddedCallbacks returns the value that was added to the "callbacks" field in this mutation.
+func (m *AgentMutation) AddedCallbacks() (r int, exists bool) {
+	v := m.addcallbacks
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetHits resets all changes to the "hits" field.
-func (m *AgentMutation) ResetHits() {
-	m.hits = nil
-	m.addhits = nil
+// ResetCallbacks resets all changes to the "callbacks" field.
+func (m *AgentMutation) ResetCallbacks() {
+	m.callbacks = nil
+	m.addcallbacks = nil
 }
 
 // SetDownloads sets the "downloads" field.
@@ -823,12 +873,15 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 15)
+	fields := make([]string, 0, 16)
 	if m.created_at != nil {
 		fields = append(fields, agent.FieldCreatedAt)
 	}
 	if m.name != nil {
 		fields = append(fields, agent.FieldName)
+	}
+	if m.comment != nil {
+		fields = append(fields, agent.FieldComment)
 	}
 	if m.os != nil {
 		fields = append(fields, agent.FieldOs)
@@ -860,8 +913,8 @@ func (m *AgentMutation) Fields() []string {
 	if m.url != nil {
 		fields = append(fields, agent.FieldURL)
 	}
-	if m.hits != nil {
-		fields = append(fields, agent.FieldHits)
+	if m.callbacks != nil {
+		fields = append(fields, agent.FieldCallbacks)
 	}
 	if m.downloads != nil {
 		fields = append(fields, agent.FieldDownloads)
@@ -881,6 +934,8 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case agent.FieldName:
 		return m.Name()
+	case agent.FieldComment:
+		return m.Comment()
 	case agent.FieldOs:
 		return m.Os()
 	case agent.FieldArch:
@@ -901,8 +956,8 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Path()
 	case agent.FieldURL:
 		return m.URL()
-	case agent.FieldHits:
-		return m.Hits()
+	case agent.FieldCallbacks:
+		return m.Callbacks()
 	case agent.FieldDownloads:
 		return m.Downloads()
 	case agent.FieldPublicKey:
@@ -920,6 +975,8 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldCreatedAt(ctx)
 	case agent.FieldName:
 		return m.OldName(ctx)
+	case agent.FieldComment:
+		return m.OldComment(ctx)
 	case agent.FieldOs:
 		return m.OldOs(ctx)
 	case agent.FieldArch:
@@ -940,8 +997,8 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldPath(ctx)
 	case agent.FieldURL:
 		return m.OldURL(ctx)
-	case agent.FieldHits:
-		return m.OldHits(ctx)
+	case agent.FieldCallbacks:
+		return m.OldCallbacks(ctx)
 	case agent.FieldDownloads:
 		return m.OldDownloads(ctx)
 	case agent.FieldPublicKey:
@@ -968,6 +1025,13 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case agent.FieldComment:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetComment(v)
 		return nil
 	case agent.FieldOs:
 		v, ok := value.(string)
@@ -1039,12 +1103,12 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetURL(v)
 		return nil
-	case agent.FieldHits:
+	case agent.FieldCallbacks:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetHits(v)
+		m.SetCallbacks(v)
 		return nil
 	case agent.FieldDownloads:
 		v, ok := value.(int)
@@ -1068,8 +1132,8 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *AgentMutation) AddedFields() []string {
 	var fields []string
-	if m.addhits != nil {
-		fields = append(fields, agent.FieldHits)
+	if m.addcallbacks != nil {
+		fields = append(fields, agent.FieldCallbacks)
 	}
 	if m.adddownloads != nil {
 		fields = append(fields, agent.FieldDownloads)
@@ -1082,8 +1146,8 @@ func (m *AgentMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *AgentMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case agent.FieldHits:
-		return m.AddedHits()
+	case agent.FieldCallbacks:
+		return m.AddedCallbacks()
 	case agent.FieldDownloads:
 		return m.AddedDownloads()
 	}
@@ -1095,12 +1159,12 @@ func (m *AgentMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *AgentMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case agent.FieldHits:
+	case agent.FieldCallbacks:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddHits(v)
+		m.AddCallbacks(v)
 		return nil
 	case agent.FieldDownloads:
 		v, ok := value.(int)
@@ -1117,6 +1181,9 @@ func (m *AgentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AgentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(agent.FieldComment) {
+		fields = append(fields, agent.FieldComment)
+	}
 	if m.FieldCleared(agent.FieldURL) {
 		fields = append(fields, agent.FieldURL)
 	}
@@ -1134,6 +1201,9 @@ func (m *AgentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AgentMutation) ClearField(name string) error {
 	switch name {
+	case agent.FieldComment:
+		m.ClearComment()
+		return nil
 	case agent.FieldURL:
 		m.ClearURL()
 		return nil
@@ -1150,6 +1220,9 @@ func (m *AgentMutation) ResetField(name string) error {
 		return nil
 	case agent.FieldName:
 		m.ResetName()
+		return nil
+	case agent.FieldComment:
+		m.ResetComment()
 		return nil
 	case agent.FieldOs:
 		m.ResetOs()
@@ -1181,8 +1254,8 @@ func (m *AgentMutation) ResetField(name string) error {
 	case agent.FieldURL:
 		m.ResetURL()
 		return nil
-	case agent.FieldHits:
-		m.ResetHits()
+	case agent.FieldCallbacks:
+		m.ResetCallbacks()
 		return nil
 	case agent.FieldDownloads:
 		m.ResetDownloads()

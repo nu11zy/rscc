@@ -1,23 +1,28 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"rscc/internal/common/validators"
 	"rscc/internal/database/ent"
+	"time"
 )
 
 // TODO: Improve logging
 func (p *Protocol) RequestHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	if r.URL.Path == "/" {
 		p.ServeDefaultPage(w, r)
 		return
 	}
 
 	// Get agent by URL
-	agent, err := p.db.GetAgentByURL(r.Context(), r.URL.Path)
+	agent, err := p.db.GetAgentByURL(ctx, r.URL.Path)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			p.lg.Debugf("Agent not found: %v", err)
@@ -37,7 +42,7 @@ func (p *Protocol) RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update agent downloads
-	if err := p.db.UpdateAgentDownloads(r.Context(), agent.ID); err != nil {
+	if err := p.db.UpdateAgentDownloads(ctx, agent.ID); err != nil {
 		p.lg.Errorf("Failed to update agent downloads: %v", err)
 	}
 }

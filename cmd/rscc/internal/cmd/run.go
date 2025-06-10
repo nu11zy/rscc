@@ -47,6 +47,7 @@ func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 		DataPath:     c.DataPath,
 		HtmlPagePath: c.HtmlPagePath,
 		Db:           db,
+		Sm:           sm,
 	}
 	agentMux, err := agentsrv.NewAgentMux(ctx, agentMuxParams)
 	if err != nil {

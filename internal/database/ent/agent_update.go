@@ -27,6 +27,26 @@ func (au *AgentUpdate) Where(ps ...predicate.Agent) *AgentUpdate {
 	return au
 }
 
+// SetComment sets the "comment" field.
+func (au *AgentUpdate) SetComment(s string) *AgentUpdate {
+	au.mutation.SetComment(s)
+	return au
+}
+
+// SetNillableComment sets the "comment" field if the given value is not nil.
+func (au *AgentUpdate) SetNillableComment(s *string) *AgentUpdate {
+	if s != nil {
+		au.SetComment(*s)
+	}
+	return au
+}
+
+// ClearComment clears the value of the "comment" field.
+func (au *AgentUpdate) ClearComment() *AgentUpdate {
+	au.mutation.ClearComment()
+	return au
+}
+
 // SetURL sets the "url" field.
 func (au *AgentUpdate) SetURL(s string) *AgentUpdate {
 	au.mutation.SetURL(s)
@@ -47,24 +67,24 @@ func (au *AgentUpdate) ClearURL() *AgentUpdate {
 	return au
 }
 
-// SetHits sets the "hits" field.
-func (au *AgentUpdate) SetHits(i int) *AgentUpdate {
-	au.mutation.ResetHits()
-	au.mutation.SetHits(i)
+// SetCallbacks sets the "callbacks" field.
+func (au *AgentUpdate) SetCallbacks(i int) *AgentUpdate {
+	au.mutation.ResetCallbacks()
+	au.mutation.SetCallbacks(i)
 	return au
 }
 
-// SetNillableHits sets the "hits" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableHits(i *int) *AgentUpdate {
+// SetNillableCallbacks sets the "callbacks" field if the given value is not nil.
+func (au *AgentUpdate) SetNillableCallbacks(i *int) *AgentUpdate {
 	if i != nil {
-		au.SetHits(*i)
+		au.SetCallbacks(*i)
 	}
 	return au
 }
 
-// AddHits adds i to the "hits" field.
-func (au *AgentUpdate) AddHits(i int) *AgentUpdate {
-	au.mutation.AddHits(i)
+// AddCallbacks adds i to the "callbacks" field.
+func (au *AgentUpdate) AddCallbacks(i int) *AgentUpdate {
+	au.mutation.AddCallbacks(i)
 	return au
 }
 
@@ -130,17 +150,23 @@ func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.Comment(); ok {
+		_spec.SetField(agent.FieldComment, field.TypeString, value)
+	}
+	if au.mutation.CommentCleared() {
+		_spec.ClearField(agent.FieldComment, field.TypeString)
+	}
 	if value, ok := au.mutation.URL(); ok {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 	}
 	if au.mutation.URLCleared() {
 		_spec.ClearField(agent.FieldURL, field.TypeString)
 	}
-	if value, ok := au.mutation.Hits(); ok {
-		_spec.SetField(agent.FieldHits, field.TypeInt, value)
+	if value, ok := au.mutation.Callbacks(); ok {
+		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
 	}
-	if value, ok := au.mutation.AddedHits(); ok {
-		_spec.AddField(agent.FieldHits, field.TypeInt, value)
+	if value, ok := au.mutation.AddedCallbacks(); ok {
+		_spec.AddField(agent.FieldCallbacks, field.TypeInt, value)
 	}
 	if value, ok := au.mutation.Downloads(); ok {
 		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
@@ -168,6 +194,26 @@ type AgentUpdateOne struct {
 	mutation *AgentMutation
 }
 
+// SetComment sets the "comment" field.
+func (auo *AgentUpdateOne) SetComment(s string) *AgentUpdateOne {
+	auo.mutation.SetComment(s)
+	return auo
+}
+
+// SetNillableComment sets the "comment" field if the given value is not nil.
+func (auo *AgentUpdateOne) SetNillableComment(s *string) *AgentUpdateOne {
+	if s != nil {
+		auo.SetComment(*s)
+	}
+	return auo
+}
+
+// ClearComment clears the value of the "comment" field.
+func (auo *AgentUpdateOne) ClearComment() *AgentUpdateOne {
+	auo.mutation.ClearComment()
+	return auo
+}
+
 // SetURL sets the "url" field.
 func (auo *AgentUpdateOne) SetURL(s string) *AgentUpdateOne {
 	auo.mutation.SetURL(s)
@@ -188,24 +234,24 @@ func (auo *AgentUpdateOne) ClearURL() *AgentUpdateOne {
 	return auo
 }
 
-// SetHits sets the "hits" field.
-func (auo *AgentUpdateOne) SetHits(i int) *AgentUpdateOne {
-	auo.mutation.ResetHits()
-	auo.mutation.SetHits(i)
+// SetCallbacks sets the "callbacks" field.
+func (auo *AgentUpdateOne) SetCallbacks(i int) *AgentUpdateOne {
+	auo.mutation.ResetCallbacks()
+	auo.mutation.SetCallbacks(i)
 	return auo
 }
 
-// SetNillableHits sets the "hits" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableHits(i *int) *AgentUpdateOne {
+// SetNillableCallbacks sets the "callbacks" field if the given value is not nil.
+func (auo *AgentUpdateOne) SetNillableCallbacks(i *int) *AgentUpdateOne {
 	if i != nil {
-		auo.SetHits(*i)
+		auo.SetCallbacks(*i)
 	}
 	return auo
 }
 
-// AddHits adds i to the "hits" field.
-func (auo *AgentUpdateOne) AddHits(i int) *AgentUpdateOne {
-	auo.mutation.AddHits(i)
+// AddCallbacks adds i to the "callbacks" field.
+func (auo *AgentUpdateOne) AddCallbacks(i int) *AgentUpdateOne {
+	auo.mutation.AddCallbacks(i)
 	return auo
 }
 
@@ -301,17 +347,23 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 			}
 		}
 	}
+	if value, ok := auo.mutation.Comment(); ok {
+		_spec.SetField(agent.FieldComment, field.TypeString, value)
+	}
+	if auo.mutation.CommentCleared() {
+		_spec.ClearField(agent.FieldComment, field.TypeString)
+	}
 	if value, ok := auo.mutation.URL(); ok {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 	}
 	if auo.mutation.URLCleared() {
 		_spec.ClearField(agent.FieldURL, field.TypeString)
 	}
-	if value, ok := auo.mutation.Hits(); ok {
-		_spec.SetField(agent.FieldHits, field.TypeInt, value)
+	if value, ok := auo.mutation.Callbacks(); ok {
+		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
 	}
-	if value, ok := auo.mutation.AddedHits(); ok {
-		_spec.AddField(agent.FieldHits, field.TypeInt, value)
+	if value, ok := auo.mutation.AddedCallbacks(); ok {
+		_spec.AddField(agent.FieldCallbacks, field.TypeInt, value)
 	}
 	if value, ok := auo.mutation.Downloads(); ok {
 		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)

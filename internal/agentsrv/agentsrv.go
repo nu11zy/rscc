@@ -8,11 +8,13 @@ import (
 	"net"
 	"rscc/internal/agentsrv/mux"
 	"rscc/internal/agentsrv/mux/http"
+	"rscc/internal/agentsrv/mux/ssh"
 	"rscc/internal/agentsrv/mux/tls"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/logger"
 	"rscc/internal/common/network"
 	"rscc/internal/database"
+	"rscc/internal/session"
 	"strconv"
 	"time"
 
@@ -39,6 +41,7 @@ type AgentMuxParams struct {
 	TlsKeyPath   string
 	HtmlPagePath string
 	Db           *database.Database
+	Sm           *session.SessionManager
 }
 
 func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error) {
@@ -54,6 +57,10 @@ func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error)
 		HttpConfig: &http.ProtocolConfig{
 			Db:           params.Db,
 			HtmlPagePath: params.HtmlPagePath,
+		},
+		SshConfig: &ssh.ProtocolConfig{
+			Db: params.Db,
+			Sm: params.Sm,
 		},
 	}
 	mux, err := mux.NewMux(lg, muxConfig)

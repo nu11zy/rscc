@@ -31,6 +31,7 @@ type Mux struct {
 type MuxConfig struct {
 	TlsConfig  *tls.ProtocolConfig
 	HttpConfig *http.ProtocolConfig
+	SshConfig  *ssh.ProtocolConfig
 }
 
 func NewMux(lg *zap.SugaredLogger, config *MuxConfig) (*Mux, error) {
@@ -41,7 +42,7 @@ func NewMux(lg *zap.SugaredLogger, config *MuxConfig) (*Mux, error) {
 		return nil, fmt.Errorf("failed to create TCP protocol: %w", err)
 	}
 
-	sshProtocol, err := ssh.NewProtocol(lg)
+	sshProtocol, err := ssh.NewProtocol(lg, config.SshConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create SSH protocol: %w", err)
 	}

@@ -138,7 +138,7 @@ func (db *Database) UpdateAgentURL(ctx context.Context, id, url string) error {
 }
 
 func (db *Database) UpdateAgentHits(ctx context.Context, id string) error {
-	return db.client.Agent.UpdateOneID(id).AddHits(1).Exec(ctx)
+	return db.client.Agent.UpdateOneID(id).AddCallbacks(1).Exec(ctx)
 }
 
 func (db *Database) UpdateAgentDownloads(ctx context.Context, id string) error {
