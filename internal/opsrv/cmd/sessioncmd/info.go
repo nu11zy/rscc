@@ -28,7 +28,7 @@ func (s *SessionCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 	}
 
 	cmd.Printf("%s %s\n", pprint.Blue.Render("ID:"), session.ID)
-	cmd.Printf("%s %s\n", pprint.Blue.Render("Created:"), session.CreatedAt.Format("2006-01-02 15:04:05"))
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Created:"), session.CreatedAt.Format("02.01.2006 15:04:05"))
 	cmd.Printf("%s %s\n", pprint.Blue.Render("Remote Address:"), session.RemoteAddr)
 	cmd.Printf("%s %s\n", pprint.Blue.Render("Username:"), session.Metadata.Username)
 	cmd.Printf("%s %s\n", pprint.Blue.Render("Hostname:"), session.Metadata.Hostname)

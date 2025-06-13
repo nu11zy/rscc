@@ -82,6 +82,6 @@ func consoleColorLevelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder
 func consoleTimeAbsEncoder() zapcore.TimeEncoder {
 	return func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 		timeColor := color.New(color.Faint)
-		enc.AppendString(timeColor.Sprintf("%s", time.Now().Format("02/01/2006 15:04:05")))
+		enc.AppendString(timeColor.Sprintf("%s", time.Now().Format("02.01.2006 15:04:05")))
 	}
 }

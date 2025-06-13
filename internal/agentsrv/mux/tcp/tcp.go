@@ -38,6 +38,7 @@ func (p *Protocol) Unwrap(bufferedConn *network.BufferedConn) (*network.Buffered
 }
 
 func (p *Protocol) Handle(bufferedConn *network.BufferedConn) error {
+	// TODO: Implement TCP protocol handling
 	return fmt.Errorf("tcp protocol does not implement handling")
 }
 
