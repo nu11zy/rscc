@@ -25,7 +25,7 @@ func CobraHelp(cmd *cobra.Command) error {
 			}
 			aliases := sort.StringSlice(c.Aliases)
 			sort.Sort(sort.Reverse(aliases))
-			aliasesStr := fmt.Sprintf("[%s]", pprint.Gray.Sprint(strings.Join(aliases, ", ")))
+			aliasesStr := fmt.Sprintf("[%s]", pprint.Black.Render(strings.Join(aliases, ", ")))
 			if len(aliasesStr) > maxAliasesLen {
 				maxAliasesLen = len(aliasesStr)
 			}
@@ -37,7 +37,7 @@ func CobraHelp(cmd *cobra.Command) error {
 				aliases := sort.StringSlice(c.Aliases)
 				sort.Sort(sort.Reverse(aliases))
 				aliasesStr := fmt.Sprintf("[%s]", strings.Join(aliases, ", "))
-				cmd.Printf("  %-*s %-*s    %s\n", maxNameLen, c.Name(), maxAliasesLen, pprint.Gray.Sprint(aliasesStr), c.Short)
+				cmd.Printf("  %-*s %-*s    %s\n", maxNameLen, c.Name(), maxAliasesLen, pprint.Black.Render(aliasesStr), c.Short)
 			}
 		}
 		cmd.Println()
@@ -50,7 +50,6 @@ func CobraHelp(cmd *cobra.Command) error {
 
 	if cmd.HasAvailableFlags() || cmd.HasAvailableSubCommands() || cmd.HasExample() {
 		cmd.Println("Use '-h / --help' for more information about a command")
-		cmd.Println()
 	}
 	return nil
 }

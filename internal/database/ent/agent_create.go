@@ -146,6 +146,20 @@ func (ac *AgentCreate) SetNillableURL(s *string) *AgentCreate {
 	return ac
 }
 
+// SetHosted sets the "hosted" field.
+func (ac *AgentCreate) SetHosted(b bool) *AgentCreate {
+	ac.mutation.SetHosted(b)
+	return ac
+}
+
+// SetNillableHosted sets the "hosted" field if the given value is not nil.
+func (ac *AgentCreate) SetNillableHosted(b *bool) *AgentCreate {
+	if b != nil {
+		ac.SetHosted(*b)
+	}
+	return ac
+}
+
 // SetCallbacks sets the "callbacks" field.
 func (ac *AgentCreate) SetCallbacks(i int) *AgentCreate {
 	ac.mutation.SetCallbacks(i)
@@ -249,6 +263,10 @@ func (ac *AgentCreate) defaults() {
 		v := agent.DefaultSubsystems
 		ac.mutation.SetSubsystems(v)
 	}
+	if _, ok := ac.mutation.Hosted(); !ok {
+		v := agent.DefaultHosted
+		ac.mutation.SetHosted(v)
+	}
 	if _, ok := ac.mutation.Callbacks(); !ok {
 		v := agent.DefaultCallbacks
 		ac.mutation.SetCallbacks(v)
@@ -322,6 +340,9 @@ func (ac *AgentCreate) check() error {
 		if err := agent.PathValidator(v); err != nil {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Agent.path": %w`, err)}
 		}
+	}
+	if _, ok := ac.mutation.Hosted(); !ok {
+		return &ValidationError{Name: "hosted", err: errors.New(`ent: missing required field "Agent.hosted"`)}
 	}
 	if _, ok := ac.mutation.Callbacks(); !ok {
 		return &ValidationError{Name: "callbacks", err: errors.New(`ent: missing required field "Agent.callbacks"`)}
@@ -423,6 +444,10 @@ func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.URL(); ok {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 		_node.URL = value
+	}
+	if value, ok := ac.mutation.Hosted(); ok {
+		_spec.SetField(agent.FieldHosted, field.TypeBool, value)
+		_node.Hosted = value
 	}
 	if value, ok := ac.mutation.Callbacks(); ok {
 		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)

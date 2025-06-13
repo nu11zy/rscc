@@ -11,3 +11,5 @@ const (
 	MaxUnwrapConnections = 1000
 	MaxUnwrapDepth       = 8
 )
+
+var Subsystems = []string{"kill", "sftp", "pscan", "pfwd", "executeassembly"}

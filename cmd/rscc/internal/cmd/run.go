@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"net"
 	"path/filepath"
 	"rscc/internal/agentsrv"
 	"rscc/internal/common/logger"
 	"rscc/internal/database"
 	"rscc/internal/opsrv"
 	"rscc/internal/session"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
@@ -15,6 +17,9 @@ import (
 func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	lg := logger.FromContext(ctx)
+
+	operatorAddr := net.JoinHostPort(c.OperatorHost, strconv.Itoa(c.OperatorPort))
+	agentAddr := net.JoinHostPort(c.AgentHost, strconv.Itoa(c.AgentPort))
 
 	// Initialize database
 	db, err := database.NewDatabase(ctx, filepath.Join(c.DataPath, "rscc.db"))
@@ -28,11 +33,11 @@ func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 
 	// Create operator server
 	opsrvParams := &opsrv.OperatorServerParams{
-		Db:       db,
-		Sm:       sm,
-		Host:     c.OperatorHost,
-		Port:     c.OperatorPort,
-		DataPath: c.DataPath,
+		Db:              db,
+		Sm:              sm,
+		OperatorAddress: operatorAddr,
+		AgentAddress:    agentAddr,
+		DataPath:        c.DataPath,
 	}
 	opsrv, err := opsrv.NewServer(ctx, opsrvParams)
 	if err != nil {
@@ -42,8 +47,7 @@ func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 
 	// Create agent mux
 	agentMuxParams := &agentsrv.AgentMuxParams{
-		Host:         c.AgentHost,
-		Port:         c.AgentPort,
+		Address:      agentAddr,
 		DataPath:     c.DataPath,
 		HtmlPagePath: c.HtmlPagePath,
 		Db:           db,

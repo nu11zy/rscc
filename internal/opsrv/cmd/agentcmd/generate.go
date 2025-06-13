@@ -50,12 +50,11 @@ func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 	cmd.Flags().StringP("os", "o", runtime.GOOS, "operating system (linux, windows, darwin)")
 	cmd.Flags().StringP("arch", "a", runtime.GOARCH, "architecture (amd64, arm64)")
 	cmd.Flags().StringSliceP("servers", "s", []string{}, "server addresses (e.g. '127.0.0.1:8080,127.0.0.1:8081')")
-	cmd.Flags().Bool("shared", false, "generate a shared library")
-	cmd.Flags().Bool("pie", false, "generate a position independent executable")
-	cmd.Flags().Bool("garble", false, "use garble to obfuscate agent")
-	cmd.Flags().Bool("debug", false, "enable debug messages")
-	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, "subsystems to add to the agent (sftp, kill, pscan, pfwd, executeassembly)")
-	cmd.MarkFlagsMutuallyExclusive("shared", "pie")
+	cmd.Flags().Bool("shared", false, "shared library")
+	cmd.Flags().Bool("pie", false, "position independent executable")
+	cmd.Flags().Bool("garble", false, "obfuscate agent with garble")
+	cmd.Flags().Bool("debug", false, "enable debug output")
+	cmd.Flags().StringSlice("ss", []string{"sftp", "kill"}, fmt.Sprintf("subsystems to add to the agent (%s)", strings.Join(constants.Subsystems, ", ")))
 	cmd.MarkFlagRequired("servers")
 
 	return cmd
@@ -201,10 +200,9 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 
 	// Build agent
 	cmd.Println(pprint.Info(
-		"Building agent '%s' for %s/%s",
-		pprint.Green.Sprint(name),
-		pprint.Bold.Sprint(goos),
-		pprint.Bold.Sprint(goarch),
+		"Building agent '%s' [%s]",
+		name,
+		pprint.Blue.Render(goos+"/"+goarch),
 	))
 	if err := buildAgent(tmpDir, builderConfig, a.dataPath); err != nil {
 		return fmt.Errorf("failed to build agent: %w", err)
@@ -225,10 +223,10 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	cmd.Println(pprint.Success(
-		"Agent '%s' generated! [ID: %s, Path: %s]\n",
-		pprint.Green.Sprint(agent.Name),
-		pprint.Blue.Sprint(agent.ID),
-		pprint.Yellow.Sprint(agent.Path),
+		"Agent '%s' generated! [ID: %s, Path: %s]",
+		agent.Name,
+		pprint.Green.Render(agent.ID),
+		pprint.Magenta.Render(agent.Path),
 	))
 	return nil
 }

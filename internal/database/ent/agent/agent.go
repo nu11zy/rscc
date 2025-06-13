@@ -39,6 +39,8 @@ const (
 	FieldPath = "path"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
+	// FieldHosted holds the string denoting the hosted field in the database.
+	FieldHosted = "hosted"
 	// FieldCallbacks holds the string denoting the callbacks field in the database.
 	FieldCallbacks = "callbacks"
 	// FieldDownloads holds the string denoting the downloads field in the database.
@@ -65,6 +67,7 @@ var Columns = []string{
 	FieldXxhash,
 	FieldPath,
 	FieldURL,
+	FieldHosted,
 	FieldCallbacks,
 	FieldDownloads,
 	FieldPublicKey,
@@ -101,6 +104,8 @@ var (
 	XxhashValidator func(string) error
 	// PathValidator is a validator for the "path" field. It is called by the builders before save.
 	PathValidator func(string) error
+	// DefaultHosted holds the default value on creation for the "hosted" field.
+	DefaultHosted bool
 	// DefaultCallbacks holds the default value on creation for the "callbacks" field.
 	DefaultCallbacks int
 	// DefaultDownloads holds the default value on creation for the "downloads" field.
@@ -172,6 +177,11 @@ func ByPath(opts ...sql.OrderTermOption) OrderOption {
 // ByURL orders the results by the url field.
 func ByURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldURL, opts...).ToFunc()
+}
+
+// ByHosted orders the results by the hosted field.
+func ByHosted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHosted, opts...).ToFunc()
 }
 
 // ByCallbacks orders the results by the callbacks field.

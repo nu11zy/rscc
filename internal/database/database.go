@@ -137,12 +137,24 @@ func (db *Database) UpdateAgentURL(ctx context.Context, id, url string) error {
 	return db.client.Agent.UpdateOneID(id).SetURL(url).Exec(ctx)
 }
 
+func (db *Database) UpdateAgentHosted(ctx context.Context, id string, hosted bool) error {
+	return db.client.Agent.UpdateOneID(id).SetHosted(hosted).Exec(ctx)
+}
+
+func (db *Database) UpdateAgentComment(ctx context.Context, id, comment string) error {
+	return db.client.Agent.UpdateOneID(id).SetComment(comment).Exec(ctx)
+}
+
 func (db *Database) UpdateAgentHits(ctx context.Context, id string) error {
 	return db.client.Agent.UpdateOneID(id).AddCallbacks(1).Exec(ctx)
 }
 
 func (db *Database) UpdateAgentDownloads(ctx context.Context, id string) error {
 	return db.client.Agent.UpdateOneID(id).AddDownloads(1).Exec(ctx)
+}
+
+func (db *Database) ResetAgentDownloads(ctx context.Context, id string) error {
+	return db.client.Agent.UpdateOneID(id).SetDownloads(0).Exec(ctx)
 }
 
 func (db *Database) DeleteAgent(ctx context.Context, id string) error {

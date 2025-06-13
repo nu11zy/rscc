@@ -24,6 +24,7 @@ var (
 		{Name: "xxhash", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
 		{Name: "url", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "hosted", Type: field.TypeBool, Default: false},
 		{Name: "callbacks", Type: field.TypeInt, Default: 0},
 		{Name: "downloads", Type: field.TypeInt, Default: 0},
 		{Name: "public_key", Type: field.TypeBytes},

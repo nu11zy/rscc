@@ -59,7 +59,10 @@ func (p *Protocol) GetName() string {
 }
 
 func (p *Protocol) GetHeader() [][]byte {
-	return [][]byte{{0x16, 0x03, 0x01}}
+	return [][]byte{
+		{0x16, 0x03, 0x01},
+		{0x16, 0x03, 0x03},
+	}
 }
 
 func (p *Protocol) IsUnwrapped() bool {

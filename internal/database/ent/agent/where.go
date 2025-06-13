@@ -119,6 +119,11 @@ func URL(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldURL, v))
 }
 
+// Hosted applies equality check predicate on the "hosted" field. It's identical to HostedEQ.
+func Hosted(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldHosted, v))
+}
+
 // Callbacks applies equality check predicate on the "callbacks" field. It's identical to CallbacksEQ.
 func Callbacks(v int) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldCallbacks, v))
@@ -677,6 +682,16 @@ func URLEqualFold(v string) predicate.Agent {
 // URLContainsFold applies the ContainsFold predicate on the "url" field.
 func URLContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldURL, v))
+}
+
+// HostedEQ applies the EQ predicate on the "hosted" field.
+func HostedEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldHosted, v))
+}
+
+// HostedNEQ applies the NEQ predicate on the "hosted" field.
+func HostedNEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldHosted, v))
 }
 
 // CallbacksEQ applies the EQ predicate on the "callbacks" field.

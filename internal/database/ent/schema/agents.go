@@ -30,6 +30,7 @@ func (Agent) Fields() []ent.Field {
 		field.String("xxhash").Immutable().NotEmpty(),
 		field.String("path").Immutable().NotEmpty(),
 		field.String("url").Unique().Optional(),
+		field.Bool("hosted").Default(false),
 		field.Int("callbacks").Default(0),
 		field.Int("downloads").Default(0),
 		field.Bytes("public_key").Immutable().NotEmpty(),

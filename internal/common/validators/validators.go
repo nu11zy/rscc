@@ -4,6 +4,7 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"rscc/internal/common/constants"
 	"slices"
 	"strconv"
 )
@@ -77,13 +78,5 @@ func ValidateDirectoryExists(path string) bool {
 
 // ValidateSubsystem validates passed value with supported subsystems by agent
 func ValidateSybsystem(ss string) bool {
-	var validSS = []string{
-		"sftp",
-		"kill",
-		"pscan",
-		"pfwd",
-		"executeassembly",
-	}
-
-	return slices.Contains(validSS, ss)
+	return slices.Contains(constants.Subsystems, ss)
 }

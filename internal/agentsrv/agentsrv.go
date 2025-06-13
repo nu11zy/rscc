@@ -15,7 +15,6 @@ import (
 	"rscc/internal/common/network"
 	"rscc/internal/database"
 	"rscc/internal/session"
-	"strconv"
 	"time"
 
 	"go.uber.org/zap"
@@ -34,8 +33,7 @@ type AgentMux struct {
 }
 
 type AgentMuxParams struct {
-	Host         string
-	Port         int
+	Address      string
 	DataPath     string
 	TlsCertPath  string
 	TlsKeyPath   string
@@ -46,8 +44,6 @@ type AgentMuxParams struct {
 
 func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error) {
 	lg := logger.FromContext(ctx).Named("agent")
-
-	address := net.JoinHostPort(params.Host, strconv.Itoa(params.Port))
 
 	muxConfig := &mux.MuxConfig{
 		TlsConfig: &tls.ProtocolConfig{
@@ -71,7 +67,7 @@ func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error)
 	return &AgentMux{
 		connQueue: make(chan net.Conn),
 		connSem:   semaphore.NewWeighted(constants.MaxUnwrapConnections),
-		address:   address,
+		address:   params.Address,
 		dataPath:  params.DataPath,
 		lg:        lg,
 		mux:       mux,

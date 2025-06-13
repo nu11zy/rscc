@@ -2,7 +2,6 @@ package agentcmd
 
 import (
 	"fmt"
-	"path/filepath"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/pprint"
 	"rscc/internal/database/ent"
@@ -49,28 +48,26 @@ func (a *AgentCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		buildFeutures = append(buildFeutures, "garble")
 	}
 
-	fullPath, err := filepath.Abs(agent.Path)
-	if err != nil {
-		return fmt.Errorf("failed to get full path to agent: %w", err)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("ID:"), agent.ID)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Name:"), agent.Name)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("OS/Arch:"), fmt.Sprintf("%s/%s", agent.Os, agent.Arch))
+	if agent.Comment != "" {
+		cmd.Printf("%s %s\n", pprint.Blue.Render("Comment:"), agent.Comment)
 	}
-
-	cmd.Println(pprint.Info("Agent info:"))
-	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("├─ ID:"), agent.ID)
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Name:"), agent.Name)
-	cmd.Printf(" %s\t\t%s/%s\n", pprint.Blue.Sprint("├─ OS:"), agent.Os, agent.Arch)
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Servers:"), strings.Join(agent.Servers, ", "))
-
+	cmd.Printf("%s %d\n", pprint.Blue.Render("Callbacks:"), agent.Callbacks)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Created:"), agent.CreatedAt.Format("2006-01-02 15:04:05"))
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Servers:"), strings.Join(agent.Servers, ", "))
 	if len(buildFeutures) > 0 {
-		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Features:"), strings.Join(buildFeutures, ", "))
+		cmd.Printf("%s %s\n", pprint.Blue.Render("Features:"), strings.Join(buildFeutures, ", "))
 	}
 	if len(agent.Subsystems) > 0 {
-		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Subsystems:"), strings.Join(agent.Subsystems, ", "))
+		cmd.Printf("%s %s\n", pprint.Blue.Render("Subsystems:"), strings.Join(agent.Subsystems, ", "))
 	}
-
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Created:"), agent.CreatedAt.Format("2006-01-02 15:04:05"))
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Path:"), fullPath)
-	cmd.Printf(" %s\t%d\n", pprint.Blue.Sprint("├─ Callbacks:"), agent.Callbacks)
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("└─ Public Key:"), agent.PublicKey)
-	cmd.Println()
+	if agent.URL != "" {
+		cmd.Printf("%s %s\n", pprint.Blue.Render("URL:"), agent.URL)
+		cmd.Printf("%s %d\n", pprint.Blue.Render("Downloads:"), agent.Downloads)
+	}
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Path:"), agent.Path)
+	cmd.Printf("%s %s", pprint.Blue.Render("Public Key:"), agent.PublicKey)
 	return nil
 }

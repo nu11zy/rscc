@@ -44,6 +44,8 @@ type Agent struct {
 	Path string `json:"path,omitempty"`
 	// URL holds the value of the "url" field.
 	URL string `json:"url,omitempty"`
+	// Hosted holds the value of the "hosted" field.
+	Hosted bool `json:"hosted,omitempty"`
 	// Callbacks holds the value of the "callbacks" field.
 	Callbacks int `json:"callbacks,omitempty"`
 	// Downloads holds the value of the "downloads" field.
@@ -60,7 +62,7 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agent.FieldServers, agent.FieldSubsystems, agent.FieldPublicKey:
 			values[i] = new([]byte)
-		case agent.FieldShared, agent.FieldPie, agent.FieldGarble:
+		case agent.FieldShared, agent.FieldPie, agent.FieldGarble, agent.FieldHosted:
 			values[i] = new(sql.NullBool)
 		case agent.FieldCallbacks, agent.FieldDownloads:
 			values[i] = new(sql.NullInt64)
@@ -171,6 +173,12 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.URL = value.String
 			}
+		case agent.FieldHosted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field hosted", values[i])
+			} else if value.Valid {
+				a.Hosted = value.Bool
+			}
 		case agent.FieldCallbacks:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field callbacks", values[i])
@@ -263,6 +271,9 @@ func (a *Agent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("url=")
 	builder.WriteString(a.URL)
+	builder.WriteString(", ")
+	builder.WriteString("hosted=")
+	builder.WriteString(fmt.Sprintf("%v", a.Hosted))
 	builder.WriteString(", ")
 	builder.WriteString("callbacks=")
 	builder.WriteString(fmt.Sprintf("%v", a.Callbacks))

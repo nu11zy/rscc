@@ -27,23 +27,22 @@ func (s *SessionCmd) cmdInfo(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	cmd.Println(pprint.Info("Session info:"))
-	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("├─ ID:"), session.ID)
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Created:"), session.CreatedAt.Format("02.01.2006 15:04:05"))
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Username:"), session.Metadata.Username)
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Hostname:"), session.Metadata.Hostname)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("ID:"), session.ID)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Created:"), session.CreatedAt.Format("2006-01-02 15:04:05"))
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Remote Address:"), session.RemoteAddr)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Username:"), session.Metadata.Username)
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Hostname:"), session.Metadata.Hostname)
 	if session.Metadata.Domain != "" {
-		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Domain:"), session.Metadata.Domain)
+		cmd.Printf("%s %s\n", pprint.Blue.Render("Domain:"), session.Metadata.Domain)
 	}
+	cmd.Printf("%s %s\n", pprint.Blue.Render("Process:"), session.Metadata.ProcName)
+	cmd.Printf("%s %t\n", pprint.Blue.Render("Privileged:"), session.Metadata.IsPriv)
 	if len(session.Metadata.IPs) > 0 {
-		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ IPs:"), strings.Join(session.Metadata.IPs, ", "))
+		cmd.Printf("%s [%s]\n", pprint.Blue.Render("IPs:"), strings.Join(session.Metadata.IPs, ", "))
 	}
-	cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Process:"), session.Metadata.ProcName)
-	cmd.Printf(" %s\t%t\n", pprint.Blue.Sprint("├─ IsAdmin:"), session.Metadata.IsPriv)
 	if session.Metadata.Extra != "" {
-		cmd.Printf(" %s\t%s\n", pprint.Blue.Sprint("├─ Extra:"), session.Metadata.Extra)
+		cmd.Printf("%s %s\n", pprint.Blue.Render("Extra:"), session.Metadata.Extra)
 	}
-	cmd.Printf(" %s\t\t%s\n", pprint.Blue.Sprint("└─ OS:"), session.Metadata.OSMeta)
-	cmd.Println()
+	cmd.Printf("%s %s\n", pprint.Blue.Render("OS:"), session.Metadata.OSMeta)
 	return nil
 }

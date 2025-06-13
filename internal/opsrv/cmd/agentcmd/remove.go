@@ -5,6 +5,7 @@ import (
 	"os"
 	"rscc/internal/common/constants"
 	"rscc/internal/common/pprint"
+	"rscc/internal/common/validators"
 	"rscc/internal/database/ent"
 
 	"github.com/spf13/cobra"
@@ -39,14 +40,13 @@ func (a *AgentCmd) cmdRemove(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get agent: %w", err)
 	}
 
-	// Check if file exists
-	if _, err := os.Stat(agent.Path); os.IsNotExist(err) {
-		cmd.Println(pprint.Warn("Agent file '%s' not found", agent.Path))
-	} else {
-		err = os.Remove(agent.Path)
-		if err != nil {
-			cmd.Println(pprint.Warn("Failed to delete agent file: %v", err))
-		}
+	if !validators.ValidateFileExists(agent.Path) {
+		return fmt.Errorf("agent file '%s' not found", agent.Path)
+	}
+
+	err = os.Remove(agent.Path)
+	if err != nil {
+		return fmt.Errorf("failed to delete agent file: %w", err)
 	}
 
 	err = a.db.DeleteAgent(cmd.Context(), id)
@@ -54,6 +54,6 @@ func (a *AgentCmd) cmdRemove(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to delete agent: %w", err)
 	}
 
-	cmd.Println(pprint.Success("Agent '%s' removed\n", pprint.Blue.Sprint(agent.Name)))
+	cmd.Println(pprint.Success("Agent '%s' removed", pprint.Blue.Render(agent.Name)))
 	return nil
 }

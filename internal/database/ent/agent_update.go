@@ -67,6 +67,20 @@ func (au *AgentUpdate) ClearURL() *AgentUpdate {
 	return au
 }
 
+// SetHosted sets the "hosted" field.
+func (au *AgentUpdate) SetHosted(b bool) *AgentUpdate {
+	au.mutation.SetHosted(b)
+	return au
+}
+
+// SetNillableHosted sets the "hosted" field if the given value is not nil.
+func (au *AgentUpdate) SetNillableHosted(b *bool) *AgentUpdate {
+	if b != nil {
+		au.SetHosted(*b)
+	}
+	return au
+}
+
 // SetCallbacks sets the "callbacks" field.
 func (au *AgentUpdate) SetCallbacks(i int) *AgentUpdate {
 	au.mutation.ResetCallbacks()
@@ -162,6 +176,9 @@ func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if au.mutation.URLCleared() {
 		_spec.ClearField(agent.FieldURL, field.TypeString)
 	}
+	if value, ok := au.mutation.Hosted(); ok {
+		_spec.SetField(agent.FieldHosted, field.TypeBool, value)
+	}
 	if value, ok := au.mutation.Callbacks(); ok {
 		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
 	}
@@ -231,6 +248,20 @@ func (auo *AgentUpdateOne) SetNillableURL(s *string) *AgentUpdateOne {
 // ClearURL clears the value of the "url" field.
 func (auo *AgentUpdateOne) ClearURL() *AgentUpdateOne {
 	auo.mutation.ClearURL()
+	return auo
+}
+
+// SetHosted sets the "hosted" field.
+func (auo *AgentUpdateOne) SetHosted(b bool) *AgentUpdateOne {
+	auo.mutation.SetHosted(b)
+	return auo
+}
+
+// SetNillableHosted sets the "hosted" field if the given value is not nil.
+func (auo *AgentUpdateOne) SetNillableHosted(b *bool) *AgentUpdateOne {
+	if b != nil {
+		auo.SetHosted(*b)
+	}
 	return auo
 }
 
@@ -358,6 +389,9 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 	}
 	if auo.mutation.URLCleared() {
 		_spec.ClearField(agent.FieldURL, field.TypeString)
+	}
+	if value, ok := auo.mutation.Hosted(); ok {
+		_spec.SetField(agent.FieldHosted, field.TypeBool, value)
 	}
 	if value, ok := auo.mutation.Callbacks(); ok {
 		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)

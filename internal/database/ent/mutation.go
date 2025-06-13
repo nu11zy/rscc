@@ -52,6 +52,7 @@ type AgentMutation struct {
 	xxhash           *string
 	_path            *string
 	url              *string
+	hosted           *bool
 	callbacks        *int
 	addcallbacks     *int
 	downloads        *int
@@ -691,6 +692,42 @@ func (m *AgentMutation) ResetURL() {
 	delete(m.clearedFields, agent.FieldURL)
 }
 
+// SetHosted sets the "hosted" field.
+func (m *AgentMutation) SetHosted(b bool) {
+	m.hosted = &b
+}
+
+// Hosted returns the value of the "hosted" field in the mutation.
+func (m *AgentMutation) Hosted() (r bool, exists bool) {
+	v := m.hosted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHosted returns the old "hosted" field's value of the Agent entity.
+// If the Agent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentMutation) OldHosted(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHosted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHosted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHosted: %w", err)
+	}
+	return oldValue.Hosted, nil
+}
+
+// ResetHosted resets all changes to the "hosted" field.
+func (m *AgentMutation) ResetHosted() {
+	m.hosted = nil
+}
+
 // SetCallbacks sets the "callbacks" field.
 func (m *AgentMutation) SetCallbacks(i int) {
 	m.callbacks = &i
@@ -873,7 +910,7 @@ func (m *AgentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentMutation) Fields() []string {
-	fields := make([]string, 0, 16)
+	fields := make([]string, 0, 17)
 	if m.created_at != nil {
 		fields = append(fields, agent.FieldCreatedAt)
 	}
@@ -912,6 +949,9 @@ func (m *AgentMutation) Fields() []string {
 	}
 	if m.url != nil {
 		fields = append(fields, agent.FieldURL)
+	}
+	if m.hosted != nil {
+		fields = append(fields, agent.FieldHosted)
 	}
 	if m.callbacks != nil {
 		fields = append(fields, agent.FieldCallbacks)
@@ -956,6 +996,8 @@ func (m *AgentMutation) Field(name string) (ent.Value, bool) {
 		return m.Path()
 	case agent.FieldURL:
 		return m.URL()
+	case agent.FieldHosted:
+		return m.Hosted()
 	case agent.FieldCallbacks:
 		return m.Callbacks()
 	case agent.FieldDownloads:
@@ -997,6 +1039,8 @@ func (m *AgentMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldPath(ctx)
 	case agent.FieldURL:
 		return m.OldURL(ctx)
+	case agent.FieldHosted:
+		return m.OldHosted(ctx)
 	case agent.FieldCallbacks:
 		return m.OldCallbacks(ctx)
 	case agent.FieldDownloads:
@@ -1102,6 +1146,13 @@ func (m *AgentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetURL(v)
+		return nil
+	case agent.FieldHosted:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHosted(v)
 		return nil
 	case agent.FieldCallbacks:
 		v, ok := value.(int)
@@ -1253,6 +1304,9 @@ func (m *AgentMutation) ResetField(name string) error {
 		return nil
 	case agent.FieldURL:
 		m.ResetURL()
+		return nil
+	case agent.FieldHosted:
+		m.ResetHosted()
 		return nil
 	case agent.FieldCallbacks:
 		m.ResetCallbacks()
