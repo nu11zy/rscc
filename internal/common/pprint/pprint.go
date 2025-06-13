@@ -4,25 +4,24 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fatih/color"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 var (
-	Bold   = color.New(color.Bold)
-	Blue   = color.New(color.FgBlue)
-	Green  = color.New(color.FgGreen)
-	Cyan   = color.New(color.FgCyan)
-	Red    = color.New(color.FgRed)
-	Purple = color.New(color.FgMagenta)
-	Yellow = color.New(color.FgYellow)
-	Gray   = color.New(color.FgHiBlack)
-	Reset  = color.New(color.Reset)
+	Bold    = lipgloss.NewStyle().Bold(true)
+	Blue    = lipgloss.NewStyle().Foreground(lipgloss.Blue)
+	Green   = lipgloss.NewStyle().Foreground(lipgloss.Green)
+	Cyan    = lipgloss.NewStyle().Foreground(lipgloss.Cyan)
+	Red     = lipgloss.NewStyle().Foreground(lipgloss.Red)
+	Magenta = lipgloss.NewStyle().Foreground(lipgloss.Magenta)
+	Yellow  = lipgloss.NewStyle().Foreground(lipgloss.Yellow)
+	Black   = lipgloss.NewStyle().Foreground(lipgloss.Black)
 
-	SuccessPrefix = Green.Sprintf("[+]")
-	InfoPrefix    = Blue.Sprintf("[i]")
-	WarnPrefix    = Yellow.Sprintf("[*]")
-	ErrorPrefix   = Red.Sprintf("[-]")
+	SuccessPrefix = Green.Render("[+]")
+	InfoPrefix    = Blue.Render("[i]")
+	WarnPrefix    = Yellow.Render("[*]")
+	ErrorPrefix   = Red.Render("[-]")
 )
 
 func Error(format string, a ...any) string {
@@ -47,7 +46,7 @@ func Table(headers []string, rows [][]string) string {
 	// Headers
 	headerRow := make(table.Row, len(headers))
 	for i, h := range headers {
-		headerRow[i] = Bold.Sprint(h)
+		headerRow[i] = Bold.Render(h)
 	}
 	t.AppendHeader(headerRow)
 
@@ -84,9 +83,8 @@ func TruncateString(s string, maxLen int) string {
 }
 
 func GetBanner() string {
-	banner := fmt.Sprintf("> %s  %s\n", Green.Sprint("┳━┓┏━┓┏━┓┏━┓"), Bold.Sprint("RSCC - v0.1"))
-	banner += fmt.Sprintf("> %s  %s\n", Green.Sprint("┣┳┛┗━┓┃  ┃  "), "Reverse SSH Command & Control")
-	banner += fmt.Sprintf("> %s  %s\n", Green.Sprint("┛┗━┗━┛┗━┛┗━┛"), Blue.Sprint("https://github.com/nu11zy/rscc"))
-	banner += "\n"
+	banner := fmt.Sprintf("> %s  %s\n", Green.Render("┳━┓┏━┓┏━┓┏━┓"), Bold.Render("RSCC - v0.1"))
+	banner += fmt.Sprintf("> %s  %s\n", Green.Render("┣┳┛┗━┓┃  ┃  "), "Reverse SSH Command & Control")
+	banner += fmt.Sprintf("> %s  %s\n", Green.Render("┛┗━┗━┛┗━┛┗━┛"), Blue.Render("https://github.com/nu11zy/rscc"))
 	return banner
 }

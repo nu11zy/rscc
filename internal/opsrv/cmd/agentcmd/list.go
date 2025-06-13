@@ -3,13 +3,12 @@ package agentcmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"rscc/internal/common/constants"
 	"rscc/internal/common/pprint"
+	"rscc/internal/database/ent"
 	"strconv"
-	"strings"
 
 	"github.com/cespare/xxhash/v2"
+	"github.com/charmbracelet/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -35,36 +34,62 @@ func (a *AgentCmd) cmdList(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	rows := make([][]string, len(agents))
-	for i, agent := range agents {
-		id := agent.ID
-		name := pprint.TruncateString(agent.Name, 32)
-		osArch := fmt.Sprintf("%s/%s", agent.Os, agent.Arch)
-		servers := pprint.TruncateString(strings.Join(agent.Servers, "\n"), 32)
-		hits := strconv.Itoa(agent.Hits)
+	cmd.Print(renderAgentList(agents))
+	return nil
+}
 
-		// Check if agent file exists
-		agentBytes, err := os.ReadFile(filepath.Join(constants.AgentDir, agent.Name))
+func renderAgentList(agents []*ent.Agent) string {
+	padding := 0
+	if len(agents) > 9 {
+		padding = 1
+	}
+
+	result := ""
+	for i, agent := range agents {
+		id := pprint.Green.Render(agent.ID)
+		osArch := pprint.Blue.Render(fmt.Sprintf("%s/%s", agent.Os, agent.Arch))
+		callbacks := pprint.Cyan.Render(fmt.Sprintf("%d", agent.Callbacks))
+
+		var status string
+		name := agent.Name
+		agentBytes, err := os.ReadFile(agent.Path)
 		if err != nil {
 			if os.IsNotExist(err) {
-				rows[i] = []string{pprint.Blue.Sprint(id), pprint.Red.Sprint(name), osArch, servers, hits}
-				continue
+				status = pprint.Red.Render("deleted")
+				name = pprint.Red.Render(agent.Name)
 			} else {
-				return fmt.Errorf("failed to read agent file %s: %w", agent.ID, err)
+				status = pprint.Red.Render("error")
+				name = pprint.Red.Render(agent.Name)
+			}
+		} else {
+			agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
+			if agentHash != agent.Xxhash {
+				status = pprint.Yellow.Render("modified")
+				name = pprint.Yellow.Render(agent.Name)
 			}
 		}
 
-		// Check if agent file is modified
-		agentHash := strconv.FormatUint(xxhash.Sum64(agentBytes), 10)
-		if agentHash != agent.Xxhash {
-			rows[i] = []string{pprint.Blue.Sprint(id), pprint.Yellow.Sprint(name), osArch, servers, hits}
+		if status != "" {
+			result += fmt.Sprintf("%*d: %s: %s [%s] (callbacks: %s) <%s>\n", padding+1, i+1, id, name, osArch, callbacks, status)
 		} else {
-			rows[i] = []string{pprint.Blue.Sprint(id), name, osArch, servers, hits}
+			result += fmt.Sprintf("%*d: %s: %s [%s] (callbacks: %s)\n", padding+1, i+1, id, name, osArch, callbacks)
+		}
+
+		if agent.URL != "" {
+			line := lipgloss.NewStyle().PaddingLeft(13 + padding).Render("url =")
+			downloads := pprint.Cyan.Render(fmt.Sprintf("%d", agent.Downloads))
+			if !agent.Hosted {
+				result += fmt.Sprintf("%s %s (downloads: %s) <%s>\n", line, pprint.Red.Render(agent.URL), downloads, pprint.Red.Render("disabled"))
+			} else {
+				result += fmt.Sprintf("%s %s (downloads: %s)\n", line, pprint.Magenta.Render(agent.URL), downloads)
+			}
+		}
+
+		if agent.Comment != "" {
+			line := lipgloss.NewStyle().PaddingLeft(13 + padding).Render("comment =")
+			result += fmt.Sprintf("%s %s\n", line, agent.Comment)
 		}
 	}
 
-	cmd.Println(pprint.Table([]string{"ID", "NAME", "OS/ARCH", "SERVERS", "HITS"}, rows))
-	cmd.Printf("[%s] - file not found; [%s] - file modified. Type 'agent info <id>' to get more info\n", pprint.Red.Sprint("*"), pprint.Yellow.Sprint("*"))
-	cmd.Println()
-	return nil
+	return result
 }

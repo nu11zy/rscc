@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -22,10 +23,11 @@ type Metadata struct {
 }
 
 type Session struct {
-	ID        string
-	CreatedAt time.Time
-	Metadata  Metadata
-	SSHConn   *ssh.ServerConn
+	ID         string
+	CreatedAt  time.Time
+	Metadata   Metadata
+	RemoteAddr string
+	SSHConn    *ssh.ServerConn
 }
 
 func NewSession(encMetadata string, sshConn *ssh.ServerConn) (*Session, error) {
@@ -40,7 +42,8 @@ func NewSession(encMetadata string, sshConn *ssh.ServerConn) (*Session, error) {
 	}
 
 	return &Session{
-		Metadata: metadata,
-		SSHConn:  sshConn,
+		Metadata:   metadata,
+		RemoteAddr: strings.Split(sshConn.RemoteAddr().String(), ":")[0],
+		SSHConn:    sshConn,
 	}, nil
 }

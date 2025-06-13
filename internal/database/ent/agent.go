@@ -22,6 +22,8 @@ type Agent struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Comment holds the value of the "comment" field.
+	Comment string `json:"comment,omitempty"`
 	// Os holds the value of the "os" field.
 	Os string `json:"os,omitempty"`
 	// Arch holds the value of the "arch" field.
@@ -40,10 +42,16 @@ type Agent struct {
 	Xxhash string `json:"xxhash,omitempty"`
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty"`
+	// URL holds the value of the "url" field.
+	URL string `json:"url,omitempty"`
+	// Hosted holds the value of the "hosted" field.
+	Hosted bool `json:"hosted,omitempty"`
+	// Callbacks holds the value of the "callbacks" field.
+	Callbacks int `json:"callbacks,omitempty"`
+	// Downloads holds the value of the "downloads" field.
+	Downloads int `json:"downloads,omitempty"`
 	// PublicKey holds the value of the "public_key" field.
-	PublicKey []byte `json:"public_key,omitempty"`
-	// Hits holds the value of the "hits" field.
-	Hits         int `json:"hits,omitempty"`
+	PublicKey    []byte `json:"public_key,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -54,11 +62,11 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agent.FieldServers, agent.FieldSubsystems, agent.FieldPublicKey:
 			values[i] = new([]byte)
-		case agent.FieldShared, agent.FieldPie, agent.FieldGarble:
+		case agent.FieldShared, agent.FieldPie, agent.FieldGarble, agent.FieldHosted:
 			values[i] = new(sql.NullBool)
-		case agent.FieldHits:
+		case agent.FieldCallbacks, agent.FieldDownloads:
 			values[i] = new(sql.NullInt64)
-		case agent.FieldID, agent.FieldName, agent.FieldOs, agent.FieldArch, agent.FieldXxhash, agent.FieldPath:
+		case agent.FieldID, agent.FieldName, agent.FieldComment, agent.FieldOs, agent.FieldArch, agent.FieldXxhash, agent.FieldPath, agent.FieldURL:
 			values[i] = new(sql.NullString)
 		case agent.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -94,6 +102,12 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				a.Name = value.String
+			}
+		case agent.FieldComment:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field comment", values[i])
+			} else if value.Valid {
+				a.Comment = value.String
 			}
 		case agent.FieldOs:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -153,17 +167,35 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Path = value.String
 			}
+		case agent.FieldURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field url", values[i])
+			} else if value.Valid {
+				a.URL = value.String
+			}
+		case agent.FieldHosted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field hosted", values[i])
+			} else if value.Valid {
+				a.Hosted = value.Bool
+			}
+		case agent.FieldCallbacks:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field callbacks", values[i])
+			} else if value.Valid {
+				a.Callbacks = int(value.Int64)
+			}
+		case agent.FieldDownloads:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field downloads", values[i])
+			} else if value.Valid {
+				a.Downloads = int(value.Int64)
+			}
 		case agent.FieldPublicKey:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field public_key", values[i])
 			} else if value != nil {
 				a.PublicKey = *value
-			}
-		case agent.FieldHits:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field hits", values[i])
-			} else if value.Valid {
-				a.Hits = int(value.Int64)
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -207,6 +239,9 @@ func (a *Agent) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(a.Name)
 	builder.WriteString(", ")
+	builder.WriteString("comment=")
+	builder.WriteString(a.Comment)
+	builder.WriteString(", ")
 	builder.WriteString("os=")
 	builder.WriteString(a.Os)
 	builder.WriteString(", ")
@@ -234,11 +269,20 @@ func (a *Agent) String() string {
 	builder.WriteString("path=")
 	builder.WriteString(a.Path)
 	builder.WriteString(", ")
+	builder.WriteString("url=")
+	builder.WriteString(a.URL)
+	builder.WriteString(", ")
+	builder.WriteString("hosted=")
+	builder.WriteString(fmt.Sprintf("%v", a.Hosted))
+	builder.WriteString(", ")
+	builder.WriteString("callbacks=")
+	builder.WriteString(fmt.Sprintf("%v", a.Callbacks))
+	builder.WriteString(", ")
+	builder.WriteString("downloads=")
+	builder.WriteString(fmt.Sprintf("%v", a.Downloads))
+	builder.WriteString(", ")
 	builder.WriteString("public_key=")
 	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
-	builder.WriteString(", ")
-	builder.WriteString("hits=")
-	builder.WriteString(fmt.Sprintf("%v", a.Hits))
 	builder.WriteByte(')')
 	return builder.String()
 }

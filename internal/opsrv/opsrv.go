@@ -14,13 +14,14 @@ import (
 	"rscc/internal/common/network"
 	"rscc/internal/common/pprint"
 	"rscc/internal/common/utils"
+	"rscc/internal/common/validators"
 	"rscc/internal/database"
 	"rscc/internal/database/ent"
 	"rscc/internal/opsrv/cmd/agentcmd"
 	"rscc/internal/opsrv/cmd/sessioncmd"
 	"rscc/internal/session"
 	"rscc/internal/sshd"
-	"strconv"
+	"slices"
 	"strings"
 	"time"
 
@@ -31,21 +32,37 @@ import (
 	"golang.org/x/term"
 )
 
+var (
+	homeAuthorizedKeysPath    string
+	currentAuthorizedKeysPath string
+)
+
 type OperatorServer struct {
-	db         *database.Database
-	sm         *session.SessionManager
-	address    string
-	listener   *net.TCPListener
-	sshConfig  *ssh.ServerConfig
-	sshTimeout int
-	lg         *zap.SugaredLogger
+	db              *database.Database
+	sm              *session.SessionManager
+	agentAddress    string
+	operatorAddress string
+	listener        *net.TCPListener
+	sshConfig       *ssh.ServerConfig
+	dataPath        string
+	lg              *zap.SugaredLogger
 }
 
-func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.SessionManager, host string, port int) (*OperatorServer, error) {
+type OperatorServerParams struct {
+	Db              *database.Database
+	Sm              *session.SessionManager
+	OperatorAddress string
+	AgentAddress    string
+	DataPath        string
+}
+
+func NewServer(ctx context.Context, params *OperatorServerParams) (*OperatorServer, error) {
 	lg := logger.FromContext(ctx).Named("opsrv")
 
-	address := net.JoinHostPort(host, strconv.Itoa(port))
-	listener, err := db.GetListener(ctx, constants.OperatorListenerID)
+	currentAuthorizedKeysPath = filepath.Join(params.DataPath, "authorized_keys")
+	homeAuthorizedKeysPath = filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")
+
+	listener, err := params.Db.GetListener(ctx, constants.OperatorListenerID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			lg.Info("Listener not found, creating new one")
@@ -57,7 +74,7 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 			if err != nil {
 				return nil, fmt.Errorf("failed to get private key: %w", err)
 			}
-			listener, err = db.CreateListenerWithID(
+			listener, err = params.Db.CreateListenerWithID(
 				ctx,
 				constants.OperatorListenerID,
 				constants.OperatorListenerName,
@@ -77,28 +94,25 @@ func NewOperatorServer(ctx context.Context, db *database.Database, sm *session.S
 	}
 
 	opsrv := &OperatorServer{
-		db:         db,
-		sm:         sm,
-		address:    address,
-		listener:   nil,
-		sshConfig:  nil,
-		sshTimeout: constants.SshTimeout,
-		lg:         lg,
+		db:              params.Db,
+		sm:              params.Sm,
+		agentAddress:    params.AgentAddress,
+		operatorAddress: params.OperatorAddress,
+		dataPath:        params.DataPath,
+		lg:              lg,
 	}
-
-	sshConfig := &ssh.ServerConfig{
+	opsrv.sshConfig = &ssh.ServerConfig{
 		NoClientAuth:      false,
 		PublicKeyCallback: opsrv.publicKeyCallback,
 	}
-	sshConfig.AddHostKey(signer)
+	opsrv.sshConfig.AddHostKey(signer)
 
-	opsrv.sshConfig = sshConfig
 	return opsrv, nil
 }
 
 // Start starts operator's listener
 func (s *OperatorServer) Start(ctx context.Context) error {
-	listener, err := net.Listen("tcp", s.address)
+	listener, err := net.Listen("tcp", s.operatorAddress)
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}
@@ -109,14 +123,14 @@ func (s *OperatorServer) Start(ctx context.Context) error {
 		return fmt.Errorf("listener is not *net.TCPListener")
 	}
 	s.listener = tcpListener
-	s.lg.Infof("Listener started at %s", s.address)
+	s.lg.Infof("Listener started at %s", s.operatorAddress)
 
 	go func() {
 		<-ctx.Done()
 		if err := s.CloseListener(); err != nil {
 			s.lg.Errorf("Failed to close listener: %v", err)
 		}
-		s.lg.Info("Stop listener")
+		s.lg.Warn("Operator listener closed")
 	}()
 
 	for {
@@ -150,16 +164,17 @@ func (l *OperatorServer) CloseListener() error {
 // publicKeyCallback is used to authenticate SSH connections
 func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, incomingKey ssh.PublicKey) (*ssh.Permissions, error) {
 	// Read authorized_keys from current directory or ~/.ssh/authorized_keys
+	var err error
 	var authorizedKeys []byte
-	if _, err := os.Stat("authorized_keys"); err == nil {
-		authorizedKeys, err = os.ReadFile("authorized_keys")
+	if validators.ValidateFileExists(currentAuthorizedKeysPath) {
+		authorizedKeys, err = os.ReadFile(currentAuthorizedKeysPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+			return nil, fmt.Errorf("failed to read authorized_keys from %s: %w", currentAuthorizedKeysPath, err)
 		}
-	} else if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys")); err == nil {
-		authorizedKeys, err = os.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "authorized_keys"))
+	} else if validators.ValidateFileExists(homeAuthorizedKeysPath) {
+		authorizedKeys, err = os.ReadFile(homeAuthorizedKeysPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read authorized_keys: %w", err)
+			return nil, fmt.Errorf("failed to read authorized_keys from %s: %w", homeAuthorizedKeysPath, err)
 		}
 	} else {
 		return nil, fmt.Errorf("authorized_keys file not found")
@@ -186,11 +201,10 @@ func (s *OperatorServer) publicKeyCallback(conn ssh.ConnMetadata, incomingKey ss
 // handleConnection handles new SSH connection
 func (s *OperatorServer) handleConnection(conn net.Conn) {
 	lg := s.lg
-
 	lg.Debugf("New TCP connection from %s", conn.RemoteAddr().String())
 
 	// create connection with timeout
-	timeoutConn := network.NewTimeoutConn(conn, time.Duration(2*s.sshTimeout)*time.Second)
+	timeoutConn := network.NewTimeoutConn(conn, time.Duration(2*constants.SshTimeout)*time.Second)
 	defer timeoutConn.Close()
 
 	// create new SSH connection
@@ -211,7 +225,7 @@ func (s *OperatorServer) handleConnection(conn net.Conn) {
 	// start keepalive process
 	stopKeepalive := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(time.Duration(s.sshTimeout) * time.Second)
+		ticker := time.NewTicker(time.Duration(constants.SshTimeout) * time.Second)
 		defer ticker.Stop()
 
 		for {
@@ -366,7 +380,7 @@ func (s *OperatorServer) handleSession(lg *zap.SugaredLogger, channel *sshd.Exte
 			subLg.Debugf("Subsystem request received: %s", system)
 
 			if system == "sftp" {
-				go sftpHandler(subLg, channel)
+				go sftpHandler(subLg, channel, s.dataPath)
 				req.Reply(true, nil)
 			} else {
 				subLg.Warnf("Subsystem not supported: %s", system)
@@ -399,7 +413,7 @@ func (s *OperatorServer) handleShell(lg *zap.SugaredLogger, channel *sshd.Extend
 
 	lg.Info("Starting rscc CLI")
 
-	terminal.SetPrompt(fmt.Sprintf("%s > ", pprint.Green.Sprint("rscc")))
+	terminal.SetPrompt(fmt.Sprintf("\n%s > ", pprint.Green.Render("rscc")))
 	terminal.Write([]byte(pprint.GetBanner()))
 
 	for {
@@ -425,12 +439,31 @@ func (s *OperatorServer) handleShell(lg *zap.SugaredLogger, channel *sshd.Extend
 
 		args, err := shlex.Split(line)
 		if err != nil {
-			cli.PrintErr(fmt.Sprintf("%s Error: %s\n\n", pprint.ErrorPrefix, err.Error()))
+			if strings.Contains(err.Error(), "EOF") {
+				cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, "unknown command. Type 'help' for usage."))
+				continue
+			}
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
 			continue
 		}
+
+		if len(args) == 0 {
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, "unknown command. Type 'help' for usage."))
+			continue
+		}
+
+		if slices.Contains([]string{"-", "#"}, args[0]) {
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, "unknown command. Type 'help' for usage."))
+			continue
+		}
+
 		cli.SetArgs(args)
 		if err := cli.Execute(); err != nil {
-			cli.PrintErr(fmt.Sprintf("%s Error: %s\n\n", pprint.ErrorPrefix, err.Error()))
+			if strings.Contains(err.Error(), "unknown command") {
+				cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, "unknown command. Type 'help' for usage."))
+				continue
+			}
+			cli.PrintErr(fmt.Sprintf("%s Error: %s\n", pprint.ErrorPrefix, err.Error()))
 		}
 	}
 }
@@ -441,8 +474,9 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 		Use:                "rscc",
 		Short:              "Reverse SSH command & control",
 		DisableFlagParsing: true,
-		SilenceUsage:       true,
-		SilenceErrors:      true,
+		// SilenceUsage:          true,
+		SilenceErrors:         true,
+		DisableFlagsInUseLine: true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
@@ -451,13 +485,6 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.Flags().MarkHidden("help")
 	app.PersistentFlags().BoolP("help", "h", false, "Print this help message")
 	app.PersistentFlags().MarkHidden("help")
-	app.SetHelpCommand(&cobra.Command{
-		Use:    "help",
-		Hidden: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Root().Help()
-		},
-	})
 
 	app.SetUsageFunc(utils.CobraHelp)
 
@@ -465,6 +492,6 @@ func (s *OperatorServer) newCli(terminal *term.Terminal) *cobra.Command {
 	app.SetErr(terminal)
 
 	app.AddCommand(sessioncmd.NewSessionCmd(s.sm).Command)
-	app.AddCommand(agentcmd.NewAgentCmd(s.db).Command)
+	app.AddCommand(agentcmd.NewAgentCmd(s.db, s.dataPath, s.agentAddress).Command)
 	return app
 }

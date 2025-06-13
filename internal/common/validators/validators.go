@@ -2,7 +2,9 @@ package validators
 
 import (
 	"net"
+	"os"
 	"regexp"
+	"rscc/internal/common/constants"
 	"slices"
 	"strconv"
 )
@@ -53,6 +55,7 @@ func ValidatePort(port any) bool {
 		return false
 	}
 }
+
 func ValidateGOOS(goos string) bool {
 	var validGOOS = []string{"windows", "linux", "darwin"}
 	return slices.Contains(validGOOS, goos)
@@ -63,15 +66,17 @@ func ValidateGOARCH(goarch string) bool {
 	return slices.Contains(validGOARCH, goarch)
 }
 
+func ValidateFileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func ValidateDirectoryExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
+}
+
 // ValidateSubsystem validates passed value with supported subsystems by agent
 func ValidateSybsystem(ss string) bool {
-	var validSS = []string{
-		"sftp",
-		"kill",
-		"pscan",
-		"pfwd",
-		"executeassembly",
-	}
-
-	return slices.Contains(validSS, ss)
+	return slices.Contains(constants.Subsystems, ss)
 }

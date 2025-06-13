@@ -74,6 +74,11 @@ func Name(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldName, v))
 }
 
+// Comment applies equality check predicate on the "comment" field. It's identical to CommentEQ.
+func Comment(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldComment, v))
+}
+
 // Os applies equality check predicate on the "os" field. It's identical to OsEQ.
 func Os(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldOs, v))
@@ -109,14 +114,29 @@ func Path(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldPath, v))
 }
 
+// URL applies equality check predicate on the "url" field. It's identical to URLEQ.
+func URL(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldURL, v))
+}
+
+// Hosted applies equality check predicate on the "hosted" field. It's identical to HostedEQ.
+func Hosted(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldHosted, v))
+}
+
+// Callbacks applies equality check predicate on the "callbacks" field. It's identical to CallbacksEQ.
+func Callbacks(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldCallbacks, v))
+}
+
+// Downloads applies equality check predicate on the "downloads" field. It's identical to DownloadsEQ.
+func Downloads(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldDownloads, v))
+}
+
 // PublicKey applies equality check predicate on the "public_key" field. It's identical to PublicKeyEQ.
 func PublicKey(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
-}
-
-// Hits applies equality check predicate on the "hits" field. It's identical to HitsEQ.
-func Hits(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldHits, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -222,6 +242,81 @@ func NameEqualFold(v string) predicate.Agent {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldName, v))
+}
+
+// CommentEQ applies the EQ predicate on the "comment" field.
+func CommentEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldComment, v))
+}
+
+// CommentNEQ applies the NEQ predicate on the "comment" field.
+func CommentNEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldComment, v))
+}
+
+// CommentIn applies the In predicate on the "comment" field.
+func CommentIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldComment, vs...))
+}
+
+// CommentNotIn applies the NotIn predicate on the "comment" field.
+func CommentNotIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldComment, vs...))
+}
+
+// CommentGT applies the GT predicate on the "comment" field.
+func CommentGT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldComment, v))
+}
+
+// CommentGTE applies the GTE predicate on the "comment" field.
+func CommentGTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldComment, v))
+}
+
+// CommentLT applies the LT predicate on the "comment" field.
+func CommentLT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldComment, v))
+}
+
+// CommentLTE applies the LTE predicate on the "comment" field.
+func CommentLTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldComment, v))
+}
+
+// CommentContains applies the Contains predicate on the "comment" field.
+func CommentContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldComment, v))
+}
+
+// CommentHasPrefix applies the HasPrefix predicate on the "comment" field.
+func CommentHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldComment, v))
+}
+
+// CommentHasSuffix applies the HasSuffix predicate on the "comment" field.
+func CommentHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldComment, v))
+}
+
+// CommentIsNil applies the IsNil predicate on the "comment" field.
+func CommentIsNil() predicate.Agent {
+	return predicate.Agent(sql.FieldIsNull(FieldComment))
+}
+
+// CommentNotNil applies the NotNil predicate on the "comment" field.
+func CommentNotNil() predicate.Agent {
+	return predicate.Agent(sql.FieldNotNull(FieldComment))
+}
+
+// CommentEqualFold applies the EqualFold predicate on the "comment" field.
+func CommentEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldComment, v))
+}
+
+// CommentContainsFold applies the ContainsFold predicate on the "comment" field.
+func CommentContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldComment, v))
 }
 
 // OsEQ applies the EQ predicate on the "os" field.
@@ -514,6 +609,171 @@ func PathContainsFold(v string) predicate.Agent {
 	return predicate.Agent(sql.FieldContainsFold(FieldPath, v))
 }
 
+// URLEQ applies the EQ predicate on the "url" field.
+func URLEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldURL, v))
+}
+
+// URLNEQ applies the NEQ predicate on the "url" field.
+func URLNEQ(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldURL, v))
+}
+
+// URLIn applies the In predicate on the "url" field.
+func URLIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldURL, vs...))
+}
+
+// URLNotIn applies the NotIn predicate on the "url" field.
+func URLNotIn(vs ...string) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldURL, vs...))
+}
+
+// URLGT applies the GT predicate on the "url" field.
+func URLGT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldURL, v))
+}
+
+// URLGTE applies the GTE predicate on the "url" field.
+func URLGTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldURL, v))
+}
+
+// URLLT applies the LT predicate on the "url" field.
+func URLLT(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldURL, v))
+}
+
+// URLLTE applies the LTE predicate on the "url" field.
+func URLLTE(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldURL, v))
+}
+
+// URLContains applies the Contains predicate on the "url" field.
+func URLContains(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContains(FieldURL, v))
+}
+
+// URLHasPrefix applies the HasPrefix predicate on the "url" field.
+func URLHasPrefix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasPrefix(FieldURL, v))
+}
+
+// URLHasSuffix applies the HasSuffix predicate on the "url" field.
+func URLHasSuffix(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldHasSuffix(FieldURL, v))
+}
+
+// URLIsNil applies the IsNil predicate on the "url" field.
+func URLIsNil() predicate.Agent {
+	return predicate.Agent(sql.FieldIsNull(FieldURL))
+}
+
+// URLNotNil applies the NotNil predicate on the "url" field.
+func URLNotNil() predicate.Agent {
+	return predicate.Agent(sql.FieldNotNull(FieldURL))
+}
+
+// URLEqualFold applies the EqualFold predicate on the "url" field.
+func URLEqualFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldEqualFold(FieldURL, v))
+}
+
+// URLContainsFold applies the ContainsFold predicate on the "url" field.
+func URLContainsFold(v string) predicate.Agent {
+	return predicate.Agent(sql.FieldContainsFold(FieldURL, v))
+}
+
+// HostedEQ applies the EQ predicate on the "hosted" field.
+func HostedEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldHosted, v))
+}
+
+// HostedNEQ applies the NEQ predicate on the "hosted" field.
+func HostedNEQ(v bool) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldHosted, v))
+}
+
+// CallbacksEQ applies the EQ predicate on the "callbacks" field.
+func CallbacksEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldCallbacks, v))
+}
+
+// CallbacksNEQ applies the NEQ predicate on the "callbacks" field.
+func CallbacksNEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldCallbacks, v))
+}
+
+// CallbacksIn applies the In predicate on the "callbacks" field.
+func CallbacksIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldCallbacks, vs...))
+}
+
+// CallbacksNotIn applies the NotIn predicate on the "callbacks" field.
+func CallbacksNotIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldCallbacks, vs...))
+}
+
+// CallbacksGT applies the GT predicate on the "callbacks" field.
+func CallbacksGT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldCallbacks, v))
+}
+
+// CallbacksGTE applies the GTE predicate on the "callbacks" field.
+func CallbacksGTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldCallbacks, v))
+}
+
+// CallbacksLT applies the LT predicate on the "callbacks" field.
+func CallbacksLT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldCallbacks, v))
+}
+
+// CallbacksLTE applies the LTE predicate on the "callbacks" field.
+func CallbacksLTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldCallbacks, v))
+}
+
+// DownloadsEQ applies the EQ predicate on the "downloads" field.
+func DownloadsEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldEQ(FieldDownloads, v))
+}
+
+// DownloadsNEQ applies the NEQ predicate on the "downloads" field.
+func DownloadsNEQ(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldNEQ(FieldDownloads, v))
+}
+
+// DownloadsIn applies the In predicate on the "downloads" field.
+func DownloadsIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldIn(FieldDownloads, vs...))
+}
+
+// DownloadsNotIn applies the NotIn predicate on the "downloads" field.
+func DownloadsNotIn(vs ...int) predicate.Agent {
+	return predicate.Agent(sql.FieldNotIn(FieldDownloads, vs...))
+}
+
+// DownloadsGT applies the GT predicate on the "downloads" field.
+func DownloadsGT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGT(FieldDownloads, v))
+}
+
+// DownloadsGTE applies the GTE predicate on the "downloads" field.
+func DownloadsGTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldGTE(FieldDownloads, v))
+}
+
+// DownloadsLT applies the LT predicate on the "downloads" field.
+func DownloadsLT(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLT(FieldDownloads, v))
+}
+
+// DownloadsLTE applies the LTE predicate on the "downloads" field.
+func DownloadsLTE(v int) predicate.Agent {
+	return predicate.Agent(sql.FieldLTE(FieldDownloads, v))
+}
+
 // PublicKeyEQ applies the EQ predicate on the "public_key" field.
 func PublicKeyEQ(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldEQ(FieldPublicKey, v))
@@ -552,46 +812,6 @@ func PublicKeyLT(v []byte) predicate.Agent {
 // PublicKeyLTE applies the LTE predicate on the "public_key" field.
 func PublicKeyLTE(v []byte) predicate.Agent {
 	return predicate.Agent(sql.FieldLTE(FieldPublicKey, v))
-}
-
-// HitsEQ applies the EQ predicate on the "hits" field.
-func HitsEQ(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldEQ(FieldHits, v))
-}
-
-// HitsNEQ applies the NEQ predicate on the "hits" field.
-func HitsNEQ(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldNEQ(FieldHits, v))
-}
-
-// HitsIn applies the In predicate on the "hits" field.
-func HitsIn(vs ...int) predicate.Agent {
-	return predicate.Agent(sql.FieldIn(FieldHits, vs...))
-}
-
-// HitsNotIn applies the NotIn predicate on the "hits" field.
-func HitsNotIn(vs ...int) predicate.Agent {
-	return predicate.Agent(sql.FieldNotIn(FieldHits, vs...))
-}
-
-// HitsGT applies the GT predicate on the "hits" field.
-func HitsGT(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldGT(FieldHits, v))
-}
-
-// HitsGTE applies the GTE predicate on the "hits" field.
-func HitsGTE(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldGTE(FieldHits, v))
-}
-
-// HitsLT applies the LT predicate on the "hits" field.
-func HitsLT(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldLT(FieldHits, v))
-}
-
-// HitsLTE applies the LTE predicate on the "hits" field.
-func HitsLTE(v int) predicate.Agent {
-	return predicate.Agent(sql.FieldLTE(FieldHits, v))
 }
 
 // And groups predicates with the AND operator between them.

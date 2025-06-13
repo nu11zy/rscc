@@ -25,45 +25,53 @@ func init() {
 	// agent.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	agent.NameValidator = agentDescName.Validators[0].(func(string) error)
 	// agentDescOs is the schema descriptor for os field.
-	agentDescOs := agentFields[3].Descriptor()
+	agentDescOs := agentFields[4].Descriptor()
 	// agent.OsValidator is a validator for the "os" field. It is called by the builders before save.
 	agent.OsValidator = agentDescOs.Validators[0].(func(string) error)
 	// agentDescArch is the schema descriptor for arch field.
-	agentDescArch := agentFields[4].Descriptor()
+	agentDescArch := agentFields[5].Descriptor()
 	// agent.ArchValidator is a validator for the "arch" field. It is called by the builders before save.
 	agent.ArchValidator = agentDescArch.Validators[0].(func(string) error)
 	// agentDescShared is the schema descriptor for shared field.
-	agentDescShared := agentFields[6].Descriptor()
+	agentDescShared := agentFields[7].Descriptor()
 	// agent.DefaultShared holds the default value on creation for the shared field.
 	agent.DefaultShared = agentDescShared.Default.(bool)
 	// agentDescPie is the schema descriptor for pie field.
-	agentDescPie := agentFields[7].Descriptor()
+	agentDescPie := agentFields[8].Descriptor()
 	// agent.DefaultPie holds the default value on creation for the pie field.
 	agent.DefaultPie = agentDescPie.Default.(bool)
 	// agentDescGarble is the schema descriptor for garble field.
-	agentDescGarble := agentFields[8].Descriptor()
+	agentDescGarble := agentFields[9].Descriptor()
 	// agent.DefaultGarble holds the default value on creation for the garble field.
 	agent.DefaultGarble = agentDescGarble.Default.(bool)
 	// agentDescSubsystems is the schema descriptor for subsystems field.
-	agentDescSubsystems := agentFields[9].Descriptor()
+	agentDescSubsystems := agentFields[10].Descriptor()
 	// agent.DefaultSubsystems holds the default value on creation for the subsystems field.
 	agent.DefaultSubsystems = agentDescSubsystems.Default.([]string)
 	// agentDescXxhash is the schema descriptor for xxhash field.
-	agentDescXxhash := agentFields[10].Descriptor()
+	agentDescXxhash := agentFields[11].Descriptor()
 	// agent.XxhashValidator is a validator for the "xxhash" field. It is called by the builders before save.
 	agent.XxhashValidator = agentDescXxhash.Validators[0].(func(string) error)
 	// agentDescPath is the schema descriptor for path field.
-	agentDescPath := agentFields[11].Descriptor()
+	agentDescPath := agentFields[12].Descriptor()
 	// agent.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	agent.PathValidator = agentDescPath.Validators[0].(func(string) error)
+	// agentDescHosted is the schema descriptor for hosted field.
+	agentDescHosted := agentFields[14].Descriptor()
+	// agent.DefaultHosted holds the default value on creation for the hosted field.
+	agent.DefaultHosted = agentDescHosted.Default.(bool)
+	// agentDescCallbacks is the schema descriptor for callbacks field.
+	agentDescCallbacks := agentFields[15].Descriptor()
+	// agent.DefaultCallbacks holds the default value on creation for the callbacks field.
+	agent.DefaultCallbacks = agentDescCallbacks.Default.(int)
+	// agentDescDownloads is the schema descriptor for downloads field.
+	agentDescDownloads := agentFields[16].Descriptor()
+	// agent.DefaultDownloads holds the default value on creation for the downloads field.
+	agent.DefaultDownloads = agentDescDownloads.Default.(int)
 	// agentDescPublicKey is the schema descriptor for public_key field.
-	agentDescPublicKey := agentFields[12].Descriptor()
+	agentDescPublicKey := agentFields[17].Descriptor()
 	// agent.PublicKeyValidator is a validator for the "public_key" field. It is called by the builders before save.
 	agent.PublicKeyValidator = agentDescPublicKey.Validators[0].(func([]byte) error)
-	// agentDescHits is the schema descriptor for hits field.
-	agentDescHits := agentFields[13].Descriptor()
-	// agent.DefaultHits holds the default value on creation for the hits field.
-	agent.DefaultHits = agentDescHits.Default.(int)
 	// agentDescID is the schema descriptor for id field.
 	agentDescID := agentFields[0].Descriptor()
 	// agent.DefaultID holds the default value on creation for the id field.
