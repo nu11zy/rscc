@@ -40,6 +40,7 @@ var (
 		{Name: "id", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "private_key", Type: field.TypeBytes},
+		{Name: "fingerprint", Type: field.TypeString},
 	}
 	// ListenersTable holds the schema information for the "listeners" table.
 	ListenersTable = &schema.Table{

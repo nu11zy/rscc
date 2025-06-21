@@ -31,6 +31,12 @@ func (lc *ListenerCreate) SetPrivateKey(b []byte) *ListenerCreate {
 	return lc
 }
 
+// SetFingerprint sets the "fingerprint" field.
+func (lc *ListenerCreate) SetFingerprint(s string) *ListenerCreate {
+	lc.mutation.SetFingerprint(s)
+	return lc
+}
+
 // SetID sets the "id" field.
 func (lc *ListenerCreate) SetID(s string) *ListenerCreate {
 	lc.mutation.SetID(s)
@@ -104,6 +110,14 @@ func (lc *ListenerCreate) check() error {
 			return &ValidationError{Name: "private_key", err: fmt.Errorf(`ent: validator failed for field "Listener.private_key": %w`, err)}
 		}
 	}
+	if _, ok := lc.mutation.Fingerprint(); !ok {
+		return &ValidationError{Name: "fingerprint", err: errors.New(`ent: missing required field "Listener.fingerprint"`)}
+	}
+	if v, ok := lc.mutation.Fingerprint(); ok {
+		if err := listener.FingerprintValidator(v); err != nil {
+			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "Listener.fingerprint": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -146,6 +160,10 @@ func (lc *ListenerCreate) createSpec() (*Listener, *sqlgraph.CreateSpec) {
 	if value, ok := lc.mutation.PrivateKey(); ok {
 		_spec.SetField(listener.FieldPrivateKey, field.TypeBytes, value)
 		_node.PrivateKey = value
+	}
+	if value, ok := lc.mutation.Fingerprint(); ok {
+		_spec.SetField(listener.FieldFingerprint, field.TypeString, value)
+		_node.Fingerprint = value
 	}
 	return _node, _spec
 }

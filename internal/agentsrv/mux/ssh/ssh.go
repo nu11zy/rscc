@@ -83,15 +83,21 @@ func (p *Protocol) StartListener(ctx context.Context) error {
 	if err != nil {
 		if ent.IsNotFound(err) {
 			p.lg.Info("Server private key not found, generating new one")
+
 			keyPair, err := sshd.NewECDSAKey()
 			if err != nil {
 				return fmt.Errorf("failed to generate key pair: %w", err)
 			}
-			privateKey, err := keyPair.GetPrivateKey()
+			privateKeyBytes, err := keyPair.GetPrivateKey()
 			if err != nil {
 				return fmt.Errorf("failed to get private key: %w", err)
 			}
-			dbListener, err = p.db.CreateListenerWithID(ctx, constants.AgentListenerID, constants.AgentListenerName, privateKey)
+			fingerprint, err := keyPair.GetFingerprint()
+			if err != nil {
+				return fmt.Errorf("failed to get fingerprint: %w", err)
+			}
+
+			dbListener, err = p.db.CreateListenerWithID(ctx, constants.AgentListenerID, constants.AgentListenerName, privateKeyBytes, fingerprint)
 			if err != nil {
 				return fmt.Errorf("failed to create server private key: %w", err)
 			}

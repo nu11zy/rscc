@@ -12,4 +12,4 @@ const (
 	MaxUnwrapDepth       = 8
 )
 
-var Subsystems = []string{"kill", "sftp", "pscan", "pfwd", "executeassembly"}
+var Subsystems = []string{"kill", "sftp", "pscan", "pfwd", "execass"}

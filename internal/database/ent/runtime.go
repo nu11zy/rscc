@@ -86,6 +86,10 @@ func init() {
 	listenerDescPrivateKey := listenerFields[2].Descriptor()
 	// listener.PrivateKeyValidator is a validator for the "private_key" field. It is called by the builders before save.
 	listener.PrivateKeyValidator = listenerDescPrivateKey.Validators[0].(func([]byte) error)
+	// listenerDescFingerprint is the schema descriptor for fingerprint field.
+	listenerDescFingerprint := listenerFields[3].Descriptor()
+	// listener.FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
+	listener.FingerprintValidator = listenerDescFingerprint.Validators[0].(func(string) error)
 	// listenerDescID is the schema descriptor for id field.
 	listenerDescID := listenerFields[0].Descriptor()
 	// listener.DefaultID holds the default value on creation for the id field.

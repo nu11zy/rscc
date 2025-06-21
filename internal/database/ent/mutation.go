@@ -1377,6 +1377,7 @@ type ListenerMutation struct {
 	id            *string
 	name          *string
 	private_key   *[]byte
+	fingerprint   *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Listener, error)
@@ -1559,6 +1560,42 @@ func (m *ListenerMutation) ResetPrivateKey() {
 	m.private_key = nil
 }
 
+// SetFingerprint sets the "fingerprint" field.
+func (m *ListenerMutation) SetFingerprint(s string) {
+	m.fingerprint = &s
+}
+
+// Fingerprint returns the value of the "fingerprint" field in the mutation.
+func (m *ListenerMutation) Fingerprint() (r string, exists bool) {
+	v := m.fingerprint
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFingerprint returns the old "fingerprint" field's value of the Listener entity.
+// If the Listener object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ListenerMutation) OldFingerprint(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFingerprint is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFingerprint requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFingerprint: %w", err)
+	}
+	return oldValue.Fingerprint, nil
+}
+
+// ResetFingerprint resets all changes to the "fingerprint" field.
+func (m *ListenerMutation) ResetFingerprint() {
+	m.fingerprint = nil
+}
+
 // Where appends a list predicates to the ListenerMutation builder.
 func (m *ListenerMutation) Where(ps ...predicate.Listener) {
 	m.predicates = append(m.predicates, ps...)
@@ -1593,12 +1630,15 @@ func (m *ListenerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ListenerMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, listener.FieldName)
 	}
 	if m.private_key != nil {
 		fields = append(fields, listener.FieldPrivateKey)
+	}
+	if m.fingerprint != nil {
+		fields = append(fields, listener.FieldFingerprint)
 	}
 	return fields
 }
@@ -1612,6 +1652,8 @@ func (m *ListenerMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case listener.FieldPrivateKey:
 		return m.PrivateKey()
+	case listener.FieldFingerprint:
+		return m.Fingerprint()
 	}
 	return nil, false
 }
@@ -1625,6 +1667,8 @@ func (m *ListenerMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldName(ctx)
 	case listener.FieldPrivateKey:
 		return m.OldPrivateKey(ctx)
+	case listener.FieldFingerprint:
+		return m.OldFingerprint(ctx)
 	}
 	return nil, fmt.Errorf("unknown Listener field %s", name)
 }
@@ -1647,6 +1691,13 @@ func (m *ListenerMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPrivateKey(v)
+		return nil
+	case listener.FieldFingerprint:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFingerprint(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Listener field %s", name)
@@ -1702,6 +1753,9 @@ func (m *ListenerMutation) ResetField(name string) error {
 		return nil
 	case listener.FieldPrivateKey:
 		m.ResetPrivateKey()
+		return nil
+	case listener.FieldFingerprint:
+		m.ResetFingerprint()
 		return nil
 	}
 	return fmt.Errorf("unknown Listener field %s", name)

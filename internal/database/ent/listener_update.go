@@ -47,6 +47,20 @@ func (lu *ListenerUpdate) SetPrivateKey(b []byte) *ListenerUpdate {
 	return lu
 }
 
+// SetFingerprint sets the "fingerprint" field.
+func (lu *ListenerUpdate) SetFingerprint(s string) *ListenerUpdate {
+	lu.mutation.SetFingerprint(s)
+	return lu
+}
+
+// SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
+func (lu *ListenerUpdate) SetNillableFingerprint(s *string) *ListenerUpdate {
+	if s != nil {
+		lu.SetFingerprint(*s)
+	}
+	return lu
+}
+
 // Mutation returns the ListenerMutation object of the builder.
 func (lu *ListenerUpdate) Mutation() *ListenerMutation {
 	return lu.mutation
@@ -91,6 +105,11 @@ func (lu *ListenerUpdate) check() error {
 			return &ValidationError{Name: "private_key", err: fmt.Errorf(`ent: validator failed for field "Listener.private_key": %w`, err)}
 		}
 	}
+	if v, ok := lu.mutation.Fingerprint(); ok {
+		if err := listener.FingerprintValidator(v); err != nil {
+			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "Listener.fingerprint": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -111,6 +130,9 @@ func (lu *ListenerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := lu.mutation.PrivateKey(); ok {
 		_spec.SetField(listener.FieldPrivateKey, field.TypeBytes, value)
+	}
+	if value, ok := lu.mutation.Fingerprint(); ok {
+		_spec.SetField(listener.FieldFingerprint, field.TypeString, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -149,6 +171,20 @@ func (luo *ListenerUpdateOne) SetNillableName(s *string) *ListenerUpdateOne {
 // SetPrivateKey sets the "private_key" field.
 func (luo *ListenerUpdateOne) SetPrivateKey(b []byte) *ListenerUpdateOne {
 	luo.mutation.SetPrivateKey(b)
+	return luo
+}
+
+// SetFingerprint sets the "fingerprint" field.
+func (luo *ListenerUpdateOne) SetFingerprint(s string) *ListenerUpdateOne {
+	luo.mutation.SetFingerprint(s)
+	return luo
+}
+
+// SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
+func (luo *ListenerUpdateOne) SetNillableFingerprint(s *string) *ListenerUpdateOne {
+	if s != nil {
+		luo.SetFingerprint(*s)
+	}
 	return luo
 }
 
@@ -209,6 +245,11 @@ func (luo *ListenerUpdateOne) check() error {
 			return &ValidationError{Name: "private_key", err: fmt.Errorf(`ent: validator failed for field "Listener.private_key": %w`, err)}
 		}
 	}
+	if v, ok := luo.mutation.Fingerprint(); ok {
+		if err := listener.FingerprintValidator(v); err != nil {
+			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "Listener.fingerprint": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -246,6 +287,9 @@ func (luo *ListenerUpdateOne) sqlSave(ctx context.Context) (_node *Listener, err
 	}
 	if value, ok := luo.mutation.PrivateKey(); ok {
 		_spec.SetField(listener.FieldPrivateKey, field.TypeBytes, value)
+	}
+	if value, ok := luo.mutation.Fingerprint(); ok {
+		_spec.SetField(listener.FieldFingerprint, field.TypeString, value)
 	}
 	_node = &Listener{config: luo.config}
 	_spec.Assign = _node.assignValues

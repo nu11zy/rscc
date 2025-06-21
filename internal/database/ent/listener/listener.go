@@ -15,6 +15,8 @@ const (
 	FieldName = "name"
 	// FieldPrivateKey holds the string denoting the private_key field in the database.
 	FieldPrivateKey = "private_key"
+	// FieldFingerprint holds the string denoting the fingerprint field in the database.
+	FieldFingerprint = "fingerprint"
 	// Table holds the table name of the listener in the database.
 	Table = "listeners"
 )
@@ -24,6 +26,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldPrivateKey,
+	FieldFingerprint,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -41,6 +44,8 @@ var (
 	NameValidator func(string) error
 	// PrivateKeyValidator is a validator for the "private_key" field. It is called by the builders before save.
 	PrivateKeyValidator func([]byte) error
+	// FingerprintValidator is a validator for the "fingerprint" field. It is called by the builders before save.
+	FingerprintValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() string
 )
@@ -56,4 +61,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByFingerprint orders the results by the fingerprint field.
+func ByFingerprint(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFingerprint, opts...).ToFunc()
 }
