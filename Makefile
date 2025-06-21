@@ -1,5 +1,9 @@
+GIT_TAG=$(shell git describe --tags --abbrev=0)
+GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+BUILD_TIME=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+LDFLAGS=-ldflags="-s -w -extldflags '-static' -X github.com/nu11zy/rscc/internal/common/version.gitTag=$(GIT_TAG) -X github.com/nu11zy/rscc/internal/common/version.gitCommit=$(GIT_COMMIT) -X github.com/nu11zy/rscc/internal/common/version.gitBranch=$(GIT_BRANCH) -X github.com/nu11zy/rscc/internal/common/version.buildDate=$(BUILD_TIME)"
 BIN_DIR=$(PWD)/bin
-LDFLAGS=-ldflags="-s -w"
 
 build: ## Build binary
 	@echo "Building binary"

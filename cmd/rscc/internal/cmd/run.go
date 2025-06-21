@@ -7,6 +7,7 @@ import (
 
 	"github.com/nu11zy/rscc/internal/agentsrv"
 	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/common/version"
 	"github.com/nu11zy/rscc/internal/database"
 	"github.com/nu11zy/rscc/internal/opsrv"
 	"github.com/nu11zy/rscc/internal/session"
@@ -18,6 +19,8 @@ import (
 func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 	lg := logger.FromContext(ctx)
+
+	lg.Infof("Starting rscc %s", version.Full())
 
 	operatorAddr := net.JoinHostPort(c.OperatorHost, strconv.Itoa(c.OperatorPort))
 	agentAddr := net.JoinHostPort(c.AgentHost, strconv.Itoa(c.AgentPort))

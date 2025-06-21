@@ -9,6 +9,7 @@ import (
 
 	"github.com/nu11zy/rscc/cmd/rscc/internal/cmd"
 	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/common/version"
 
 	"github.com/spf13/cobra"
 )
@@ -45,6 +46,7 @@ func main() {
 		Short:   "Reverse SSH command & control",
 		PreRunE: cmd.PreRunE,
 		RunE:    cmd.RunE,
+		Version: version.Full(),
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
 		},
