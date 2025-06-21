@@ -53,6 +53,8 @@ make build
 
 ## Usage
 
+> **TIP:** All commands have `--help` flag. Use it to get more information about the command.
+
 ### Server
 
 1. Start **RSCC** server:
