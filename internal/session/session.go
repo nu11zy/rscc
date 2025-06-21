@@ -31,7 +31,7 @@ type Session struct {
 }
 
 func NewSession(encMetadata string, sshConn *ssh.ServerConn) (*Session, error) {
-	jsonMetadata, err := base64.RawStdEncoding.DecodeString(encMetadata)
+	jsonMetadata, err := base64.RawURLEncoding.DecodeString(encMetadata)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode metadata: %w", err)
 	}

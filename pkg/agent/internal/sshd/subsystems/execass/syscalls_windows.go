@@ -1,4 +1,4 @@
-package executeassembly
+package execass
 
 //go:generate go run golang.org/x/sys/windows/mkwinsyscall@latest -output zsyscalls_windows.go syscalls_windows.go
 

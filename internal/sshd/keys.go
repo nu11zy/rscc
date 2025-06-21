@@ -41,6 +41,15 @@ func (k *ECDSAKey) GetPublicKey() ([]byte, error) {
 	return ssh.MarshalAuthorizedKey(sshPubKey), nil
 }
 
+// GetFingerprint returns the fingerprint of the public key
+func (k *ECDSAKey) GetFingerprint() (string, error) {
+	sshPubKey, err := ssh.NewPublicKey(k.publicKey)
+	if err != nil {
+		return "", fmt.Errorf("new public key: %w", err)
+	}
+	return ssh.FingerprintSHA256(sshPubKey), nil
+}
+
 // GetPrivateKey returns the private key in PEM format
 func (k *ECDSAKey) GetPrivateKey() ([]byte, error) {
 	privKeyBytes, err := x509.MarshalPKCS8PrivateKey(k.privateKey)

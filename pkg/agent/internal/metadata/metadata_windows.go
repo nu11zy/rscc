@@ -1,3 +1,6 @@
+//go:build windows
+// +build windows
+
 package metadata
 
 import (
@@ -5,11 +8,6 @@ import (
 
 	"golang.org/x/sys/windows"
 )
-
-func getOSMeta() string {
-	v := *windows.RtlGetVersion()
-	return fmt.Sprintf("Windows %d.%d.%d", v.MajorVersion, v.MinorVersion, v.BuildNumber)
-}
 
 func isPrivileged() bool {
 	var sid *windows.SID
@@ -28,4 +26,9 @@ func isPrivileged() bool {
 	}
 
 	return true
+}
+
+func getOSMeta() string {
+	v := *windows.RtlGetVersion()
+	return fmt.Sprintf("Windows %d.%d.%d", v.MajorVersion, v.MinorVersion, v.BuildNumber)
 }

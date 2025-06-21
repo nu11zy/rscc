@@ -19,7 +19,9 @@ type Listener struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// PrivateKey holds the value of the "private_key" field.
-	PrivateKey   []byte `json:"private_key,omitempty"`
+	PrivateKey []byte `json:"private_key,omitempty"`
+	// Fingerprint holds the value of the "fingerprint" field.
+	Fingerprint  string `json:"fingerprint,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -30,7 +32,7 @@ func (*Listener) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case listener.FieldPrivateKey:
 			values[i] = new([]byte)
-		case listener.FieldID, listener.FieldName:
+		case listener.FieldID, listener.FieldName, listener.FieldFingerprint:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -64,6 +66,12 @@ func (l *Listener) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field private_key", values[i])
 			} else if value != nil {
 				l.PrivateKey = *value
+			}
+		case listener.FieldFingerprint:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field fingerprint", values[i])
+			} else if value.Valid {
+				l.Fingerprint = value.String
 			}
 		default:
 			l.selectValues.Set(columns[i], values[i])
@@ -106,6 +114,9 @@ func (l *Listener) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("private_key=")
 	builder.WriteString(fmt.Sprintf("%v", l.PrivateKey))
+	builder.WriteString(", ")
+	builder.WriteString("fingerprint=")
+	builder.WriteString(l.Fingerprint)
 	builder.WriteByte(')')
 	return builder.String()
 }

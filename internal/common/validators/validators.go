@@ -77,6 +77,6 @@ func ValidateDirectoryExists(path string) bool {
 }
 
 // ValidateSubsystem validates passed value with supported subsystems by agent
-func ValidateSybsystem(ss string) bool {
+func ValidateSubsystem(ss string) bool {
 	return slices.Contains(constants.Subsystems, ss)
 }

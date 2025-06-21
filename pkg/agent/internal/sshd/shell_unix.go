@@ -4,12 +4,9 @@
 package sshd
 
 import (
-	"fmt"
+	"agent/internal/logger"
+	"errors"
 	"io"
-
-	// {{if .Debug}}
-	"log"
-	// {{end}}
 	"os"
 	"os/exec"
 
@@ -17,74 +14,70 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type Shell struct {
+type unixShell struct {
 	ptyFile *os.File
-	width   int
-	height  int
+	shell   *exec.Cmd
+	columns uint32
+	rows    uint32
 }
 
-func NewShell() *Shell {
-	return &Shell{
-		ptyFile: nil,
-		width:   80,
-		height:  24,
+func (s *unixShell) SetSize(req *ssh.Request) error {
+	columns, rows, err := ParseSize(req)
+	if err != nil {
+		return err
 	}
-}
+	s.columns = columns
+	s.rows = rows
 
-func (s *Shell) SetSize(width, height int) {
-	s.width = width
-	s.height = height
 	if s.ptyFile != nil {
 		err := pty.Setsize(s.ptyFile, &pty.Winsize{
-			Cols: uint16(width),
-			Rows: uint16(height),
+			Rows: uint16(rows),
+			Cols: uint16(columns),
 		})
 		if err != nil {
-			// {{if .Debug}}
-			log.Printf("Failed to set pty size: %v", err)
-			// {{end}}
+			return err
 		}
+	}
+	return nil
+}
+
+func (s *unixShell) HandleShell(channel ssh.Channel) {
+	defer channel.Close()
+	defer s.ptyFile.Close()
+	defer s.shell.Process.Kill()
+
+	go io.Copy(s.ptyFile, channel)
+	go io.Copy(channel, s.ptyFile)
+
+	lg := logger.GetLogger()
+	if err := s.shell.Wait(); err != nil {
+		lg.Error("Shell exited with error: %v", err)
 	}
 }
 
-func (s *Shell) handleShell(channel ssh.Channel) {
-	defer channel.Close()
-
+func NewShell() (sshShell, error) {
 	var shell *exec.Cmd
-	if _, err := os.Stat("/bin/bash"); err == nil {
+	if _, err := os.Stat("/bin/bash"); err == nil { // TODO: check shells in /etc/shells
 		shell = exec.Command("/bin/bash", "--noprofile", "--norc")
 	} else {
 		shell = exec.Command("/bin/sh")
 	}
 
 	if shell == nil {
-		// {{if .Debug}}
-		log.Printf("Shell binary not found")
-		// {{end}}
-		fmt.Fprintf(channel, "Shell binary not found\n")
-		return
+		return nil, errors.New("shell binary not found")
 	}
+	shell.Env = os.Environ()
 	shell.Env = append(shell.Env, "HISTFILE=")
 
-	var err error
-	s.ptyFile, err = pty.Start(shell)
+	ptyFile, err := pty.Start(shell)
 	if err != nil {
-		// {{if .Debug}}
-		log.Printf("Failed to start shell: %v", err)
-		// {{end}}
-		fmt.Fprintf(channel, "Failed to start shell: %v\n", err)
-		return
+		return nil, err
 	}
-	defer s.ptyFile.Close()
 
-	s.SetSize(s.width, s.height)
-
-	go io.Copy(s.ptyFile, channel)
-	go io.Copy(channel, s.ptyFile)
-
-	if err := shell.Wait(); err != nil {
-		// {{if .Debug}}
-		log.Printf("Shell exited with error: %v", err)
-		// {{end}}
-	}
+	return &unixShell{
+		ptyFile: ptyFile,
+		shell:   shell,
+		columns: 80,
+		rows:    24,
+	}, nil
 }

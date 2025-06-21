@@ -66,19 +66,26 @@ func NewServer(ctx context.Context, params *OperatorServerParams) (*OperatorServ
 	if err != nil {
 		if ent.IsNotFound(err) {
 			lg.Info("Listener not found, creating new one")
+
 			keyPair, err := sshd.NewECDSAKey()
 			if err != nil {
 				return nil, fmt.Errorf("failed to generate key pair: %w", err)
 			}
-			privateKey, err := keyPair.GetPrivateKey()
+			privateKeyBytes, err := keyPair.GetPrivateKey()
 			if err != nil {
 				return nil, fmt.Errorf("failed to get private key: %w", err)
 			}
+			fingerprint, err := keyPair.GetFingerprint()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get fingerprint: %w", err)
+			}
+
 			listener, err = params.Db.CreateListenerWithID(
 				ctx,
 				constants.OperatorListenerID,
 				constants.OperatorListenerName,
-				privateKey,
+				privateKeyBytes,
+				fingerprint,
 			)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create operator listener: %w", err)

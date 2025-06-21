@@ -1,0 +1,13 @@
+{
+    "gopls": {
+        "buildFlags": [
+            "-tags", "sftp kill pscan pfwd execass"
+        ],
+        "build.env": {
+            "GOOS": "windows",
+        },
+    },
+    "go.toolsEnvVars": {
+        "GOOS": "windows",
+    }
+}

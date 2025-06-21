@@ -3,26 +3,8 @@
 
 package subsystems
 
-import (
-	// {{if .Debug}}
-	"log"
-	// {{end}}
-	"os"
-
-	"golang.org/x/crypto/ssh"
-)
+import "agent/internal/sshd/subsystems/kill"
 
 func init() {
-	Subsystems["kill"] = subsystemKill
-}
-
-func subsystemKill(channel ssh.Channel, args []string) {
-	defer channel.Close()
-
-	// {{if .Debug}}
-	log.Printf("Kill subsystem request received")
-	// {{end}}
-
-	channel.Close()
-	os.Exit(0)
+	Subsystems["kill"] = kill.Start
 }

@@ -1,24 +1,27 @@
 <div align="center">
   <h1>RSCC</h1>
-  <tt>~ Reverse SSH Command & Control ~</tt><br/>
+  <tt>~ Reverse SSH Command & Control ~</tt><br/><br/>
   <img src=".github/rscc.png"/><br/>
 </div>
 
-RSCC is an open source, cross-platform command & control framework that allows you to control your agents (targets) via SSH.
+RSCC is an open source, cross-platform command & control framework that allows you to control your agents via SSH.
 
 ## Features
 
-Since RSCC is based on SSH, it has the following features:
+RSCC has the following features:
 
 - Cross-platform agents
 - Fully interactive shell
 - File transfer via SCP or SFTP
-- Local / Remote  port forwarding
+- Local/remote port forwarding via SSH
 - Chain SOCKS5 proxy via SSH -D
+- Multiple subsystems (port scanner, port forward, execute-assembly, etc)
+- Web delivery of agents
+- Webhooks for events *(coming soon)*
 
 **Also you can extend agent with your own SSH subsystems!**
 
-As an example, there is a [port scanner subsystem](pkg/agent/internal/sshd/subsystems/pscan.go) that allows you to scan the target host for open ports from the agent.
+As an example, there is a [port scanner subsystem](pkg/agent/internal/sshd/subsystems/pscan/pscan.go) that allows you to scan the target host for open ports from the agent.
 
 <details>
 <summary>Example</summary><br/>
@@ -33,16 +36,14 @@ ssh rscc+agent_id -s pscan --ports 139,445,3389 --ips 10.10.10.10
 
 ### Prerequisites
 
-To use RSCC, you need to have following tools on server machine:
+To use RSCC server, you need to have following tools on your machine:
 
 - Go 1.24+ (https://go.dev/doc/install)
 - Garble (https://github.com/burrowers/garble)
 
 ### Installation
 
-Just download binary from [latest release](https://github.com/nu11zy/rscc/releases/latest) and run it.
-
-Or build it from source:
+Download binary from [latest release](https://github.com/nu11zy/rscc/releases/latest) or build it from source:
 
 ```sh
 git clone https://github.com/nu11zy/rscc.git
@@ -52,24 +53,29 @@ make build
 
 ## Usage
 
+> **TIP:** All commands have `--help` flag. Use it to get more information about the command.
+
 ### Server
 
-1. Add your public key to `authorized_keys` file in the current directory or `~/.ssh/authorized_keys`.
-
-2. Start **RSCC** server:
+1. Start **RSCC** server:
 
 ```sh
 ./rscc
 ```
 
-3. Update your SSH config (for example, `~/.ssh/config`):
+2. Add your public key to `data/authorized_keys` or `~/.ssh/authorized_keys`.
 
+> **TIP:** If `data/authorized_keys` exists, it will be used instead of `~/.ssh/authorized_keys`.
+
+3. Update your SSH config (for example, `~/.ssh/config`):
 ```yml
 # Server config
 Host rscc
   HostName 127.0.0.1 # RSCC server IP
   Port 55022         # RSCC operator port
   User nu11z         # Operator username
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
 
 # Agent config
 Host rscc+*
@@ -84,27 +90,31 @@ Host rscc+*
 ssh rscc
 ```
 
-5. Generate agent (see `--help` for more options):
+5. Generate agent (see `agent generate --help` for more options):
 
 ```sh
-rscc > agent generate -s "127.0.0.1:8080"
+rscc > agent generate -s 127.0.0.1:8080
 ```
 
-6. Download agent to your machine (*web delivery is coming soon*):
+6. Start web delivery for agent:
 
 ```sh
-scp rscc:<agent_name> /path/to/local/file
+rscc > agent host <agent_id> <url>
 ```
+
+> **TIP:** If you want to download agent to your machine, you can use SCP: `scp rscc:<agent_name> /path/to/local/file`
 
 ### Target
 
-1. Drop agent to target machine and execute it:
+1. Download agent from web delivery or drop it manually to target machine.
 
 2. Get agent's session ID:
 
 ```sh
-ssh rscc session list
+rscc > session list
 ```
+
+> **TIP:** You can use `ssh rscc session list` command to list all sessions without using RSCC CLI.
 
 3. Connect to agent:
 
@@ -165,10 +175,60 @@ ssh rscc+agent_id -s pfwd stop 8080
 
 </details>
 
-## Roadmap
+<details>
+<summary>Execute assembly</summary><br/>
 
-- [ ] Support for agent listeners with custom protocols (HTTP, WS, gRPC)
-- [ ] Add more subsystems *(execute-assembly, port forward, inject, etc)*
+**WARNING:** Unstable. Can crash your agent.
+
+```sh
+cat /path/to/assembly.exe | ssh rscc+agent_id -s execass 
+```
+
+Extra flags:
+
+```txt
+-args string
+      Assembly arguments
+-in-process
+      Execute assembly in current process
+-ppid int
+      Parent process ID to inject assembly into (default: 0)
+-process string
+      Process to inject assembly into (default "notepad.exe")
+-process-args string
+      Arguments to pass to the process
+-runtime string
+      CLR runtime to use (default: v4) (default "v4")
+```
+
+</details>
+
+## For Contributors
+
+*This section will be updated in the future.*
+
+<details>
+<summary>How to create a new subsystem</summary><br/>
+
+**NOTE:** Don't forget to add a build tag to your files.
+
+1. Create a new file that registers your subsystem in the global subsystems map. See [pscan](pkg/agent/internal/sshd/subsystems/pscan.go) as an example.
+
+2. Implement the actual subsystem. See [pscan](pkg/agent/internal/sshd/subsystems/pscan/pscan.go) as an example.
+
+3. Run `go mod tidy` and `go mod vendor` in the **agent directory** to update dependencies.
+
+4. Add the name of your subsystem to the `internal/common/constants/constants.go` file.
+
+5. If you use VSCode, add your build tag to `.vscode/settings.json`
+
+6. Run `make build` in the root directory to build RSCC with your subsystem.
+
+</details>
+
+
+## TODO
+
 - [ ] Webhooks for events
-- [ ] HTTP server for serving agents
 - [ ] More documentation
+- [ ] More subsystems

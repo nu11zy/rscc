@@ -73,6 +73,11 @@ func PrivateKey(v []byte) predicate.Listener {
 	return predicate.Listener(sql.FieldEQ(FieldPrivateKey, v))
 }
 
+// Fingerprint applies equality check predicate on the "fingerprint" field. It's identical to FingerprintEQ.
+func Fingerprint(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldEQ(FieldFingerprint, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Listener {
 	return predicate.Listener(sql.FieldEQ(FieldName, v))
@@ -176,6 +181,71 @@ func PrivateKeyLT(v []byte) predicate.Listener {
 // PrivateKeyLTE applies the LTE predicate on the "private_key" field.
 func PrivateKeyLTE(v []byte) predicate.Listener {
 	return predicate.Listener(sql.FieldLTE(FieldPrivateKey, v))
+}
+
+// FingerprintEQ applies the EQ predicate on the "fingerprint" field.
+func FingerprintEQ(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldEQ(FieldFingerprint, v))
+}
+
+// FingerprintNEQ applies the NEQ predicate on the "fingerprint" field.
+func FingerprintNEQ(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldNEQ(FieldFingerprint, v))
+}
+
+// FingerprintIn applies the In predicate on the "fingerprint" field.
+func FingerprintIn(vs ...string) predicate.Listener {
+	return predicate.Listener(sql.FieldIn(FieldFingerprint, vs...))
+}
+
+// FingerprintNotIn applies the NotIn predicate on the "fingerprint" field.
+func FingerprintNotIn(vs ...string) predicate.Listener {
+	return predicate.Listener(sql.FieldNotIn(FieldFingerprint, vs...))
+}
+
+// FingerprintGT applies the GT predicate on the "fingerprint" field.
+func FingerprintGT(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldGT(FieldFingerprint, v))
+}
+
+// FingerprintGTE applies the GTE predicate on the "fingerprint" field.
+func FingerprintGTE(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldGTE(FieldFingerprint, v))
+}
+
+// FingerprintLT applies the LT predicate on the "fingerprint" field.
+func FingerprintLT(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldLT(FieldFingerprint, v))
+}
+
+// FingerprintLTE applies the LTE predicate on the "fingerprint" field.
+func FingerprintLTE(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldLTE(FieldFingerprint, v))
+}
+
+// FingerprintContains applies the Contains predicate on the "fingerprint" field.
+func FingerprintContains(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldContains(FieldFingerprint, v))
+}
+
+// FingerprintHasPrefix applies the HasPrefix predicate on the "fingerprint" field.
+func FingerprintHasPrefix(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldHasPrefix(FieldFingerprint, v))
+}
+
+// FingerprintHasSuffix applies the HasSuffix predicate on the "fingerprint" field.
+func FingerprintHasSuffix(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldHasSuffix(FieldFingerprint, v))
+}
+
+// FingerprintEqualFold applies the EqualFold predicate on the "fingerprint" field.
+func FingerprintEqualFold(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldEqualFold(FieldFingerprint, v))
+}
+
+// FingerprintContainsFold applies the ContainsFold predicate on the "fingerprint" field.
+func FingerprintContainsFold(v string) predicate.Listener {
+	return predicate.Listener(sql.FieldContainsFold(FieldFingerprint, v))
 }
 
 // And groups predicates with the AND operator between them.
