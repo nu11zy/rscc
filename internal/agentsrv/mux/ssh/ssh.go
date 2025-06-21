@@ -83,7 +83,6 @@ func (p *Protocol) StartListener(ctx context.Context) error {
 	if err != nil {
 		if ent.IsNotFound(err) {
 			p.lg.Info("Server private key not found, generating new one")
-
 			keyPair, err := sshd.NewECDSAKey()
 			if err != nil {
 				return fmt.Errorf("failed to generate key pair: %w", err)

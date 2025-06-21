@@ -149,6 +149,32 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Set extension
+	switch goos {
+	case "windows":
+		if shared {
+			if !strings.HasSuffix(name, ".dll") {
+				name = fmt.Sprintf("%s.dll", name)
+			}
+		} else {
+			if !strings.HasSuffix(name, ".exe") {
+				name = fmt.Sprintf("%s.exe", name)
+			}
+		}
+	case "darwin":
+		if shared {
+			if !strings.HasSuffix(name, ".dylib") {
+				name = fmt.Sprintf("%s.dylib", name)
+			}
+		}
+	case "linux":
+		if shared {
+			if !strings.HasSuffix(name, ".so") {
+				name = fmt.Sprintf("%s.so", name)
+			}
+		}
+	}
+
 	// Check database
 	agent, err := a.db.GetAgentByName(cmd.Context(), name)
 	if err == nil && agent != nil {
