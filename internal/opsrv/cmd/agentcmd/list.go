@@ -3,9 +3,10 @@ package agentcmd
 import (
 	"fmt"
 	"os"
-	"rscc/internal/common/pprint"
-	"rscc/internal/database/ent"
 	"strconv"
+
+	"github.com/nu11zy/rscc/internal/common/pprint"
+	"github.com/nu11zy/rscc/internal/database/ent"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/charmbracelet/lipgloss/v2"

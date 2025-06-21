@@ -4,9 +4,10 @@ import (
 	"net"
 	"os"
 	"regexp"
-	"rscc/internal/common/constants"
 	"slices"
 	"strconv"
+
+	"github.com/nu11zy/rscc/internal/common/constants"
 )
 
 func ValidateAddr(addr string) bool {

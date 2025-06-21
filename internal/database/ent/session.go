@@ -5,7 +5,7 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
-	"rscc/internal/database/ent/session"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 	"strings"
 	"time"
 

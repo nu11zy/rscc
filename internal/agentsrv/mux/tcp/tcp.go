@@ -3,7 +3,8 @@ package tcp
 import (
 	"context"
 	"fmt"
-	"rscc/internal/common/network"
+
+	"github.com/nu11zy/rscc/internal/common/network"
 
 	"go.uber.org/zap"
 )

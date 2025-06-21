@@ -6,9 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"rscc/internal/common/constants"
-	"rscc/internal/common/network"
 	"time"
+
+	"github.com/nu11zy/rscc/internal/common/constants"
+	"github.com/nu11zy/rscc/internal/common/network"
 
 	"go.uber.org/zap"
 	realssh "golang.org/x/crypto/ssh"

@@ -5,11 +5,11 @@ package enttest
 import (
 	"context"
 
-	"rscc/internal/database/ent"
+	"github.com/nu11zy/rscc/internal/database/ent"
 	// required by schema hooks.
-	_ "rscc/internal/database/ent/runtime"
+	_ "github.com/nu11zy/rscc/internal/database/ent/runtime"
 
-	"rscc/internal/database/ent/migrate"
+	"github.com/nu11zy/rscc/internal/database/ent/migrate"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

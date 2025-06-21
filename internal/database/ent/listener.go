@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
 	"strings"
 
 	"entgo.io/ent"

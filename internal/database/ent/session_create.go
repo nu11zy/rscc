@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"rscc/internal/database/ent/session"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"

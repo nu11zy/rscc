@@ -2,7 +2,8 @@ package opsrv
 
 import (
 	"path/filepath"
-	"rscc/internal/sshd"
+
+	"github.com/nu11zy/rscc/internal/sshd"
 
 	"go.uber.org/zap"
 

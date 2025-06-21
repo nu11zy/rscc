@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"rscc/internal/common/logger"
-	"rscc/internal/database/ent"
-	"rscc/internal/database/ent/agent"
 	"strings"
+
+	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/database/ent"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
 
 	entsql "entgo.io/ent/dialect/sql"
 

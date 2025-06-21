@@ -3,12 +3,13 @@ package cmd
 import (
 	"net"
 	"path/filepath"
-	"rscc/internal/agentsrv"
-	"rscc/internal/common/logger"
-	"rscc/internal/database"
-	"rscc/internal/opsrv"
-	"rscc/internal/session"
 	"strconv"
+
+	"github.com/nu11zy/rscc/internal/agentsrv"
+	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/database"
+	"github.com/nu11zy/rscc/internal/opsrv"
+	"github.com/nu11zy/rscc/internal/session"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"

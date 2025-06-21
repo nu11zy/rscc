@@ -1,7 +1,7 @@
 package sessioncmd
 
 import (
-	"rscc/internal/session"
+	"github.com/nu11zy/rscc/internal/session"
 
 	"github.com/spf13/cobra"
 )

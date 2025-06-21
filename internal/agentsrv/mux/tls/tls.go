@@ -4,8 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"rscc/internal/common/network"
-	"rscc/internal/common/utils"
+
+	"github.com/nu11zy/rscc/internal/common/network"
+	"github.com/nu11zy/rscc/internal/common/utils"
 
 	"go.uber.org/zap"
 )

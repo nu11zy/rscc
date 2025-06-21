@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"rscc/internal/common/logger"
-	"rscc/internal/common/validators"
+
+	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/common/validators"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

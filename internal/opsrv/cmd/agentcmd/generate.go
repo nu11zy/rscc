@@ -9,15 +9,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"rscc"
-	"rscc/internal/common/constants"
-	"rscc/internal/common/pprint"
-	"rscc/internal/common/utils"
-	"rscc/internal/common/validators"
-	"rscc/internal/sshd"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/nu11zy/rscc"
+
+	"github.com/nu11zy/rscc/internal/common/constants"
+	"github.com/nu11zy/rscc/internal/common/pprint"
+	"github.com/nu11zy/rscc/internal/common/utils"
+	"github.com/nu11zy/rscc/internal/common/validators"
+	"github.com/nu11zy/rscc/internal/sshd"
 
 	"github.com/cespare/xxhash/v2"
 	"github.com/spf13/cobra"

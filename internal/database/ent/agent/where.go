@@ -3,7 +3,7 @@
 package agent
 
 import (
-	"rscc/internal/database/ent/predicate"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"

@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"rscc/internal/agentsrv/mux/http"
-	"rscc/internal/agentsrv/mux/ssh"
-	"rscc/internal/agentsrv/mux/tcp"
-	"rscc/internal/agentsrv/mux/tls"
-	"rscc/internal/common/network"
+
+	"github.com/nu11zy/rscc/internal/agentsrv/mux/http"
+	"github.com/nu11zy/rscc/internal/agentsrv/mux/ssh"
+	"github.com/nu11zy/rscc/internal/agentsrv/mux/tcp"
+	"github.com/nu11zy/rscc/internal/agentsrv/mux/tls"
+	"github.com/nu11zy/rscc/internal/common/network"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"

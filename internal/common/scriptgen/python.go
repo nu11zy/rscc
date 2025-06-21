@@ -3,8 +3,9 @@ package scriptgen
 import (
 	"bytes"
 	"fmt"
-	"rscc/internal/database/ent"
 	"text/template"
+
+	"github.com/nu11zy/rscc/internal/database/ent"
 )
 
 var pyTemplate = `

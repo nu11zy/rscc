@@ -2,8 +2,9 @@ package agentcmd
 
 import (
 	"fmt"
-	"rscc/internal/common/constants"
-	"rscc/internal/common/pprint"
+
+	"github.com/nu11zy/rscc/internal/common/constants"
+	"github.com/nu11zy/rscc/internal/common/pprint"
 
 	"github.com/spf13/cobra"
 )

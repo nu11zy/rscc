@@ -6,8 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"rscc/internal/database/ent/agent"
-	"rscc/internal/database/ent/predicate"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

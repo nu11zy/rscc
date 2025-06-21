@@ -3,10 +3,11 @@ package session
 import (
 	"context"
 	"fmt"
-	"rscc/internal/common/logger"
-	"rscc/internal/database"
 	"strings"
 	"time"
+
+	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/database"
 
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"

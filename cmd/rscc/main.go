@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"rscc/cmd/rscc/internal/cmd"
-	"rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/cmd/rscc/internal/cmd"
+	"github.com/nu11zy/rscc/internal/common/logger"
 
 	"github.com/spf13/cobra"
 )

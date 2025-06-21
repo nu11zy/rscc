@@ -3,9 +3,10 @@ package http
 import (
 	"context"
 	realhttp "net/http"
-	"rscc/internal/common/network"
-	"rscc/internal/database"
 	"time"
+
+	"github.com/nu11zy/rscc/internal/common/network"
+	"github.com/nu11zy/rscc/internal/database"
 
 	"go.uber.org/zap"
 )

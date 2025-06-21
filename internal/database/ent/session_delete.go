@@ -4,8 +4,8 @@ package ent
 
 import (
 	"context"
-	"rscc/internal/database/ent/predicate"
-	"rscc/internal/database/ent/session"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

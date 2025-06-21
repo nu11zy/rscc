@@ -5,7 +5,7 @@ package hook
 import (
 	"context"
 	"fmt"
-	"rscc/internal/database/ent"
+	"github.com/nu11zy/rscc/internal/database/ent"
 )
 
 // The AgentFunc type is an adapter to allow the use of ordinary

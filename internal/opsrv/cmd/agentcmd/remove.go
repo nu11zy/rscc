@@ -3,10 +3,11 @@ package agentcmd
 import (
 	"fmt"
 	"os"
-	"rscc/internal/common/constants"
-	"rscc/internal/common/pprint"
-	"rscc/internal/common/validators"
-	"rscc/internal/database/ent"
+
+	"github.com/nu11zy/rscc/internal/common/constants"
+	"github.com/nu11zy/rscc/internal/common/pprint"
+	"github.com/nu11zy/rscc/internal/common/validators"
+	"github.com/nu11zy/rscc/internal/database/ent"
 
 	"github.com/spf13/cobra"
 )

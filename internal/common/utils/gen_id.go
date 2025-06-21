@@ -3,7 +3,8 @@ package utils
 import (
 	"crypto/rand"
 	"math/big"
-	"rscc/internal/common/constants"
+
+	"github.com/nu11zy/rscc/internal/common/constants"
 )
 
 const safeCharset = "abcdefghjkmnpqrstuvwxyz1234567890"

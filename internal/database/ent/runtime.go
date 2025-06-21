@@ -3,10 +3,10 @@
 package ent
 
 import (
-	"rscc/internal/database/ent/agent"
-	"rscc/internal/database/ent/listener"
-	"rscc/internal/database/ent/schema"
-	"rscc/internal/database/ent/session"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/schema"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 	"time"
 )
 

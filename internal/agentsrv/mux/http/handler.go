@@ -6,11 +6,12 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"rscc/internal/common/scriptgen"
-	"rscc/internal/common/validators"
-	"rscc/internal/database/ent"
 	"strings"
 	"time"
+
+	"github.com/nu11zy/rscc/internal/common/scriptgen"
+	"github.com/nu11zy/rscc/internal/common/validators"
+	"github.com/nu11zy/rscc/internal/database/ent"
 )
 
 // TODO: Improve logging

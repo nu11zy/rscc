@@ -2,9 +2,10 @@ package utils
 
 import (
 	"fmt"
-	"rscc/internal/common/pprint"
 	"sort"
 	"strings"
+
+	"github.com/nu11zy/rscc/internal/common/pprint"
 
 	"github.com/spf13/cobra"
 )

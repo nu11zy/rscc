@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"rscc/internal/database/ent/predicate"
-	"rscc/internal/database/ent/session"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

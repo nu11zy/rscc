@@ -6,7 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"

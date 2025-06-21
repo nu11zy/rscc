@@ -1,7 +1,7 @@
 package agentcmd
 
 import (
-	"rscc/internal/database"
+	"github.com/nu11zy/rscc/internal/database"
 
 	"github.com/spf13/cobra"
 )

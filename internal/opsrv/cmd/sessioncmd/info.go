@@ -1,8 +1,9 @@
 package sessioncmd
 
 import (
-	"rscc/internal/common/pprint"
 	"strings"
+
+	"github.com/nu11zy/rscc/internal/common/pprint"
 
 	"github.com/spf13/cobra"
 )

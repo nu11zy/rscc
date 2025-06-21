@@ -3,7 +3,7 @@
 package listener
 
 import (
-	"rscc/internal/database/ent/predicate"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 )

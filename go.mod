@@ -1,4 +1,4 @@
-module rscc
+module github.com/nu11zy/rscc
 
 go 1.23.0
 

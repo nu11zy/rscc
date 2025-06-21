@@ -1,8 +1,9 @@
 package schema
 
 import (
-	"rscc/internal/common/utils"
 	"time"
+
+	"github.com/nu11zy/rscc/internal/common/utils"
 
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"

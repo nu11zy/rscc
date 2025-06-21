@@ -2,10 +2,11 @@ package sessioncmd
 
 import (
 	"fmt"
-	"rscc/internal/common/pprint"
-	"rscc/internal/session"
 	"strconv"
 	"time"
+
+	"github.com/nu11zy/rscc/internal/common/pprint"
+	"github.com/nu11zy/rscc/internal/session"
 
 	"github.com/spf13/cobra"
 )
