@@ -31,7 +31,6 @@ func GetMetadata() string {
 		OSMeta:   getOSMeta(),
 		ProcName: getProcName(),
 		IsPriv:   isPrivileged(),
-		Extra:    "TODO",
 	}
 	metadata.Domain, metadata.Username = getUsername()
 

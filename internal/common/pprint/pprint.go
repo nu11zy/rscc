@@ -83,7 +83,7 @@ func TruncateString(s string, maxLen int) string {
 }
 
 func GetBanner() string {
-	banner := fmt.Sprintf("> %s  %s\n", Green.Render("┳━┓┏━┓┏━┓┏━┓"), Bold.Render("RSCC - v0.1"))
+	banner := fmt.Sprintf("> %s  %s\n", Green.Render("┳━┓┏━┓┏━┓┏━┓"), Bold.Render("RSCC - v0.2"))
 	banner += fmt.Sprintf("> %s  %s\n", Green.Render("┣┳┛┗━┓┃  ┃  "), "Reverse SSH Command & Control")
 	banner += fmt.Sprintf("> %s  %s\n", Green.Render("┛┗━┗━┛┗━┛┗━┛"), Blue.Render("https://github.com/nu11zy/rscc"))
 	return banner
