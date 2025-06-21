@@ -1,6 +1,6 @@
 <div align="center">
   <h1>RSCC</h1>
-  <tt>~ Reverse SSH Command & Control ~</tt><br/>
+  <tt>~ Reverse SSH Command & Control ~</tt><br/><br/>
   <img src=".github/rscc.png"/><br/>
 </div>
 
