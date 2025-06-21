@@ -216,11 +216,11 @@ Extra flags:
 
 3. Run `go mod tidy` and `go mod vendor` in the **agent directory** to update dependencies.
 
-4. Run `make build` in the root directory to build RSCC with your subsystem.
+4. Add the name of your subsystem to the `internal/common/constants/constants.go` file.
 
-5. Add the name of your subsystem to the `internal/common/constants/constants.go` file.
+5. If you use VSCode, add your build tag to `.vscode/settings.json`
 
-6. If you use VSCode, add your build tag to `.vscode/settings.json`
+6. Run `make build` in the root directory to build RSCC with your subsystem.
 
 </details>
 
