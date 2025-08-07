@@ -73,7 +73,7 @@ make build
 Host rscc
   HostName 127.0.0.1 # RSCC server IP
   Port 55022         # RSCC operator port
-  User nu11z         # Operator username
+  User username      # Operator username
   UserKnownHostsFile /dev/null
   StrictHostKeyChecking no
 
