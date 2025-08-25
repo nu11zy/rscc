@@ -2,6 +2,7 @@ package sessioncmd
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -35,6 +36,10 @@ func (s *SessionCmd) cmdList(cmd *cobra.Command, args []string) error {
 func (s *SessionCmd) renderSessionList(sessions []*session.Session, comments map[string]string) string {
 	result := ""
 	padding := len(strconv.Itoa(len(sessions)))
+
+	sort.Slice(sessions, func(i, j int) bool {
+		return sessions[i].CreatedAt.Before(sessions[j].CreatedAt)
+	})
 
 	for i, session := range sessions {
 		id := pprint.Green.Render(session.ID)
