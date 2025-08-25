@@ -24,6 +24,7 @@ type Metadata struct {
 
 type Session struct {
 	ID         string
+	AgentID    string
 	CreatedAt  time.Time
 	Metadata   Metadata
 	RemoteAddr string

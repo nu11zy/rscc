@@ -22,34 +22,17 @@ func (s *SessionCmd) newCmdList() *cobra.Command {
 
 func (s *SessionCmd) cmdList(cmd *cobra.Command, args []string) error {
 	sessions := s.sm.ListSessions()
+	comments := s.sm.ListComments()
 	if len(sessions) == 0 {
 		cmd.Println(pprint.Info("No sessions found"))
 		return nil
 	}
 
-	// var rows [][]string
-	// for _, session := range sessions {
-	// 	id := pprint.Blue.Render(session.ID)
-	// 	var username string
-	// 	if session.Metadata.Domain != "" {
-	// 		username = fmt.Sprintf("%s/%s", session.Metadata.Username, session.Metadata.Domain)
-	// 	} else {
-	// 		username = session.Metadata.Username
-	// 	}
-	// 	if session.Metadata.IsPriv {
-	// 		username = pprint.Red.Render(fmt.Sprintf("%s (*)", username))
-	// 	}
-	// 	osMeta := strings.Split(session.Metadata.OSMeta, ":")
-	// 	rows = append(rows, []string{id, username, session.Metadata.Hostname, osMeta[0], session.CreatedAt.Format("02.01.2006 15:04:05")})
-	// }
-
-	// cmd.Println(pprint.Table([]string{"ID", "Username", "Hostname", "OS", "Created"}, rows))
-	// cmd.Println()
-	cmd.Print(s.renderSessionList(sessions))
+	cmd.Print(s.renderSessionList(sessions, comments))
 	return nil
 }
 
-func (s *SessionCmd) renderSessionList(sessions []*session.Session) string {
+func (s *SessionCmd) renderSessionList(sessions []*session.Session, comments map[string]string) string {
 	result := ""
 	padding := len(strconv.Itoa(len(sessions)))
 
@@ -68,10 +51,15 @@ func (s *SessionCmd) renderSessionList(sessions []*session.Session) string {
 			userHost = fmt.Sprintf("%s %s", userHost, pprint.Red.Render("(*)"))
 		}
 
+		var agentComment string
+		if comment, ok := comments[session.AgentID]; ok {
+			agentComment = pprint.Black.Render(fmt.Sprintf("# %s", comment))
+		}
+
 		duration := time.Since(session.CreatedAt)
 		createdAt := pprint.Cyan.Render(duration.Round(time.Second).String())
 
-		result += fmt.Sprintf("%*d: %s: %s [%s] <%s>\n", padding, i+1, id, userHost, remoteAddr, createdAt)
+		result += fmt.Sprintf("%*d: %s: %s [%s] <%s> %s\n", padding, i+1, id, userHost, remoteAddr, createdAt, agentComment)
 	}
 
 	return result

@@ -37,7 +37,11 @@ func (s *SessionManager) AddSession(encMetadata string, sshConn *ssh.ServerConn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	agentID := sshConn.Permissions.Extensions["id"]
+
+	agentID, ok := sshConn.Permissions.Extensions["id"]
+	if !ok {
+		return nil, fmt.Errorf("agent id not found in ssh connection extensions")
+	}
 	dbSession, err := s.db.CreateSession(
 		ctx,
 		agentID,
@@ -54,12 +58,13 @@ func (s *SessionManager) AddSession(encMetadata string, sshConn *ssh.ServerConn)
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	err = s.db.UpdateAgentHits(ctx, agentID)
+	err = s.db.UpdateAgentHits(ctx, dbSession.AgentID)
 	if err != nil {
 		s.lg.Errorw("failed to update agent hits", "error", err)
 	}
 
 	session.ID = dbSession.ID
+	session.AgentID = dbSession.AgentID
 	session.CreatedAt = dbSession.CreatedAt
 	s.sessions[session.ID] = session
 
@@ -76,6 +81,20 @@ func (s *SessionManager) ListSessions() []*Session {
 		sessions = append(sessions, session)
 	}
 	return sessions
+}
+
+func (s *SessionManager) ListComments() map[string]string {
+	agents, err := s.db.GetAllAgents(context.Background())
+	if err != nil {
+		s.lg.Errorw("failed to get all agents", "error", err)
+		return nil
+	}
+
+	comments := make(map[string]string)
+	for _, agent := range agents {
+		comments[agent.ID] = agent.Comment
+	}
+	return comments
 }
 
 func (s *SessionManager) CountSessions() int {
