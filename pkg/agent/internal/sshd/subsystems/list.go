@@ -8,14 +8,16 @@ import (
 )
 
 func init() {
-	Subsystems["list"] = func(channel ssh.Channel, args []string) {
-		lg := logger.GetLogger()
-		defer channel.Close()
+	Subsystems["list"] = listSubsystems
+}
 
-		lg.Info("List subsystems request received")
+func listSubsystems(channel ssh.Channel, args []string) {
+	lg := logger.GetLogger()
+	defer channel.Close()
 
-		for k := range Subsystems {
-			channel.Write([]byte(fmt.Sprintf("- %s\n", k)))
-		}
+	lg.Info("List subsystems request received")
+
+	for k := range Subsystems {
+		channel.Write([]byte(fmt.Sprintf("- %s\n", k)))
 	}
 }
