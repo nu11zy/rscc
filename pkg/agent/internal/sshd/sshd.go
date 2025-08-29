@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/rand/v2"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/google/shlex"
@@ -143,6 +144,8 @@ func (ac *AgentConfig) handleJump(channel ssh.Channel) {
 				continue
 			}
 			go ac.handleSession(channel, chanReqs)
+		case "direct-tcpip":
+			go ac.handleDirectTcpip(newChan)
 		default:
 			lg.Warn("Unknown channel type: %s", newChan.ChannelType())
 			newChan.Reject(ssh.UnknownChannelType, fmt.Sprintf("Unknown channel: %s", newChan.ChannelType()))
@@ -229,4 +232,46 @@ func (ac *AgentConfig) handleSession(channel ssh.Channel, chanReqs <-chan *ssh.R
 			req.Reply(false, nil)
 		}
 	}
+}
+
+func (ac *AgentConfig) handleDirectTcpip(channel ssh.NewChannel) {
+	var extraData struct {
+		TargetHost     string
+		TargetPort     uint32
+		OriginatorIP   string
+		OriginatorPort uint32
+	}
+	if err := ssh.Unmarshal(channel.ExtraData(), &extraData); err != nil {
+		channel.Reject(ssh.ResourceShortage, "Unable to unmarshal extra data")
+		return
+	}
+
+	dialer := net.Dialer{
+		Timeout: 5 * time.Second,
+	}
+	destDial := net.JoinHostPort(extraData.TargetHost, strconv.Itoa(int(extraData.TargetPort)))
+	tcpConn, err := dialer.Dial("tcp", destDial)
+	if err != nil {
+		channel.Reject(ssh.ConnectionFailed, fmt.Sprintf("Unable to connect: %s", destDial))
+		return
+	}
+	defer tcpConn.Close()
+
+	dialer.Timeout = 0
+
+	conn, reqs, err := channel.Accept()
+	if err != nil {
+		channel.Reject(ssh.ResourceShortage, "Unable accept direct-tcpip channel request")
+		return
+	}
+	defer conn.Close()
+	go ssh.DiscardRequests(reqs)
+
+	go func() {
+		defer tcpConn.Close()
+		defer conn.Close()
+
+		io.Copy(conn, tcpConn)
+	}()
+	io.Copy(tcpConn, conn)
 }
