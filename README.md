@@ -125,6 +125,19 @@ ssh rscc+session_id
 ### More examples
 
 <details>
+<summary>List subsystems</summary><br/>
+
+if you forget which subsystems the agent is built with:
+```sh
+ssh rscc+agent_id
+- sftp
+- kill
+- pscan
+```
+
+</details>
+
+<details>
 <summary>SOCKS5 Proxy</summary><br/>
 
 ```sh
@@ -199,6 +212,35 @@ Extra flags:
       Arguments to pass to the process
 -runtime string
       CLR runtime to use (default: v4) (default "v4")
+```
+
+</details>
+
+<details>
+<summary>Port scanner</summary><br/>
+
+Port scanner will probe each speacified port on all specified IP addresses (no ICMP/ARP discovery).
+
+```sh
+ssh rscc+agent_id -s pscan
+Usage:
+  -ips string
+        IP addresses to scan (required)
+  -ports string
+        Ports to scan (default "21,22,23,25,53,80,88,102,161,162,389,443,445,636,1433,3128,1962,3389,4786,5985,5986,7433,8080-8200,9000-9200,9433,9600,10000,10161,10162")
+  -threads int
+        Number of threads for scanner (default 300)
+  -timeout int
+        Timeout for TCP connection establishment (default 3)
+```
+
+For example to scan `172.16.5.0/24` subnet:
+```sh
+ssh rscc+agent_id -s pscan -ips 172.16.5.0/24
+172.16.5.1:80
+172.16.5.1:443
+172.16.5.34:445
+172.16.5.34:5985
 ```
 
 </details>
