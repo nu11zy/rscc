@@ -4,6 +4,7 @@ import (
 	"agent/internal/config"
 	"agent/internal/logger"
 	"agent/internal/sshd/subsystems"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand/v2"
@@ -113,15 +114,21 @@ func (ac *AgentConfig) handleJump(channel ssh.Channel) {
 	defer pAgent.Close()
 
 	go func() {
-		_, err := io.Copy(channel, pServer)
-		if err != nil {
-			lg.Error("io channel<-pServer error: %v", err)
+		if _, err := io.Copy(channel, pServer); err != nil {
+			if !errors.Is(err, io.EOF) {
+				lg.Error("io channel<-pServer error: %v", err)
+			}
+			defer pServer.Close()
+			defer pAgent.Close()
 		}
 	}()
 	go func() {
-		_, err := io.Copy(pServer, channel)
-		if err != nil {
-			lg.Error("io pServer<-channel error: %v", err)
+		if _, err := io.Copy(pServer, channel); err != nil {
+			if !errors.Is(err, io.EOF) {
+				lg.Error("io pServer<-channel error: %v", err)
+			}
+			defer pServer.Close()
+			defer pAgent.Close()
 		}
 	}()
 

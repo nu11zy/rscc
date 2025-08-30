@@ -100,6 +100,7 @@ func Start(channel ssh.Channel, args []string) {
 			bytes := make([]byte, 1)
 			if _, err := channel.Read(bytes); err != nil {
 				cancel()
+				lg.Warn("Scan is cancelled due to interruption")
 				return
 			}
 		}
@@ -128,6 +129,7 @@ func (s *subsystemPscanAddress) Pretty() string {
 // Scan start TCP scanning
 func (s *subsystemPscanConfig) Scan(ctx context.Context) {
 	addrs := make(chan subsystemPscanAddress, 65535)
+	defer close(addrs)
 	var wg sync.WaitGroup
 
 	lg := logger.GetLogger()
@@ -157,7 +159,6 @@ func (s *subsystemPscanConfig) Scan(ctx context.Context) {
 	}
 
 	wg.Wait()
-	close(addrs)
 }
 
 // connectTcp try to connect to ip:port
