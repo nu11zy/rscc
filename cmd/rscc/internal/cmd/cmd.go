@@ -18,7 +18,7 @@ type Cmd struct {
 	OperatorHost string
 	AgentPort    int
 	AgentHost    string
-	AgentTrust   bool
+	Insecure     bool
 	TlsCertPath  string
 	TlsKeyPath   string
 	HtmlPagePath string
@@ -31,7 +31,7 @@ func (c *Cmd) RegisterFlags(fs *pflag.FlagSet) error {
 	fs.StringVar(&c.OperatorHost, "oh", "0.0.0.0", "operator listener host")
 	fs.IntVar(&c.AgentPort, "ap", 8080, "agent listener port")
 	fs.StringVar(&c.AgentHost, "ah", "0.0.0.0", "agent listener host")
-	fs.BoolVar(&c.AgentTrust, "at", false, "trust any agent's SSH key (insecure)")
+	fs.BoolVarP(&c.Insecure, "insecure", "i", false, "trust any agent's SSH key (insecure)")
 	fs.StringVarP(&c.TlsCertPath, "tls-cert", "c", "", "TLS certificate path")
 	fs.StringVarP(&c.TlsKeyPath, "tls-key", "k", "", "TLS key path")
 	fs.StringVarP(&c.HtmlPagePath, "page", "p", "", "fake HTML page path")

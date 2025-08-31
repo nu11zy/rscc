@@ -34,14 +34,14 @@ type AgentMux struct {
 }
 
 type AgentMuxParams struct {
-	Address        string
-	DataPath       string
-	TlsCertPath    string
-	TlsKeyPath     string
-	HtmlPagePath   string
-	TrustAnySshKey bool
-	Db             *database.Database
-	Sm             *session.SessionManager
+	Address      string
+	DataPath     string
+	TlsCertPath  string
+	TlsKeyPath   string
+	HtmlPagePath string
+	Insecure     bool
+	Db           *database.Database
+	Sm           *session.SessionManager
 }
 
 func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error) {
@@ -57,9 +57,9 @@ func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error)
 			HtmlPagePath: params.HtmlPagePath,
 		},
 		SshConfig: &ssh.ProtocolConfig{
-			Db:             params.Db,
-			Sm:             params.Sm,
-			TrustAnySshKey: params.TrustAnySshKey,
+			Db:       params.Db,
+			Sm:       params.Sm,
+			Insecure: params.Insecure,
 		},
 	}
 	mux, err := mux.NewMux(lg, muxConfig)
