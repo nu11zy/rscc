@@ -17,7 +17,7 @@ var (
 	Red     = lipgloss.NewStyle().Foreground(lipgloss.Red)
 	Magenta = lipgloss.NewStyle().Foreground(lipgloss.Magenta)
 	Yellow  = lipgloss.NewStyle().Foreground(lipgloss.Yellow)
-	Black   = lipgloss.NewStyle().Foreground(lipgloss.Black)
+	Black   = lipgloss.NewStyle().Foreground(lipgloss.BrightBlack)
 
 	SuccessPrefix = Green.Render("[+]")
 	InfoPrefix    = Blue.Render("[i]")

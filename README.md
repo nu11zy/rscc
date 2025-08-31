@@ -104,6 +104,8 @@ rscc > agent host <agent_id> <url>
 
 > **TIP:** If you want to download agent to your machine, you can use SCP: `scp rscc:<agent_name> /path/to/local/file`
 
+> **NOTE:** If you delete the agent, any already running instances won't be able to reconnect to the server. To temporarily allow them to reconnect, restart the server with the `-i / --insecure` flag.
+
 ### Target
 
 1. Download agent from web delivery or drop it manually to target machine.

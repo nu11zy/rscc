@@ -39,6 +39,7 @@ type AgentMuxParams struct {
 	TlsCertPath  string
 	TlsKeyPath   string
 	HtmlPagePath string
+	Insecure     bool
 	Db           *database.Database
 	Sm           *session.SessionManager
 }
@@ -56,8 +57,9 @@ func NewAgentMux(ctx context.Context, params *AgentMuxParams) (*AgentMux, error)
 			HtmlPagePath: params.HtmlPagePath,
 		},
 		SshConfig: &ssh.ProtocolConfig{
-			Db: params.Db,
-			Sm: params.Sm,
+			Db:       params.Db,
+			Sm:       params.Sm,
+			Insecure: params.Insecure,
 		},
 	}
 	mux, err := mux.NewMux(lg, muxConfig)

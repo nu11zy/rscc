@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/nu11zy/rscc/internal/common/pprint"
@@ -59,6 +60,8 @@ func (s *SessionCmd) renderSessionList(sessions []*session.Session, comments map
 		var agentComment string
 		if comment, ok := comments[session.AgentID]; ok {
 			agentComment = pprint.Black.Render(fmt.Sprintf("# %s", comment))
+		} else if strings.HasPrefix(session.AgentID, "unknown-") {
+			agentComment = pprint.Black.Render("# unknown agent")
 		}
 
 		duration := time.Since(session.CreatedAt)

@@ -51,7 +51,7 @@ func (p *Protocol) handleConnection(conn net.Conn) {
 	// Create new SSH connection
 	sshConn, chans, reqs, err := realssh.NewServerConn(timeoutConn, p.sshConfig)
 	if err != nil {
-		lg.Errorf("SSH handshake failed: %v", err)
+		lg.Errorf("SSH handshake failed: %v (to disable agent authentication, restart server with --insecure flag)", err)
 		return
 	}
 	defer sshConn.Close()

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/nu11zy/rscc/internal/common/logger"
+	"github.com/nu11zy/rscc/internal/common/utils"
 	"github.com/nu11zy/rscc/internal/database"
 
 	"go.uber.org/zap"
@@ -20,7 +21,7 @@ type SessionManager struct {
 }
 
 func NewSessionManager(ctx context.Context, db *database.Database) *SessionManager {
-	lg := logger.FromContext(ctx)
+	lg := logger.FromContext(ctx).Named("session-manager")
 
 	return &SessionManager{
 		db:       db,
@@ -38,10 +39,21 @@ func (s *SessionManager) AddSession(encMetadata string, sshConn *ssh.ServerConn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	agentID, ok := sshConn.Permissions.Extensions["id"]
-	if !ok {
-		return nil, fmt.Errorf("agent id not found in ssh connection extensions")
+	agentID := "unknown-" + utils.GenID()
+	if sshConn.Permissions != nil {
+		var ok bool
+		agentID, ok = sshConn.Permissions.Extensions["id"]
+		if ok {
+			if s.db.UpdateAgentHits(ctx, agentID) != nil {
+				s.lg.Error("failed to update agent hits", "error", err)
+			}
+		} else {
+			s.lg.Warn("agent id not found in ssh connection extensions, using default id")
+		}
+	} else {
+		s.lg.Warn("ssh connection permissions not found, using default id")
 	}
+
 	dbSession, err := s.db.CreateSession(
 		ctx,
 		agentID,
@@ -56,11 +68,6 @@ func (s *SessionManager) AddSession(encMetadata string, sshConn *ssh.ServerConn)
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
-	}
-
-	err = s.db.UpdateAgentHits(ctx, dbSession.AgentID)
-	if err != nil {
-		s.lg.Errorw("failed to update agent hits", "error", err)
 	}
 
 	session.ID = dbSession.ID
@@ -84,9 +91,12 @@ func (s *SessionManager) ListSessions() []*Session {
 }
 
 func (s *SessionManager) ListComments() map[string]string {
-	agents, err := s.db.GetAllAgents(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	agents, err := s.db.GetAllAgents(ctx)
 	if err != nil {
-		s.lg.Errorw("failed to get all agents", "error", err)
+		s.lg.Error("failed to get all agents", "error", err)
 		return nil
 	}
 
