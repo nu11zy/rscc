@@ -15,6 +15,19 @@ import (
 	realssh "golang.org/x/crypto/ssh"
 )
 
+func (p *Protocol) insecurePublicKeyCallback(conn realssh.ConnMetadata, key realssh.PublicKey) (*realssh.Permissions, error) {
+	perm, err := p.publicKeyCallback(conn, key)
+	if err != nil {
+		// in case of any error -> trust client's session
+		return &realssh.Permissions{
+			Extensions: map[string]string{
+				"id": constants.AgentInsecurePlugName,
+			},
+		}, nil
+	}
+	return perm, nil
+}
+
 func (p *Protocol) publicKeyCallback(conn realssh.ConnMetadata, key realssh.PublicKey) (*realssh.Permissions, error) {
 	p.lg.Debugf("Public key callback for %s", conn.RemoteAddr())
 

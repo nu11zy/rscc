@@ -51,11 +51,12 @@ func (c *Cmd) RunE(cmd *cobra.Command, args []string) error {
 
 	// Create agent mux
 	agentMuxParams := &agentsrv.AgentMuxParams{
-		Address:      agentAddr,
-		DataPath:     c.DataPath,
-		HtmlPagePath: c.HtmlPagePath,
-		Db:           db,
-		Sm:           sm,
+		Address:        agentAddr,
+		DataPath:       c.DataPath,
+		HtmlPagePath:   c.HtmlPagePath,
+		Db:             db,
+		Sm:             sm,
+		TrustAnySshKey: c.AgentTrust,
 	}
 	agentMux, err := agentsrv.NewAgentMux(ctx, agentMuxParams)
 	if err != nil {

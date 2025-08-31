@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nu11zy/rscc/internal/common/constants"
 	"github.com/nu11zy/rscc/internal/common/logger"
 	"github.com/nu11zy/rscc/internal/database"
 
@@ -20,7 +21,7 @@ type SessionManager struct {
 }
 
 func NewSessionManager(ctx context.Context, db *database.Database) *SessionManager {
-	lg := logger.FromContext(ctx)
+	lg := logger.FromContext(ctx).Named("session-manager")
 
 	return &SessionManager{
 		db:       db,
@@ -58,9 +59,12 @@ func (s *SessionManager) AddSession(encMetadata string, sshConn *ssh.ServerConn)
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	err = s.db.UpdateAgentHits(ctx, dbSession.AgentID)
-	if err != nil {
-		s.lg.Errorw("failed to update agent hits", "error", err)
+	if dbSession.AgentID == constants.AgentInsecurePlugName {
+		s.lg.Warnw("Skip increment of agent's hits due to unknown source")
+	} else {
+		if s.db.UpdateAgentHits(ctx, dbSession.AgentID) != nil {
+			s.lg.Errorw("failed to update agent hits", "error", err)
+		}
 	}
 
 	session.ID = dbSession.ID

@@ -28,8 +28,9 @@ type Protocol struct {
 }
 
 type ProtocolConfig struct {
-	Db *database.Database
-	Sm *session.SessionManager
+	TrustAnySshKey bool
+	Db             *database.Database
+	Sm             *session.SessionManager
 }
 
 func NewProtocol(lg *zap.SugaredLogger, config *ProtocolConfig) (*Protocol, error) {
@@ -47,8 +48,14 @@ func NewProtocol(lg *zap.SugaredLogger, config *ProtocolConfig) (*Protocol, erro
 	}
 
 	protocol.sshConfig = &realssh.ServerConfig{
-		NoClientAuth:      false,
-		PublicKeyCallback: protocol.publicKeyCallback,
+		NoClientAuth: false,
+	}
+
+	if config.TrustAnySshKey {
+		lg.Warn("Each client can connect to SSH due to insecure public key callback")
+		protocol.sshConfig.PublicKeyCallback = protocol.insecurePublicKeyCallback
+	} else {
+		protocol.sshConfig.PublicKeyCallback = protocol.publicKeyCallback
 	}
 
 	return protocol, nil
