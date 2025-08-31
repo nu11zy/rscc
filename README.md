@@ -92,6 +92,8 @@ ssh rscc
 
 5. Generate agent (see `agent generate --help` for more options):
 
+> **NOTE:** If you will delete agent via `agent remove` it will unable to connect on the next rscc server restart. If you fall at this point - use flag `--at` which will apply insecure processor of agent's SSH key.
+
 ```sh
 rscc > agent generate -s 127.0.0.1:8080
 ```
