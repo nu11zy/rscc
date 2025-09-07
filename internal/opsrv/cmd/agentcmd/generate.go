@@ -48,7 +48,7 @@ func (a *AgentCmd) newCmdGenerate() *cobra.Command {
 		RunE:    a.cmdGenerate,
 	}
 	cmd.Flags().StringP("name", "n", "", "agent name without extension (random if not provided)")
-	cmd.Flags().StringP("os", "o", runtime.GOOS, "operating system (linux, windows, darwin)")
+	cmd.Flags().StringP("os", "o", runtime.GOOS, "operating system (linux, windows, darwin, freebsd, openbsd, solaris)")
 	cmd.Flags().StringP("arch", "a", runtime.GOARCH, "architecture (amd64, arm64)")
 	cmd.Flags().StringSliceP("servers", "s", []string{}, "server addresses (e.g. '127.0.0.1:8080,127.0.0.1:8081')")
 	cmd.Flags().Bool("shared", false, "build shared library")
@@ -125,6 +125,10 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 		name = strings.ReplaceAll(strings.TrimSpace(name), " ", "-")
 	}
 
+	if goos == "solaris" && goarch == "arm64" {
+		return fmt.Errorf("solaris/arm64 is not supported")
+	}
+
 	// Set extension
 	switch goos {
 	case "windows":
@@ -143,36 +147,10 @@ func (a *AgentCmd) cmdGenerate(cmd *cobra.Command, args []string) error {
 				name = name + ".dylib"
 			}
 		}
-	case "linux":
+	case "linux", "freebsd", "openbsd", "solaris":
 		if shared {
 			if !strings.HasSuffix(name, ".so") {
 				name = name + ".so"
-			}
-		}
-	}
-
-	// Set extension
-	switch goos {
-	case "windows":
-		if shared {
-			if !strings.HasSuffix(name, ".dll") {
-				name = fmt.Sprintf("%s.dll", name)
-			}
-		} else {
-			if !strings.HasSuffix(name, ".exe") {
-				name = fmt.Sprintf("%s.exe", name)
-			}
-		}
-	case "darwin":
-		if shared {
-			if !strings.HasSuffix(name, ".dylib") {
-				name = fmt.Sprintf("%s.dylib", name)
-			}
-		}
-	case "linux":
-		if shared {
-			if !strings.HasSuffix(name, ".so") {
-				name = fmt.Sprintf("%s.so", name)
 			}
 		}
 	}
@@ -344,6 +322,12 @@ func (a *AgentCmd) buildAgent(tmpDir string, config builderConfig) error {
 		sshClient = constants.SshBannersDarwin[utils.RandInt(len(constants.SshBannersDarwin))]
 	case "linux":
 		sshClient = constants.SshBannersLinux[utils.RandInt(len(constants.SshBannersLinux))]
+	case "freebsd":
+		sshClient = constants.SshBannersFreebsd[utils.RandInt(len(constants.SshBannersFreebsd))]
+	case "openbsd":
+		sshClient = constants.SshBannersOpenbsd[utils.RandInt(len(constants.SshBannersOpenbsd))]
+	case "solaris":
+		sshClient = constants.SshBannersSolaris[utils.RandInt(len(constants.SshBannersSolaris))]
 	}
 
 	// Set output path
