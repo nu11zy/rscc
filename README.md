@@ -53,7 +53,8 @@ make build
 
 ## Usage
 
-> **TIP:** All commands have `--help` flag. Use it to get more information about the command.
+> [!TIP]
+> All commands have `--help` flag. Use it to get more information about the command.
 
 ### Server
 
@@ -65,7 +66,8 @@ make build
 
 2. Add your public key to `data/authorized_keys` or `~/.ssh/authorized_keys`.
 
-> **TIP:** If `data/authorized_keys` exists, it will be used instead of `~/.ssh/authorized_keys`.
+> [!TIP]
+> If `data/authorized_keys` exists, it will be used instead of `~/.ssh/authorized_keys`.
 
 3. Update your SSH config (for example, `~/.ssh/config`):
 ```yml
@@ -102,9 +104,11 @@ rscc > agent generate -s 127.0.0.1:8080
 rscc > agent host <agent_id> <url>
 ```
 
-> **TIP:** If you want to download agent to your machine, you can use SCP: `scp rscc:<agent_name> /path/to/local/file`
+> [!TIP]
+> If you want to download agent to your machine, you can use SCP: `scp rscc:<agent_name> /path/to/local/file`
 
-> **NOTE:** If you delete the agent, any already running instances won't be able to reconnect to the server. To temporarily allow them to reconnect, restart the server with the `-i / --insecure` flag.
+> [!NOTE]
+> If you delete the agent, any already running instances won't be able to reconnect to the server. To temporarily allow them to reconnect, restart the server with the `-i / --insecure` flag.
 
 ### Target
 
@@ -116,7 +120,8 @@ rscc > agent host <agent_id> <url>
 rscc > session list
 ```
 
-> **TIP:** You can use `ssh rscc session list` command to list all sessions without using RSCC CLI.
+> [!TIP]
+> You can use `ssh rscc session list` command to list all sessions without using RSCC CLI.
 
 3. Connect to agent:
 
@@ -193,7 +198,8 @@ ssh rscc+agent_id -s pfwd stop 8080
 <details>
 <summary>Execute assembly</summary><br/>
 
-**WARNING:** Unstable. Can crash your agent.
+> [!WARNING]
+> Unstable. Can crash your agent.
 
 ```sh
 cat /path/to/assembly.exe | ssh rscc+agent_id -s execass 
@@ -254,7 +260,8 @@ ssh rscc+agent_id -s pscan -ips 172.16.5.0/24
 <details>
 <summary>How to create a new subsystem</summary><br/>
 
-**NOTE:** Don't forget to add a build tag to your files.
+> [!NOTE]
+> Don't forget to add a build tag to your files.
 
 1. Create a new file that registers your subsystem in the global subsystems map. See [pscan](pkg/agent/internal/sshd/subsystems/pscan.go) as an example.
 
@@ -273,5 +280,6 @@ ssh rscc+agent_id -s pscan -ips 172.16.5.0/24
 ## TODO
 
 - [ ] Webhooks for events
-- [ ] More documentation
-- [ ] More subsystems
+- [ ] Add more subsystems
+- [ ] Refactor windows [execute-assembly](pkg/agent/internal/sshd/subsystems/execass.go) subsystem
+- [ ] Sleep mode for agents (???)
