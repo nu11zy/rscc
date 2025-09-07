@@ -22,6 +22,7 @@ build-all: ## Build binaries for platforms
 	@echo "Build for darwin/amd64"
 	@GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.darwin.amd64 cmd/rscc/main.go
 	@echo "Build for darwin/arm64"
+	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.darwin.arm64 cmd/rscc/main.go
 
 gen-ent: ## Generate ent models
 	@echo "Generate ent models"
