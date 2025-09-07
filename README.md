@@ -198,12 +198,11 @@ ssh rscc+agent_id -s pfwd stop 8080
 <details>
 <summary>Execute assembly</summary><br/>
 
-> [!WARNING]
-> Unstable. Can crash your agent.
-
 ```sh
 cat /path/to/assembly.exe | ssh rscc+agent_id -s execass 
 ```
+
+> **WARNING:** Unstable. Can crash your agent.
 
 Extra flags:
 
@@ -260,8 +259,7 @@ ssh rscc+agent_id -s pscan -ips 172.16.5.0/24
 <details>
 <summary>How to create a new subsystem</summary><br/>
 
-> [!NOTE]
-> Don't forget to add a build tag to your files.
+> **NOTE:** Don't forget to add a build tag to your files.
 
 1. Create a new file that registers your subsystem in the global subsystems map. See [pscan](pkg/agent/internal/sshd/subsystems/pscan.go) as an example.
 
