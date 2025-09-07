@@ -23,16 +23,6 @@ build-all: ## Build binaries for platforms
 	@GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.darwin.amd64 cmd/rscc/main.go
 	@echo "Build for darwin/arm64"
 	@GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.darwin.arm64 cmd/rscc/main.go
-	@echo "Build for freebsd/amd64"
-	@GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.freebsd.amd64 cmd/rscc/main.go
-	@echo "Build for freebsd/arm64"
-	@GOOS=freebsd GOARCH=arm64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.freebsd.arm64 cmd/rscc/main.go
-	@echo "Build for openbsd/amd64"
-	@GOOS=openbsd GOARCH=amd64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.openbsd.amd64 cmd/rscc/main.go
-	@echo "Build for openbsd/arm64"
-	@GOOS=openbsd GOARCH=arm64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.openbsd.arm64 cmd/rscc/main.go
-	@echo "Build for solaris/amd64"
-	@GOOS=solaris GOARCH=amd64 CGO_ENABLED=0 go build -trimpath ${LDFLAGS} -o ${BIN_DIR}/rscc.solaris.amd64 cmd/rscc/main.go
 
 gen-ent: ## Generate ent models
 	@echo "Generate ent models"
