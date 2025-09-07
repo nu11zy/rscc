@@ -58,7 +58,7 @@ func ValidatePort(port any) bool {
 }
 
 func ValidateGOOS(goos string) bool {
-	var validGOOS = []string{"windows", "linux", "darwin"}
+	var validGOOS = []string{"windows", "linux", "darwin", "freebsd", "openbsd", "solaris"}
 	return slices.Contains(validGOOS, goos)
 }
 
