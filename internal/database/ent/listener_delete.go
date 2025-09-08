@@ -4,12 +4,12 @@ package ent
 
 import (
 	"context"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
-	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 )
 
 // ListenerDelete is the builder for deleting a Listener entity.
@@ -20,56 +20,56 @@ type ListenerDelete struct {
 }
 
 // Where appends a list predicates to the ListenerDelete builder.
-func (ld *ListenerDelete) Where(ps ...predicate.Listener) *ListenerDelete {
-	ld.mutation.Where(ps...)
-	return ld
+func (_d *ListenerDelete) Where(ps ...predicate.Listener) *ListenerDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ld *ListenerDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ld.sqlExec, ld.mutation, ld.hooks)
+func (_d *ListenerDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ld *ListenerDelete) ExecX(ctx context.Context) int {
-	n, err := ld.Exec(ctx)
+func (_d *ListenerDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ld *ListenerDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *ListenerDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(listener.Table, sqlgraph.NewFieldSpec(listener.FieldID, field.TypeString))
-	if ps := ld.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ld.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ld.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // ListenerDeleteOne is the builder for deleting a single Listener entity.
 type ListenerDeleteOne struct {
-	ld *ListenerDelete
+	_d *ListenerDelete
 }
 
 // Where appends a list predicates to the ListenerDelete builder.
-func (ldo *ListenerDeleteOne) Where(ps ...predicate.Listener) *ListenerDeleteOne {
-	ldo.ld.mutation.Where(ps...)
-	return ldo
+func (_d *ListenerDeleteOne) Where(ps ...predicate.Listener) *ListenerDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ldo *ListenerDeleteOne) Exec(ctx context.Context) error {
-	n, err := ldo.ld.Exec(ctx)
+func (_d *ListenerDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ldo *ListenerDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ldo *ListenerDeleteOne) ExecX(ctx context.Context) {
-	if err := ldo.Exec(ctx); err != nil {
+func (_d *ListenerDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

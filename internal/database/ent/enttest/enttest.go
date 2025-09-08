@@ -9,9 +9,8 @@ import (
 	// required by schema hooks.
 	_ "github.com/nu11zy/rscc/internal/database/ent/runtime"
 
-	"github.com/nu11zy/rscc/internal/database/ent/migrate"
-
 	"entgo.io/ent/dialect/sql/schema"
+	"github.com/nu11zy/rscc/internal/database/ent/migrate"
 )
 
 type (

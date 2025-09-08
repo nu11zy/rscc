@@ -3,10 +3,10 @@
 package agent
 
 import (
-	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

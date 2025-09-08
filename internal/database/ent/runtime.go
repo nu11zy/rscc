@@ -3,11 +3,12 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/nu11zy/rscc/internal/database/ent/agent"
 	"github.com/nu11zy/rscc/internal/database/ent/listener"
 	"github.com/nu11zy/rscc/internal/database/ent/schema"
 	"github.com/nu11zy/rscc/internal/database/ent/session"
-	"time"
 )
 
 // The init function reads all schema descriptors with runtime code

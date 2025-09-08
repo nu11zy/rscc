@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
-	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 )
 
 // ListenerUpdate is the builder for updating Listener entities.
@@ -22,58 +22,58 @@ type ListenerUpdate struct {
 }
 
 // Where appends a list predicates to the ListenerUpdate builder.
-func (lu *ListenerUpdate) Where(ps ...predicate.Listener) *ListenerUpdate {
-	lu.mutation.Where(ps...)
-	return lu
+func (_u *ListenerUpdate) Where(ps ...predicate.Listener) *ListenerUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (lu *ListenerUpdate) SetName(s string) *ListenerUpdate {
-	lu.mutation.SetName(s)
-	return lu
+func (_u *ListenerUpdate) SetName(v string) *ListenerUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (lu *ListenerUpdate) SetNillableName(s *string) *ListenerUpdate {
-	if s != nil {
-		lu.SetName(*s)
+func (_u *ListenerUpdate) SetNillableName(v *string) *ListenerUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return lu
+	return _u
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (lu *ListenerUpdate) SetPrivateKey(b []byte) *ListenerUpdate {
-	lu.mutation.SetPrivateKey(b)
-	return lu
+func (_u *ListenerUpdate) SetPrivateKey(v []byte) *ListenerUpdate {
+	_u.mutation.SetPrivateKey(v)
+	return _u
 }
 
 // SetFingerprint sets the "fingerprint" field.
-func (lu *ListenerUpdate) SetFingerprint(s string) *ListenerUpdate {
-	lu.mutation.SetFingerprint(s)
-	return lu
+func (_u *ListenerUpdate) SetFingerprint(v string) *ListenerUpdate {
+	_u.mutation.SetFingerprint(v)
+	return _u
 }
 
 // SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
-func (lu *ListenerUpdate) SetNillableFingerprint(s *string) *ListenerUpdate {
-	if s != nil {
-		lu.SetFingerprint(*s)
+func (_u *ListenerUpdate) SetNillableFingerprint(v *string) *ListenerUpdate {
+	if v != nil {
+		_u.SetFingerprint(*v)
 	}
-	return lu
+	return _u
 }
 
 // Mutation returns the ListenerMutation object of the builder.
-func (lu *ListenerUpdate) Mutation() *ListenerMutation {
-	return lu.mutation
+func (_u *ListenerUpdate) Mutation() *ListenerMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (lu *ListenerUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, lu.sqlSave, lu.mutation, lu.hooks)
+func (_u *ListenerUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (lu *ListenerUpdate) SaveX(ctx context.Context) int {
-	affected, err := lu.Save(ctx)
+func (_u *ListenerUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -81,31 +81,31 @@ func (lu *ListenerUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (lu *ListenerUpdate) Exec(ctx context.Context) error {
-	_, err := lu.Save(ctx)
+func (_u *ListenerUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (lu *ListenerUpdate) ExecX(ctx context.Context) {
-	if err := lu.Exec(ctx); err != nil {
+func (_u *ListenerUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (lu *ListenerUpdate) check() error {
-	if v, ok := lu.mutation.Name(); ok {
+func (_u *ListenerUpdate) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := listener.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Listener.name": %w`, err)}
 		}
 	}
-	if v, ok := lu.mutation.PrivateKey(); ok {
+	if v, ok := _u.mutation.PrivateKey(); ok {
 		if err := listener.PrivateKeyValidator(v); err != nil {
 			return &ValidationError{Name: "private_key", err: fmt.Errorf(`ent: validator failed for field "Listener.private_key": %w`, err)}
 		}
 	}
-	if v, ok := lu.mutation.Fingerprint(); ok {
+	if v, ok := _u.mutation.Fingerprint(); ok {
 		if err := listener.FingerprintValidator(v); err != nil {
 			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "Listener.fingerprint": %w`, err)}
 		}
@@ -113,28 +113,28 @@ func (lu *ListenerUpdate) check() error {
 	return nil
 }
 
-func (lu *ListenerUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := lu.check(); err != nil {
-		return n, err
+func (_u *ListenerUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(listener.Table, listener.Columns, sqlgraph.NewFieldSpec(listener.FieldID, field.TypeString))
-	if ps := lu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := lu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(listener.FieldName, field.TypeString, value)
 	}
-	if value, ok := lu.mutation.PrivateKey(); ok {
+	if value, ok := _u.mutation.PrivateKey(); ok {
 		_spec.SetField(listener.FieldPrivateKey, field.TypeBytes, value)
 	}
-	if value, ok := lu.mutation.Fingerprint(); ok {
+	if value, ok := _u.mutation.Fingerprint(); ok {
 		_spec.SetField(listener.FieldFingerprint, field.TypeString, value)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, lu.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{listener.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -142,8 +142,8 @@ func (lu *ListenerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	lu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ListenerUpdateOne is the builder for updating a single Listener entity.
@@ -155,65 +155,65 @@ type ListenerUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (luo *ListenerUpdateOne) SetName(s string) *ListenerUpdateOne {
-	luo.mutation.SetName(s)
-	return luo
+func (_u *ListenerUpdateOne) SetName(v string) *ListenerUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (luo *ListenerUpdateOne) SetNillableName(s *string) *ListenerUpdateOne {
-	if s != nil {
-		luo.SetName(*s)
+func (_u *ListenerUpdateOne) SetNillableName(v *string) *ListenerUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return luo
+	return _u
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (luo *ListenerUpdateOne) SetPrivateKey(b []byte) *ListenerUpdateOne {
-	luo.mutation.SetPrivateKey(b)
-	return luo
+func (_u *ListenerUpdateOne) SetPrivateKey(v []byte) *ListenerUpdateOne {
+	_u.mutation.SetPrivateKey(v)
+	return _u
 }
 
 // SetFingerprint sets the "fingerprint" field.
-func (luo *ListenerUpdateOne) SetFingerprint(s string) *ListenerUpdateOne {
-	luo.mutation.SetFingerprint(s)
-	return luo
+func (_u *ListenerUpdateOne) SetFingerprint(v string) *ListenerUpdateOne {
+	_u.mutation.SetFingerprint(v)
+	return _u
 }
 
 // SetNillableFingerprint sets the "fingerprint" field if the given value is not nil.
-func (luo *ListenerUpdateOne) SetNillableFingerprint(s *string) *ListenerUpdateOne {
-	if s != nil {
-		luo.SetFingerprint(*s)
+func (_u *ListenerUpdateOne) SetNillableFingerprint(v *string) *ListenerUpdateOne {
+	if v != nil {
+		_u.SetFingerprint(*v)
 	}
-	return luo
+	return _u
 }
 
 // Mutation returns the ListenerMutation object of the builder.
-func (luo *ListenerUpdateOne) Mutation() *ListenerMutation {
-	return luo.mutation
+func (_u *ListenerUpdateOne) Mutation() *ListenerMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the ListenerUpdate builder.
-func (luo *ListenerUpdateOne) Where(ps ...predicate.Listener) *ListenerUpdateOne {
-	luo.mutation.Where(ps...)
-	return luo
+func (_u *ListenerUpdateOne) Where(ps ...predicate.Listener) *ListenerUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (luo *ListenerUpdateOne) Select(field string, fields ...string) *ListenerUpdateOne {
-	luo.fields = append([]string{field}, fields...)
-	return luo
+func (_u *ListenerUpdateOne) Select(field string, fields ...string) *ListenerUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Listener entity.
-func (luo *ListenerUpdateOne) Save(ctx context.Context) (*Listener, error) {
-	return withHooks(ctx, luo.sqlSave, luo.mutation, luo.hooks)
+func (_u *ListenerUpdateOne) Save(ctx context.Context) (*Listener, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (luo *ListenerUpdateOne) SaveX(ctx context.Context) *Listener {
-	node, err := luo.Save(ctx)
+func (_u *ListenerUpdateOne) SaveX(ctx context.Context) *Listener {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -221,31 +221,31 @@ func (luo *ListenerUpdateOne) SaveX(ctx context.Context) *Listener {
 }
 
 // Exec executes the query on the entity.
-func (luo *ListenerUpdateOne) Exec(ctx context.Context) error {
-	_, err := luo.Save(ctx)
+func (_u *ListenerUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (luo *ListenerUpdateOne) ExecX(ctx context.Context) {
-	if err := luo.Exec(ctx); err != nil {
+func (_u *ListenerUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (luo *ListenerUpdateOne) check() error {
-	if v, ok := luo.mutation.Name(); ok {
+func (_u *ListenerUpdateOne) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := listener.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Listener.name": %w`, err)}
 		}
 	}
-	if v, ok := luo.mutation.PrivateKey(); ok {
+	if v, ok := _u.mutation.PrivateKey(); ok {
 		if err := listener.PrivateKeyValidator(v); err != nil {
 			return &ValidationError{Name: "private_key", err: fmt.Errorf(`ent: validator failed for field "Listener.private_key": %w`, err)}
 		}
 	}
-	if v, ok := luo.mutation.Fingerprint(); ok {
+	if v, ok := _u.mutation.Fingerprint(); ok {
 		if err := listener.FingerprintValidator(v); err != nil {
 			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "Listener.fingerprint": %w`, err)}
 		}
@@ -253,17 +253,17 @@ func (luo *ListenerUpdateOne) check() error {
 	return nil
 }
 
-func (luo *ListenerUpdateOne) sqlSave(ctx context.Context) (_node *Listener, err error) {
-	if err := luo.check(); err != nil {
+func (_u *ListenerUpdateOne) sqlSave(ctx context.Context) (_node *Listener, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(listener.Table, listener.Columns, sqlgraph.NewFieldSpec(listener.FieldID, field.TypeString))
-	id, ok := luo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Listener.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := luo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, listener.FieldID)
 		for _, f := range fields {
@@ -275,26 +275,26 @@ func (luo *ListenerUpdateOne) sqlSave(ctx context.Context) (_node *Listener, err
 			}
 		}
 	}
-	if ps := luo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := luo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(listener.FieldName, field.TypeString, value)
 	}
-	if value, ok := luo.mutation.PrivateKey(); ok {
+	if value, ok := _u.mutation.PrivateKey(); ok {
 		_spec.SetField(listener.FieldPrivateKey, field.TypeBytes, value)
 	}
-	if value, ok := luo.mutation.Fingerprint(); ok {
+	if value, ok := _u.mutation.Fingerprint(); ok {
 		_spec.SetField(listener.FieldFingerprint, field.TypeString, value)
 	}
-	_node = &Listener{config: luo.config}
+	_node = &Listener{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, luo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{listener.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -302,6 +302,6 @@ func (luo *ListenerUpdateOne) sqlSave(ctx context.Context) (_node *Listener, err
 		}
 		return nil, err
 	}
-	luo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

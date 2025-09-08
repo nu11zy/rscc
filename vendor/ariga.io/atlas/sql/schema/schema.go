@@ -4,6 +4,12 @@
 
 package schema
 
+import (
+	"reflect"
+	"strconv"
+	"strings"
+)
+
 type (
 	// A Realm or a database describes a domain of schema resources that are logically connected
 	// and can be accessed and queried in the same connection (e.g. a physical database instance).
@@ -70,7 +76,12 @@ type (
 		// part of their child columns.
 		ForeignKeys []*ForeignKey
 	}
-
+	// NamedDefault defines a named default expression.
+	NamedDefault struct {
+		Expr
+		Name  string
+		Attrs []Attr
+	}
 	// ColumnType represents a column type that is implemented by the dialect.
 	ColumnType struct {
 		Type Type
@@ -234,14 +245,31 @@ func (r *Realm) Object(f func(Object) bool) (Object, bool) {
 	return nil, false
 }
 
+// PosSetter wraps the two methods for getting
+// and setting positions for schema objects.
+type PosSetter interface {
+	Pos() *Pos
+	SetPos(*Pos)
+}
+
 // Pos of the schema, if exists.
-func (s *Schema) Pos() (*Pos, bool) {
+func (s *Schema) Pos() *Pos {
 	for _, a := range s.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
+}
+
+// Pos of the enum, if exists.
+func (e *EnumType) Pos() *Pos {
+	for _, a := range e.Attrs {
+		if p, ok := a.(*Pos); ok {
+			return p
+		}
+	}
+	return nil
 }
 
 // Table returns the first table that matched the given name.
@@ -315,13 +343,13 @@ func (t *Table) Column(name string) (*Column, bool) {
 }
 
 // Pos of the table, if exists.
-func (t *Table) Pos() (*Pos, bool) {
+func (t *Table) Pos() *Pos {
 	for _, a := range t.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // Index returns the first index that matched the given name.
@@ -365,13 +393,13 @@ func (t *Table) Checks() (ck []*Check) {
 }
 
 // Pos of the view, if exists.
-func (v *View) Pos() (*Pos, bool) {
+func (v *View) Pos() *Pos {
 	for _, a := range v.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // Materialized reports if the view is materialized.
@@ -431,54 +459,129 @@ func (v *View) AsTable() *Table {
 		AddColumns(v.Columns...)
 }
 
-// Pos of the column, if exists.
-func (c *Column) Pos() (*Pos, bool) {
-	for _, a := range c.Attrs {
+// SetPos sets the position of the function.
+func (f *Func) SetPos(p *Pos) {
+	ReplaceOrAppend(&f.Attrs, p)
+}
+
+// Pos of the schema, if exists.
+func (f *Func) Pos() *Pos {
+	for _, a := range f.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
+}
+
+// SetPos sets the position of the schema.
+func (s *Schema) SetPos(p *Pos) {
+	ReplaceOrAppend(&s.Attrs, p)
+}
+
+// SetPos sets the position of the enum type.
+func (e *EnumType) SetPos(p *Pos) {
+	ReplaceOrAppend(&e.Attrs, p)
+}
+
+// SetPos sets the position of the table.
+func (t *Table) SetPos(p *Pos) {
+	ReplaceOrAppend(&t.Attrs, p)
+}
+
+// SetPos sets the position of the view.
+func (v *View) SetPos(p *Pos) {
+	ReplaceOrAppend(&v.Attrs, p)
+}
+
+// SetPos sets the position of the column.
+func (c *Column) SetPos(p *Pos) {
+	ReplaceOrAppend(&c.Attrs, p)
+}
+
+// SetPos sets the position of the check.
+func (c *Check) SetPos(p *Pos) {
+	ReplaceOrAppend(&c.Attrs, p)
+}
+
+// SetPos sets the position of the index.
+func (i *Index) SetPos(p *Pos) {
+	ReplaceOrAppend(&i.Attrs, p)
+}
+
+// SetPos sets the position of the index part.
+func (p *IndexPart) SetPos(p1 *Pos) {
+	ReplaceOrAppend(&p.Attrs, p1)
+}
+
+// SetPos sets the position of the foreign key.
+func (f *ForeignKey) SetPos(p *Pos) {
+	ReplaceOrAppend(&f.Attrs, p)
+}
+
+// SetPos sets the position of the procedure.
+func (p *Proc) SetPos(p1 *Pos) {
+	ReplaceOrAppend(&p.Attrs, p1)
+}
+
+// Pos of the schema, if exists.
+func (p *Proc) Pos() *Pos {
+	for _, a := range p.Attrs {
+		if p, ok := a.(*Pos); ok {
+			return p
+		}
+	}
+	return nil
+}
+
+// Pos of the column, if exists.
+func (c *Column) Pos() *Pos {
+	for _, a := range c.Attrs {
+		if p, ok := a.(*Pos); ok {
+			return p
+		}
+	}
+	return nil
 }
 
 // Pos of the index, if exists.
-func (i *Index) Pos() (*Pos, bool) {
+func (i *Index) Pos() *Pos {
 	for _, a := range i.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // Pos of the index part, if exists.
-func (p *IndexPart) Pos() (*Pos, bool) {
+func (p *IndexPart) Pos() *Pos {
 	for _, a := range p.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // Pos of the check, if exists.
-func (c *Check) Pos() (*Pos, bool) {
+func (c *Check) Pos() *Pos {
 	for _, a := range c.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // Pos of the foreign-key, if exists.
-func (f *ForeignKey) Pos() (*Pos, bool) {
+func (f *ForeignKey) Pos() *Pos {
 	for _, a := range f.Attrs {
 		if p, ok := a.(*Pos); ok {
-			return p, true
+			return p
 		}
 	}
-	return nil, false
+	return nil
 }
 
 // Column returns the first column that matches the given name.
@@ -499,6 +602,21 @@ func (f *ForeignKey) RefColumn(name string) (*Column, bool) {
 		}
 	}
 	return nil, false
+}
+
+// SetPos sets the position of the trigger.
+func (t *Trigger) SetPos(p *Pos) {
+	ReplaceOrAppend(&t.Attrs, p)
+}
+
+// Pos of the schema, if exists.
+func (t *Trigger) Pos() *Pos {
+	for _, a := range t.Attrs {
+		if p, ok := a.(*Pos); ok {
+			return p
+		}
+	}
+	return nil
 }
 
 // ReferenceOption for constraint actions.
@@ -536,9 +654,10 @@ type (
 		T      string   // Optional type.
 		Values []string // Enum values.
 		Schema *Schema  // Optional schema.
+		Attrs  []Attr   // Extra attributes.
 	}
 
-	// BinaryType represents a type that stores a binary data.
+	// BinaryType represents a type that stores binary data.
 	BinaryType struct {
 		T    string
 		Size *int
@@ -717,6 +836,29 @@ type (
 	}
 )
 
+// String returns the position in editor/LSP style.
+// Format: "filename:line[:c][-end_line[:end_c]]"
+func (p *Pos) String() string {
+	if p == nil {
+		return ""
+	}
+	var b strings.Builder
+	if p.Filename != "" {
+		b.WriteString(p.Filename)
+	} else {
+		b.WriteByte('-')
+	}
+	if p.Start.Line > 0 {
+		b.WriteByte(':')
+		b.WriteString(strconv.Itoa(p.Start.Line))
+		if p.Start.Column > 0 {
+			b.WriteByte(':')
+			b.WriteString(strconv.Itoa(p.Start.Column))
+		}
+	}
+	return b.String()
+}
+
 // A list of known view check options.
 const (
 	ViewCheckOptionNone     = "NONE"
@@ -731,6 +873,12 @@ func (*Func) obj()     {}
 func (*Proc) obj()     {}
 func (*Trigger) obj()  {}
 func (*EnumType) obj() {}
+
+// constraints are objects.
+func (*Index) obj()        {}
+func (*Check) obj()        {}
+func (*ForeignKey) obj()   {}
+func (*NamedDefault) obj() {}
 
 // expressions.
 func (*Literal) expr() {}
@@ -765,6 +913,11 @@ func (e *EnumType) SpecType() string { return "enum" }
 // SpecName returns the name of the spec.
 func (e *EnumType) SpecName() string { return e.T }
 
+// Underlying returns underlying the expression.
+func (n *NamedDefault) Underlying() Expr {
+	return n.Expr
+}
+
 // UnderlyingExpr returns the underlying expression of x.
 func UnderlyingExpr(x Expr) Expr {
 	if w, ok := x.(interface{ Underlying() Expr }); ok {
@@ -779,4 +932,35 @@ func UnderlyingType(t Type) Type {
 		return UnderlyingType(w.Underlying())
 	}
 	return t
+}
+
+// IsType return true if somewhere in the type-chain of t1 is the same as t2.
+func IsType(t1, t2 Type) bool {
+	if t1 == nil || t2 == nil {
+		return t1 == t2
+	}
+	return sameType(t1, t2, reflect.TypeOf(t2).Comparable())
+}
+
+func sameType(t1, t2 Type, targetComparable bool) bool {
+	for {
+		if targetComparable && t1 == t2 {
+			return true
+		}
+		// Check if t1 implements the Is method.
+		// Then call it to check if it is the same as t2.
+		// This is useful for comparing types that are
+		// not directly the same pointer.
+		if x, ok := t1.(interface{ Is(Type) bool }); ok && x.Is(t2) {
+			return true
+		}
+		// Check if t1 has an underlying type.
+		// Then use it to compare with t2.
+		if x, ok := t1.(interface{ Underlying() Type }); ok {
+			if t1 = x.Underlying(); t1 != nil {
+				continue
+			}
+		}
+		return false
+	}
 }
