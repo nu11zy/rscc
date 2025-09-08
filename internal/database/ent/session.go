@@ -5,12 +5,12 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/session"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 )
 
 // Session is the model entity for the Session schema.
@@ -63,7 +63,7 @@ func (*Session) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Session fields.
-func (s *Session) assignValues(columns []string, values []any) error {
+func (_m *Session) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -73,49 +73,49 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				s.ID = value.String
+				_m.ID = value.String
 			}
 		case session.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				s.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case session.FieldAgentID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_id", values[i])
 			} else if value.Valid {
-				s.AgentID = value.String
+				_m.AgentID = value.String
 			}
 		case session.FieldUsername:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field username", values[i])
 			} else if value.Valid {
-				s.Username = value.String
+				_m.Username = value.String
 			}
 		case session.FieldHostname:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hostname", values[i])
 			} else if value.Valid {
-				s.Hostname = value.String
+				_m.Hostname = value.String
 			}
 		case session.FieldDomain:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field domain", values[i])
 			} else if value.Valid {
-				s.Domain = value.String
+				_m.Domain = value.String
 			}
 		case session.FieldIsPriv:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_priv", values[i])
 			} else if value.Valid {
-				s.IsPriv = value.Bool
+				_m.IsPriv = value.Bool
 			}
 		case session.FieldIps:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field ips", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &s.Ips); err != nil {
+				if err := json.Unmarshal(*value, &_m.Ips); err != nil {
 					return fmt.Errorf("unmarshal field ips: %w", err)
 				}
 			}
@@ -123,22 +123,22 @@ func (s *Session) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field os_meta", values[i])
 			} else if value.Valid {
-				s.OsMeta = value.String
+				_m.OsMeta = value.String
 			}
 		case session.FieldProcName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field proc_name", values[i])
 			} else if value.Valid {
-				s.ProcName = value.String
+				_m.ProcName = value.String
 			}
 		case session.FieldExtra:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field extra", values[i])
 			} else if value.Valid {
-				s.Extra = value.String
+				_m.Extra = value.String
 			}
 		default:
-			s.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -146,62 +146,62 @@ func (s *Session) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Session.
 // This includes values selected through modifiers, order, etc.
-func (s *Session) Value(name string) (ent.Value, error) {
-	return s.selectValues.Get(name)
+func (_m *Session) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Session.
 // Note that you need to call Session.Unwrap() before calling this method if this Session
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (s *Session) Update() *SessionUpdateOne {
-	return NewSessionClient(s.config).UpdateOne(s)
+func (_m *Session) Update() *SessionUpdateOne {
+	return NewSessionClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Session entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (s *Session) Unwrap() *Session {
-	_tx, ok := s.config.driver.(*txDriver)
+func (_m *Session) Unwrap() *Session {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Session is not a transactional entity")
 	}
-	s.config.driver = _tx.drv
-	return s
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (s *Session) String() string {
+func (_m *Session) String() string {
 	var builder strings.Builder
 	builder.WriteString("Session(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(s.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("agent_id=")
-	builder.WriteString(s.AgentID)
+	builder.WriteString(_m.AgentID)
 	builder.WriteString(", ")
 	builder.WriteString("username=")
-	builder.WriteString(s.Username)
+	builder.WriteString(_m.Username)
 	builder.WriteString(", ")
 	builder.WriteString("hostname=")
-	builder.WriteString(s.Hostname)
+	builder.WriteString(_m.Hostname)
 	builder.WriteString(", ")
 	builder.WriteString("domain=")
-	builder.WriteString(s.Domain)
+	builder.WriteString(_m.Domain)
 	builder.WriteString(", ")
 	builder.WriteString("is_priv=")
-	builder.WriteString(fmt.Sprintf("%v", s.IsPriv))
+	builder.WriteString(fmt.Sprintf("%v", _m.IsPriv))
 	builder.WriteString(", ")
 	builder.WriteString("ips=")
-	builder.WriteString(fmt.Sprintf("%v", s.Ips))
+	builder.WriteString(fmt.Sprintf("%v", _m.Ips))
 	builder.WriteString(", ")
 	builder.WriteString("os_meta=")
-	builder.WriteString(s.OsMeta)
+	builder.WriteString(_m.OsMeta)
 	builder.WriteString(", ")
 	builder.WriteString("proc_name=")
-	builder.WriteString(s.ProcName)
+	builder.WriteString(_m.ProcName)
 	builder.WriteString(", ")
 	builder.WriteString("extra=")
-	builder.WriteString(s.Extra)
+	builder.WriteString(_m.Extra)
 	builder.WriteByte(')')
 	return builder.String()
 }

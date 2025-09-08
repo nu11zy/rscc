@@ -249,6 +249,7 @@ type (
 	ModifyIndex struct {
 		From, To *Index
 		Change   ChangeKind
+		Extra    []Clause // Extra clauses and options.
 	}
 
 	// RenameIndex describes an index rename change.
@@ -305,6 +306,11 @@ type (
 	ModifyCheck struct {
 		From, To *Check
 		Change   ChangeKind
+	}
+
+	// RenameConstraint describes an constraint rename change.
+	RenameConstraint struct {
+		From, To Object // PK, FK, Unique, Check, etc.
 	}
 
 	// AddAttr describes an attribute addition.
@@ -390,9 +396,10 @@ const (
 
 // List of diff modes.
 const (
-	DiffModeUnset         DiffMode = iota // Default, backwards compatability.
-	DiffModeNotNormalized                 // Diff objects are considered to be in not normalized state.
-	DiffModeNormalized                    // Diff objects are considered to be in normalized state.
+	DiffModeUnset         DiffMode = 1 << iota // Default, backwards compatability.
+	DiffModeNotNormalized                      // Diff objects are considered to be in not normalized state.
+	DiffModeNormalized                         // Diff objects are considered to be in normalized state.
+	DiffModeSkipInvalid                        // Invalid changes are skipped, instead of returning an error.
 )
 
 // Is reports whether c is match the given change kind.
@@ -520,8 +527,17 @@ type (
 	}
 )
 
-// Changes is a list of changes allow for searching and mutating changes.
-type Changes []Change
+type (
+	// Changes is a list of changes allow for searching and mutating changes.
+	Changes []Change
+
+	// ChangeDepender wraps the ChangeDeps method, which returns a dependency map
+	// from each change to its dependent changes. This interface can optionally
+	// be implemented by drivers.
+	ChangeDepender interface {
+		ChangeDeps([]Change) map[Change][]Change
+	}
+)
 
 // IndexAddTable returns the index of the first AddTable in the changes
 // with the given name, or -1 if there is no such change in the Changes.
@@ -688,6 +704,7 @@ func (*RenameColumn) change()     {}
 func (*AddForeignKey) change()    {}
 func (*DropForeignKey) change()   {}
 func (*ModifyForeignKey) change() {}
+func (*RenameConstraint) change() {}
 
 // clauses.
 func (*IfExists) clause()    {}

@@ -7,14 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"github.com/nu11zy/rscc/internal/database/ent/agent"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
-	"github.com/nu11zy/rscc/internal/database/ent/session"
 	"sync"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -72,7 +72,7 @@ var (
 )
 
 // checkColumn checks if the column exists in the given table.
-func checkColumn(table, column string) error {
+func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			agent.Table:    agent.ValidColumn,
@@ -80,7 +80,7 @@ func checkColumn(table, column string) error {
 			session.Table:  session.ValidColumn,
 		})
 	})
-	return columnCheck(table, column)
+	return columnCheck(t, c)
 }
 
 // Asc applies the given fields in ASC order.

@@ -5,12 +5,12 @@ package ent
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/agent"
 	"strings"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
 )
 
 // Agent is the model entity for the Agent schema.
@@ -79,7 +79,7 @@ func (*Agent) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Agent fields.
-func (a *Agent) assignValues(columns []string, values []any) error {
+func (_m *Agent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -89,43 +89,43 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				a.ID = value.String
+				_m.ID = value.String
 			}
 		case agent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				a.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case agent.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				a.Name = value.String
+				_m.Name = value.String
 			}
 		case agent.FieldComment:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field comment", values[i])
 			} else if value.Valid {
-				a.Comment = value.String
+				_m.Comment = value.String
 			}
 		case agent.FieldOs:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field os", values[i])
 			} else if value.Valid {
-				a.Os = value.String
+				_m.Os = value.String
 			}
 		case agent.FieldArch:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field arch", values[i])
 			} else if value.Valid {
-				a.Arch = value.String
+				_m.Arch = value.String
 			}
 		case agent.FieldServers:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field servers", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &a.Servers); err != nil {
+				if err := json.Unmarshal(*value, &_m.Servers); err != nil {
 					return fmt.Errorf("unmarshal field servers: %w", err)
 				}
 			}
@@ -133,25 +133,25 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field shared", values[i])
 			} else if value.Valid {
-				a.Shared = value.Bool
+				_m.Shared = value.Bool
 			}
 		case agent.FieldPie:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field pie", values[i])
 			} else if value.Valid {
-				a.Pie = value.Bool
+				_m.Pie = value.Bool
 			}
 		case agent.FieldGarble:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field garble", values[i])
 			} else if value.Valid {
-				a.Garble = value.Bool
+				_m.Garble = value.Bool
 			}
 		case agent.FieldSubsystems:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field subsystems", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &a.Subsystems); err != nil {
+				if err := json.Unmarshal(*value, &_m.Subsystems); err != nil {
 					return fmt.Errorf("unmarshal field subsystems: %w", err)
 				}
 			}
@@ -159,46 +159,46 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field xxhash", values[i])
 			} else if value.Valid {
-				a.Xxhash = value.String
+				_m.Xxhash = value.String
 			}
 		case agent.FieldPath:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field path", values[i])
 			} else if value.Valid {
-				a.Path = value.String
+				_m.Path = value.String
 			}
 		case agent.FieldURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
-				a.URL = value.String
+				_m.URL = value.String
 			}
 		case agent.FieldHosted:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field hosted", values[i])
 			} else if value.Valid {
-				a.Hosted = value.Bool
+				_m.Hosted = value.Bool
 			}
 		case agent.FieldCallbacks:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field callbacks", values[i])
 			} else if value.Valid {
-				a.Callbacks = int(value.Int64)
+				_m.Callbacks = int(value.Int64)
 			}
 		case agent.FieldDownloads:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field downloads", values[i])
 			} else if value.Valid {
-				a.Downloads = int(value.Int64)
+				_m.Downloads = int(value.Int64)
 			}
 		case agent.FieldPublicKey:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field public_key", values[i])
 			} else if value != nil {
-				a.PublicKey = *value
+				_m.PublicKey = *value
 			}
 		default:
-			a.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -206,83 +206,83 @@ func (a *Agent) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Agent.
 // This includes values selected through modifiers, order, etc.
-func (a *Agent) Value(name string) (ent.Value, error) {
-	return a.selectValues.Get(name)
+func (_m *Agent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Agent.
 // Note that you need to call Agent.Unwrap() before calling this method if this Agent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (a *Agent) Update() *AgentUpdateOne {
-	return NewAgentClient(a.config).UpdateOne(a)
+func (_m *Agent) Update() *AgentUpdateOne {
+	return NewAgentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Agent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (a *Agent) Unwrap() *Agent {
-	_tx, ok := a.config.driver.(*txDriver)
+func (_m *Agent) Unwrap() *Agent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Agent is not a transactional entity")
 	}
-	a.config.driver = _tx.drv
-	return a
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (a *Agent) String() string {
+func (_m *Agent) String() string {
 	var builder strings.Builder
 	builder.WriteString("Agent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
-	builder.WriteString(a.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(a.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("comment=")
-	builder.WriteString(a.Comment)
+	builder.WriteString(_m.Comment)
 	builder.WriteString(", ")
 	builder.WriteString("os=")
-	builder.WriteString(a.Os)
+	builder.WriteString(_m.Os)
 	builder.WriteString(", ")
 	builder.WriteString("arch=")
-	builder.WriteString(a.Arch)
+	builder.WriteString(_m.Arch)
 	builder.WriteString(", ")
 	builder.WriteString("servers=")
-	builder.WriteString(fmt.Sprintf("%v", a.Servers))
+	builder.WriteString(fmt.Sprintf("%v", _m.Servers))
 	builder.WriteString(", ")
 	builder.WriteString("shared=")
-	builder.WriteString(fmt.Sprintf("%v", a.Shared))
+	builder.WriteString(fmt.Sprintf("%v", _m.Shared))
 	builder.WriteString(", ")
 	builder.WriteString("pie=")
-	builder.WriteString(fmt.Sprintf("%v", a.Pie))
+	builder.WriteString(fmt.Sprintf("%v", _m.Pie))
 	builder.WriteString(", ")
 	builder.WriteString("garble=")
-	builder.WriteString(fmt.Sprintf("%v", a.Garble))
+	builder.WriteString(fmt.Sprintf("%v", _m.Garble))
 	builder.WriteString(", ")
 	builder.WriteString("subsystems=")
-	builder.WriteString(fmt.Sprintf("%v", a.Subsystems))
+	builder.WriteString(fmt.Sprintf("%v", _m.Subsystems))
 	builder.WriteString(", ")
 	builder.WriteString("xxhash=")
-	builder.WriteString(a.Xxhash)
+	builder.WriteString(_m.Xxhash)
 	builder.WriteString(", ")
 	builder.WriteString("path=")
-	builder.WriteString(a.Path)
+	builder.WriteString(_m.Path)
 	builder.WriteString(", ")
 	builder.WriteString("url=")
-	builder.WriteString(a.URL)
+	builder.WriteString(_m.URL)
 	builder.WriteString(", ")
 	builder.WriteString("hosted=")
-	builder.WriteString(fmt.Sprintf("%v", a.Hosted))
+	builder.WriteString(fmt.Sprintf("%v", _m.Hosted))
 	builder.WriteString(", ")
 	builder.WriteString("callbacks=")
-	builder.WriteString(fmt.Sprintf("%v", a.Callbacks))
+	builder.WriteString(fmt.Sprintf("%v", _m.Callbacks))
 	builder.WriteString(", ")
 	builder.WriteString("downloads=")
-	builder.WriteString(fmt.Sprintf("%v", a.Downloads))
+	builder.WriteString(fmt.Sprintf("%v", _m.Downloads))
 	builder.WriteString(", ")
 	builder.WriteString("public_key=")
-	builder.WriteString(fmt.Sprintf("%v", a.PublicKey))
+	builder.WriteString(fmt.Sprintf("%v", _m.PublicKey))
 	builder.WriteByte(')')
 	return builder.String()
 }

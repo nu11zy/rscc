@@ -4,11 +4,11 @@ package ent
 
 import (
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
 	"strings"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
 )
 
 // Listener is the model entity for the Listener schema.
@@ -43,7 +43,7 @@ func (*Listener) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Listener fields.
-func (l *Listener) assignValues(columns []string, values []any) error {
+func (_m *Listener) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -53,28 +53,28 @@ func (l *Listener) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				l.ID = value.String
+				_m.ID = value.String
 			}
 		case listener.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				l.Name = value.String
+				_m.Name = value.String
 			}
 		case listener.FieldPrivateKey:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field private_key", values[i])
 			} else if value != nil {
-				l.PrivateKey = *value
+				_m.PrivateKey = *value
 			}
 		case listener.FieldFingerprint:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field fingerprint", values[i])
 			} else if value.Valid {
-				l.Fingerprint = value.String
+				_m.Fingerprint = value.String
 			}
 		default:
-			l.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -82,41 +82,41 @@ func (l *Listener) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Listener.
 // This includes values selected through modifiers, order, etc.
-func (l *Listener) Value(name string) (ent.Value, error) {
-	return l.selectValues.Get(name)
+func (_m *Listener) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Listener.
 // Note that you need to call Listener.Unwrap() before calling this method if this Listener
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (l *Listener) Update() *ListenerUpdateOne {
-	return NewListenerClient(l.config).UpdateOne(l)
+func (_m *Listener) Update() *ListenerUpdateOne {
+	return NewListenerClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Listener entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (l *Listener) Unwrap() *Listener {
-	_tx, ok := l.config.driver.(*txDriver)
+func (_m *Listener) Unwrap() *Listener {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Listener is not a transactional entity")
 	}
-	l.config.driver = _tx.drv
-	return l
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (l *Listener) String() string {
+func (_m *Listener) String() string {
 	var builder strings.Builder
 	builder.WriteString("Listener(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", l.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("name=")
-	builder.WriteString(l.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("private_key=")
-	builder.WriteString(fmt.Sprintf("%v", l.PrivateKey))
+	builder.WriteString(fmt.Sprintf("%v", _m.PrivateKey))
 	builder.WriteString(", ")
 	builder.WriteString("fingerprint=")
-	builder.WriteString(l.Fingerprint)
+	builder.WriteString(_m.Fingerprint)
 	builder.WriteByte(')')
 	return builder.String()
 }

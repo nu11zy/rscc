@@ -95,13 +95,13 @@ type (
 	// TableFinder wraps the FindTable method, providing more
 	// control to the DiffDriver on how tables are matched.
 	TableFinder interface {
-		FindTable(*schema.Schema, string) (*schema.Table, error)
+		FindTable(*schema.Schema, *schema.Table) (*schema.Table, error)
 	}
 
 	// ChangesAnnotator is an optional interface allows DiffDriver to annotate
 	// changes with additional driver-specific attributes before they are returned.
 	ChangesAnnotator interface {
-		AnnotateChanges([]schema.Change, *schema.DiffOptions) error
+		AnnotateChanges([]schema.Change, *schema.DiffOptions) ([]schema.Change, error)
 	}
 
 	// ProcFuncsDiffer is an optional interface allows DiffDriver to diff
@@ -117,6 +117,13 @@ type (
 		// TriggerDiff returns a changeset for migrating triggers from
 		// one state to the other. For example, changing action time.
 		TriggerDiff(from, to *schema.Trigger) ([]schema.Change, error)
+	}
+
+	// ChangeSupporter wraps the single SupportChange method.
+	ChangeSupporter interface {
+		// SupportChange can be implemented to tell the Differ if they support
+		// a specific change type, or it should avoid suggesting it.
+		SupportChange(schema.Change) bool
 	}
 )
 
@@ -208,7 +215,7 @@ func (d *Diff) schemaDiff(from, to *schema.Schema, opts *schema.DiffOptions) ([]
 
 	// Drop or modify tables.
 	for _, t1 := range from.Tables {
-		switch t2, err := d.findTable(to, t1.Name); {
+		switch t2, err := d.findTable(to, t1); {
 		case schema.IsNotExistError(err):
 			// Triggers should be dropped either by the driver or the database.
 			changes = opts.AddOrSkip(changes, &schema.DropTable{T: t1})
@@ -230,7 +237,7 @@ func (d *Diff) schemaDiff(from, to *schema.Schema, opts *schema.DiffOptions) ([]
 	changes = d.fixRenames(changes)
 	// Add tables.
 	for _, t1 := range to.Tables {
-		switch _, err := d.findTable(from, t1.Name); {
+		switch _, err := d.findTable(from, t1); {
 		case schema.IsNotExistError(err):
 			changes = opts.AddOrSkip(changes, addTableChange(t1)...)
 		case err != nil:
@@ -353,10 +360,10 @@ func (d *Diff) tableDiff(from, to *schema.Table, opts *schema.DiffOptions) ([]sc
 	return changes, nil
 }
 
-func (d *Diff) mayAnnotate(changes []schema.Change, opts *schema.DiffOptions) ([]schema.Change, error) {
+func (d *Diff) mayAnnotate(changes []schema.Change, opts *schema.DiffOptions) (_ []schema.Change, err error) {
 	r, ok := d.DiffDriver.(ChangesAnnotator)
 	if ok {
-		if err := r.AnnotateChanges(changes, opts); err != nil {
+		if changes, err = r.AnnotateChanges(changes, opts); err != nil {
 			return nil, err
 		}
 	}
@@ -433,11 +440,15 @@ func (d *Diff) pkDiff(from, to *schema.Table, opts *schema.DiffOptions) (changes
 	case pk1 != nil:
 		change := d.indexChange(pk1, pk2)
 		change &= ^schema.ChangeUnique
-		if change != schema.NoChange {
+		switch c, ok := d.DiffDriver.(ChangeSupporter); {
+		case change != schema.NoChange:
 			changes = opts.AddOrSkip(changes, &schema.ModifyPrimaryKey{
-				From:   pk1,
-				To:     pk2,
-				Change: change,
+				From: pk1, To: pk2, Change: change,
+			})
+		case (!ok || c.SupportChange((*schema.RenameConstraint)(nil))) &&
+			pk1.Name != "" && pk2.Name != "" && pk1.Name != pk2.Name:
+			changes = opts.AddOrSkip(changes, &schema.RenameConstraint{
+				From: pk1, To: pk2,
 			})
 		}
 	}
@@ -628,7 +639,7 @@ func (d *Diff) partsChange(fromI, toI *schema.Index, renames map[string]string) 
 func (d *Diff) fkChange(from, to *schema.ForeignKey) schema.ChangeKind {
 	var change schema.ChangeKind
 	switch {
-	case from.Table.Name != to.Table.Name:
+	case from.RefTable.Name != to.RefTable.Name:
 		change |= schema.ChangeRefTable | schema.ChangeRefColumn
 	case len(from.RefColumns) != len(to.RefColumns):
 		change |= schema.ChangeRefColumn
@@ -681,15 +692,15 @@ func (d *Diff) similarUnnamedIndex(t *schema.Table, idx1 *schema.Index) (*schema
 	return nil, false
 }
 
-func (d *Diff) findTable(s *schema.Schema, name string) (*schema.Table, error) {
+func (d *Diff) findTable(s *schema.Schema, t1 *schema.Table) (*schema.Table, error) {
 	if f, ok := d.DiffDriver.(TableFinder); ok {
-		return f.FindTable(s, name)
+		return f.FindTable(s, t1)
 	}
-	t, ok := s.Table(name)
+	t2, ok := s.Table(t1.Name)
 	if !ok {
-		return nil, &schema.NotExistError{Err: fmt.Errorf("table %q was not found", name)}
+		return nil, &schema.NotExistError{Err: fmt.Errorf("table %q was not found", t1.Name)}
 	}
-	return t, nil
+	return t2, nil
 }
 
 // CommentChange reports if the element comment was changed.
@@ -826,26 +837,31 @@ func ChecksDiff(from, to *schema.Table, compare func(c1, c2 *schema.Check) bool)
 	var (
 		changes    []schema.Change
 		fromC, toC = checks(from.Attrs), checks(to.Attrs)
+		compareTo  = func(c1 *schema.Check) func(c2 *schema.Check) bool {
+			return func(c2 *schema.Check) bool {
+				if c1.Name != "" && c2.Name != "" {
+					// Only compare by name if both have a name.
+					return c1.Name == c2.Name
+				}
+				return compare(c1, c2)
+			}
+		}
 	)
 	for _, c1 := range fromC {
-		idx := slices.IndexFunc(toC, func(c2 *schema.Check) bool {
-			return c1.Name == c2.Name
-		})
-		if idx == -1 {
+		switch idx := slices.IndexFunc(toC, compareTo(c1)); {
+		case idx == -1:
 			changes = append(changes, &schema.DropCheck{
 				C: c1,
 			})
-		} else if c2 := toC[idx]; !compare(c1, c2) {
+		case !compare(c1, toC[idx]):
 			changes = append(changes, &schema.ModifyCheck{
 				From: c1,
-				To:   c2,
+				To:   toC[idx],
 			})
 		}
 	}
 	for _, c1 := range toC {
-		if !slices.ContainsFunc(fromC, func(c2 *schema.Check) bool {
-			return c1.Name == c2.Name
-		}) {
+		if !slices.ContainsFunc(fromC, compareTo(c1)) {
 			changes = append(changes, &schema.AddCheck{
 				C: c1,
 			})

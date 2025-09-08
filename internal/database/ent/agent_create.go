@@ -6,11 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/agent"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
 )
 
 // AgentCreate is the builder for creating a Agent entity.
@@ -21,207 +21,207 @@ type AgentCreate struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ac *AgentCreate) SetCreatedAt(t time.Time) *AgentCreate {
-	ac.mutation.SetCreatedAt(t)
-	return ac
+func (_c *AgentCreate) SetCreatedAt(v time.Time) *AgentCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableCreatedAt(t *time.Time) *AgentCreate {
-	if t != nil {
-		ac.SetCreatedAt(*t)
+func (_c *AgentCreate) SetNillableCreatedAt(v *time.Time) *AgentCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetName sets the "name" field.
-func (ac *AgentCreate) SetName(s string) *AgentCreate {
-	ac.mutation.SetName(s)
-	return ac
+func (_c *AgentCreate) SetName(v string) *AgentCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetComment sets the "comment" field.
-func (ac *AgentCreate) SetComment(s string) *AgentCreate {
-	ac.mutation.SetComment(s)
-	return ac
+func (_c *AgentCreate) SetComment(v string) *AgentCreate {
+	_c.mutation.SetComment(v)
+	return _c
 }
 
 // SetNillableComment sets the "comment" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableComment(s *string) *AgentCreate {
-	if s != nil {
-		ac.SetComment(*s)
+func (_c *AgentCreate) SetNillableComment(v *string) *AgentCreate {
+	if v != nil {
+		_c.SetComment(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetOs sets the "os" field.
-func (ac *AgentCreate) SetOs(s string) *AgentCreate {
-	ac.mutation.SetOs(s)
-	return ac
+func (_c *AgentCreate) SetOs(v string) *AgentCreate {
+	_c.mutation.SetOs(v)
+	return _c
 }
 
 // SetArch sets the "arch" field.
-func (ac *AgentCreate) SetArch(s string) *AgentCreate {
-	ac.mutation.SetArch(s)
-	return ac
+func (_c *AgentCreate) SetArch(v string) *AgentCreate {
+	_c.mutation.SetArch(v)
+	return _c
 }
 
 // SetServers sets the "servers" field.
-func (ac *AgentCreate) SetServers(s []string) *AgentCreate {
-	ac.mutation.SetServers(s)
-	return ac
+func (_c *AgentCreate) SetServers(v []string) *AgentCreate {
+	_c.mutation.SetServers(v)
+	return _c
 }
 
 // SetShared sets the "shared" field.
-func (ac *AgentCreate) SetShared(b bool) *AgentCreate {
-	ac.mutation.SetShared(b)
-	return ac
+func (_c *AgentCreate) SetShared(v bool) *AgentCreate {
+	_c.mutation.SetShared(v)
+	return _c
 }
 
 // SetNillableShared sets the "shared" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableShared(b *bool) *AgentCreate {
-	if b != nil {
-		ac.SetShared(*b)
+func (_c *AgentCreate) SetNillableShared(v *bool) *AgentCreate {
+	if v != nil {
+		_c.SetShared(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetPie sets the "pie" field.
-func (ac *AgentCreate) SetPie(b bool) *AgentCreate {
-	ac.mutation.SetPie(b)
-	return ac
+func (_c *AgentCreate) SetPie(v bool) *AgentCreate {
+	_c.mutation.SetPie(v)
+	return _c
 }
 
 // SetNillablePie sets the "pie" field if the given value is not nil.
-func (ac *AgentCreate) SetNillablePie(b *bool) *AgentCreate {
-	if b != nil {
-		ac.SetPie(*b)
+func (_c *AgentCreate) SetNillablePie(v *bool) *AgentCreate {
+	if v != nil {
+		_c.SetPie(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetGarble sets the "garble" field.
-func (ac *AgentCreate) SetGarble(b bool) *AgentCreate {
-	ac.mutation.SetGarble(b)
-	return ac
+func (_c *AgentCreate) SetGarble(v bool) *AgentCreate {
+	_c.mutation.SetGarble(v)
+	return _c
 }
 
 // SetNillableGarble sets the "garble" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableGarble(b *bool) *AgentCreate {
-	if b != nil {
-		ac.SetGarble(*b)
+func (_c *AgentCreate) SetNillableGarble(v *bool) *AgentCreate {
+	if v != nil {
+		_c.SetGarble(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetSubsystems sets the "subsystems" field.
-func (ac *AgentCreate) SetSubsystems(s []string) *AgentCreate {
-	ac.mutation.SetSubsystems(s)
-	return ac
+func (_c *AgentCreate) SetSubsystems(v []string) *AgentCreate {
+	_c.mutation.SetSubsystems(v)
+	return _c
 }
 
 // SetXxhash sets the "xxhash" field.
-func (ac *AgentCreate) SetXxhash(s string) *AgentCreate {
-	ac.mutation.SetXxhash(s)
-	return ac
+func (_c *AgentCreate) SetXxhash(v string) *AgentCreate {
+	_c.mutation.SetXxhash(v)
+	return _c
 }
 
 // SetPath sets the "path" field.
-func (ac *AgentCreate) SetPath(s string) *AgentCreate {
-	ac.mutation.SetPath(s)
-	return ac
+func (_c *AgentCreate) SetPath(v string) *AgentCreate {
+	_c.mutation.SetPath(v)
+	return _c
 }
 
 // SetURL sets the "url" field.
-func (ac *AgentCreate) SetURL(s string) *AgentCreate {
-	ac.mutation.SetURL(s)
-	return ac
+func (_c *AgentCreate) SetURL(v string) *AgentCreate {
+	_c.mutation.SetURL(v)
+	return _c
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableURL(s *string) *AgentCreate {
-	if s != nil {
-		ac.SetURL(*s)
+func (_c *AgentCreate) SetNillableURL(v *string) *AgentCreate {
+	if v != nil {
+		_c.SetURL(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetHosted sets the "hosted" field.
-func (ac *AgentCreate) SetHosted(b bool) *AgentCreate {
-	ac.mutation.SetHosted(b)
-	return ac
+func (_c *AgentCreate) SetHosted(v bool) *AgentCreate {
+	_c.mutation.SetHosted(v)
+	return _c
 }
 
 // SetNillableHosted sets the "hosted" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableHosted(b *bool) *AgentCreate {
-	if b != nil {
-		ac.SetHosted(*b)
+func (_c *AgentCreate) SetNillableHosted(v *bool) *AgentCreate {
+	if v != nil {
+		_c.SetHosted(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetCallbacks sets the "callbacks" field.
-func (ac *AgentCreate) SetCallbacks(i int) *AgentCreate {
-	ac.mutation.SetCallbacks(i)
-	return ac
+func (_c *AgentCreate) SetCallbacks(v int) *AgentCreate {
+	_c.mutation.SetCallbacks(v)
+	return _c
 }
 
 // SetNillableCallbacks sets the "callbacks" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableCallbacks(i *int) *AgentCreate {
-	if i != nil {
-		ac.SetCallbacks(*i)
+func (_c *AgentCreate) SetNillableCallbacks(v *int) *AgentCreate {
+	if v != nil {
+		_c.SetCallbacks(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetDownloads sets the "downloads" field.
-func (ac *AgentCreate) SetDownloads(i int) *AgentCreate {
-	ac.mutation.SetDownloads(i)
-	return ac
+func (_c *AgentCreate) SetDownloads(v int) *AgentCreate {
+	_c.mutation.SetDownloads(v)
+	return _c
 }
 
 // SetNillableDownloads sets the "downloads" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableDownloads(i *int) *AgentCreate {
-	if i != nil {
-		ac.SetDownloads(*i)
+func (_c *AgentCreate) SetNillableDownloads(v *int) *AgentCreate {
+	if v != nil {
+		_c.SetDownloads(*v)
 	}
-	return ac
+	return _c
 }
 
 // SetPublicKey sets the "public_key" field.
-func (ac *AgentCreate) SetPublicKey(b []byte) *AgentCreate {
-	ac.mutation.SetPublicKey(b)
-	return ac
+func (_c *AgentCreate) SetPublicKey(v []byte) *AgentCreate {
+	_c.mutation.SetPublicKey(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ac *AgentCreate) SetID(s string) *AgentCreate {
-	ac.mutation.SetID(s)
-	return ac
+func (_c *AgentCreate) SetID(v string) *AgentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ac *AgentCreate) SetNillableID(s *string) *AgentCreate {
-	if s != nil {
-		ac.SetID(*s)
+func (_c *AgentCreate) SetNillableID(v *string) *AgentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ac
+	return _c
 }
 
 // Mutation returns the AgentMutation object of the builder.
-func (ac *AgentCreate) Mutation() *AgentMutation {
-	return ac.mutation
+func (_c *AgentCreate) Mutation() *AgentMutation {
+	return _c.mutation
 }
 
 // Save creates the Agent in the database.
-func (ac *AgentCreate) Save(ctx context.Context) (*Agent, error) {
-	ac.defaults()
-	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
+func (_c *AgentCreate) Save(ctx context.Context) (*Agent, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ac *AgentCreate) SaveX(ctx context.Context) *Agent {
-	v, err := ac.Save(ctx)
+func (_c *AgentCreate) SaveX(ctx context.Context) *Agent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,131 +229,131 @@ func (ac *AgentCreate) SaveX(ctx context.Context) *Agent {
 }
 
 // Exec executes the query.
-func (ac *AgentCreate) Exec(ctx context.Context) error {
-	_, err := ac.Save(ctx)
+func (_c *AgentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ac *AgentCreate) ExecX(ctx context.Context) {
-	if err := ac.Exec(ctx); err != nil {
+func (_c *AgentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ac *AgentCreate) defaults() {
-	if _, ok := ac.mutation.CreatedAt(); !ok {
+func (_c *AgentCreate) defaults() {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := agent.DefaultCreatedAt()
-		ac.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := ac.mutation.Shared(); !ok {
+	if _, ok := _c.mutation.Shared(); !ok {
 		v := agent.DefaultShared
-		ac.mutation.SetShared(v)
+		_c.mutation.SetShared(v)
 	}
-	if _, ok := ac.mutation.Pie(); !ok {
+	if _, ok := _c.mutation.Pie(); !ok {
 		v := agent.DefaultPie
-		ac.mutation.SetPie(v)
+		_c.mutation.SetPie(v)
 	}
-	if _, ok := ac.mutation.Garble(); !ok {
+	if _, ok := _c.mutation.Garble(); !ok {
 		v := agent.DefaultGarble
-		ac.mutation.SetGarble(v)
+		_c.mutation.SetGarble(v)
 	}
-	if _, ok := ac.mutation.Subsystems(); !ok {
+	if _, ok := _c.mutation.Subsystems(); !ok {
 		v := agent.DefaultSubsystems
-		ac.mutation.SetSubsystems(v)
+		_c.mutation.SetSubsystems(v)
 	}
-	if _, ok := ac.mutation.Hosted(); !ok {
+	if _, ok := _c.mutation.Hosted(); !ok {
 		v := agent.DefaultHosted
-		ac.mutation.SetHosted(v)
+		_c.mutation.SetHosted(v)
 	}
-	if _, ok := ac.mutation.Callbacks(); !ok {
+	if _, ok := _c.mutation.Callbacks(); !ok {
 		v := agent.DefaultCallbacks
-		ac.mutation.SetCallbacks(v)
+		_c.mutation.SetCallbacks(v)
 	}
-	if _, ok := ac.mutation.Downloads(); !ok {
+	if _, ok := _c.mutation.Downloads(); !ok {
 		v := agent.DefaultDownloads
-		ac.mutation.SetDownloads(v)
+		_c.mutation.SetDownloads(v)
 	}
-	if _, ok := ac.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := agent.DefaultID()
-		ac.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ac *AgentCreate) check() error {
-	if _, ok := ac.mutation.CreatedAt(); !ok {
+func (_c *AgentCreate) check() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Agent.created_at"`)}
 	}
-	if _, ok := ac.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Agent.name"`)}
 	}
-	if v, ok := ac.mutation.Name(); ok {
+	if v, ok := _c.mutation.Name(); ok {
 		if err := agent.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Agent.name": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Os(); !ok {
+	if _, ok := _c.mutation.Os(); !ok {
 		return &ValidationError{Name: "os", err: errors.New(`ent: missing required field "Agent.os"`)}
 	}
-	if v, ok := ac.mutation.Os(); ok {
+	if v, ok := _c.mutation.Os(); ok {
 		if err := agent.OsValidator(v); err != nil {
 			return &ValidationError{Name: "os", err: fmt.Errorf(`ent: validator failed for field "Agent.os": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Arch(); !ok {
+	if _, ok := _c.mutation.Arch(); !ok {
 		return &ValidationError{Name: "arch", err: errors.New(`ent: missing required field "Agent.arch"`)}
 	}
-	if v, ok := ac.mutation.Arch(); ok {
+	if v, ok := _c.mutation.Arch(); ok {
 		if err := agent.ArchValidator(v); err != nil {
 			return &ValidationError{Name: "arch", err: fmt.Errorf(`ent: validator failed for field "Agent.arch": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Servers(); !ok {
+	if _, ok := _c.mutation.Servers(); !ok {
 		return &ValidationError{Name: "servers", err: errors.New(`ent: missing required field "Agent.servers"`)}
 	}
-	if _, ok := ac.mutation.Shared(); !ok {
+	if _, ok := _c.mutation.Shared(); !ok {
 		return &ValidationError{Name: "shared", err: errors.New(`ent: missing required field "Agent.shared"`)}
 	}
-	if _, ok := ac.mutation.Pie(); !ok {
+	if _, ok := _c.mutation.Pie(); !ok {
 		return &ValidationError{Name: "pie", err: errors.New(`ent: missing required field "Agent.pie"`)}
 	}
-	if _, ok := ac.mutation.Garble(); !ok {
+	if _, ok := _c.mutation.Garble(); !ok {
 		return &ValidationError{Name: "garble", err: errors.New(`ent: missing required field "Agent.garble"`)}
 	}
-	if _, ok := ac.mutation.Subsystems(); !ok {
+	if _, ok := _c.mutation.Subsystems(); !ok {
 		return &ValidationError{Name: "subsystems", err: errors.New(`ent: missing required field "Agent.subsystems"`)}
 	}
-	if _, ok := ac.mutation.Xxhash(); !ok {
+	if _, ok := _c.mutation.Xxhash(); !ok {
 		return &ValidationError{Name: "xxhash", err: errors.New(`ent: missing required field "Agent.xxhash"`)}
 	}
-	if v, ok := ac.mutation.Xxhash(); ok {
+	if v, ok := _c.mutation.Xxhash(); ok {
 		if err := agent.XxhashValidator(v); err != nil {
 			return &ValidationError{Name: "xxhash", err: fmt.Errorf(`ent: validator failed for field "Agent.xxhash": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Path(); !ok {
+	if _, ok := _c.mutation.Path(); !ok {
 		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "Agent.path"`)}
 	}
-	if v, ok := ac.mutation.Path(); ok {
+	if v, ok := _c.mutation.Path(); ok {
 		if err := agent.PathValidator(v); err != nil {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "Agent.path": %w`, err)}
 		}
 	}
-	if _, ok := ac.mutation.Hosted(); !ok {
+	if _, ok := _c.mutation.Hosted(); !ok {
 		return &ValidationError{Name: "hosted", err: errors.New(`ent: missing required field "Agent.hosted"`)}
 	}
-	if _, ok := ac.mutation.Callbacks(); !ok {
+	if _, ok := _c.mutation.Callbacks(); !ok {
 		return &ValidationError{Name: "callbacks", err: errors.New(`ent: missing required field "Agent.callbacks"`)}
 	}
-	if _, ok := ac.mutation.Downloads(); !ok {
+	if _, ok := _c.mutation.Downloads(); !ok {
 		return &ValidationError{Name: "downloads", err: errors.New(`ent: missing required field "Agent.downloads"`)}
 	}
-	if _, ok := ac.mutation.PublicKey(); !ok {
+	if _, ok := _c.mutation.PublicKey(); !ok {
 		return &ValidationError{Name: "public_key", err: errors.New(`ent: missing required field "Agent.public_key"`)}
 	}
-	if v, ok := ac.mutation.PublicKey(); ok {
+	if v, ok := _c.mutation.PublicKey(); ok {
 		if err := agent.PublicKeyValidator(v); err != nil {
 			return &ValidationError{Name: "public_key", err: fmt.Errorf(`ent: validator failed for field "Agent.public_key": %w`, err)}
 		}
@@ -361,12 +361,12 @@ func (ac *AgentCreate) check() error {
 	return nil
 }
 
-func (ac *AgentCreate) sqlSave(ctx context.Context) (*Agent, error) {
-	if err := ac.check(); err != nil {
+func (_c *AgentCreate) sqlSave(ctx context.Context) (*Agent, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ac.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ac.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -379,85 +379,85 @@ func (ac *AgentCreate) sqlSave(ctx context.Context) (*Agent, error) {
 			return nil, fmt.Errorf("unexpected Agent.ID type: %T", _spec.ID.Value)
 		}
 	}
-	ac.mutation.id = &_node.ID
-	ac.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ac *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
+func (_c *AgentCreate) createSpec() (*Agent, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Agent{config: ac.config}
+		_node = &Agent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(agent.Table, sqlgraph.NewFieldSpec(agent.FieldID, field.TypeString))
 	)
-	if id, ok := ac.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := ac.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(agent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := ac.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(agent.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := ac.mutation.Comment(); ok {
+	if value, ok := _c.mutation.Comment(); ok {
 		_spec.SetField(agent.FieldComment, field.TypeString, value)
 		_node.Comment = value
 	}
-	if value, ok := ac.mutation.Os(); ok {
+	if value, ok := _c.mutation.Os(); ok {
 		_spec.SetField(agent.FieldOs, field.TypeString, value)
 		_node.Os = value
 	}
-	if value, ok := ac.mutation.Arch(); ok {
+	if value, ok := _c.mutation.Arch(); ok {
 		_spec.SetField(agent.FieldArch, field.TypeString, value)
 		_node.Arch = value
 	}
-	if value, ok := ac.mutation.Servers(); ok {
+	if value, ok := _c.mutation.Servers(); ok {
 		_spec.SetField(agent.FieldServers, field.TypeJSON, value)
 		_node.Servers = value
 	}
-	if value, ok := ac.mutation.Shared(); ok {
+	if value, ok := _c.mutation.Shared(); ok {
 		_spec.SetField(agent.FieldShared, field.TypeBool, value)
 		_node.Shared = value
 	}
-	if value, ok := ac.mutation.Pie(); ok {
+	if value, ok := _c.mutation.Pie(); ok {
 		_spec.SetField(agent.FieldPie, field.TypeBool, value)
 		_node.Pie = value
 	}
-	if value, ok := ac.mutation.Garble(); ok {
+	if value, ok := _c.mutation.Garble(); ok {
 		_spec.SetField(agent.FieldGarble, field.TypeBool, value)
 		_node.Garble = value
 	}
-	if value, ok := ac.mutation.Subsystems(); ok {
+	if value, ok := _c.mutation.Subsystems(); ok {
 		_spec.SetField(agent.FieldSubsystems, field.TypeJSON, value)
 		_node.Subsystems = value
 	}
-	if value, ok := ac.mutation.Xxhash(); ok {
+	if value, ok := _c.mutation.Xxhash(); ok {
 		_spec.SetField(agent.FieldXxhash, field.TypeString, value)
 		_node.Xxhash = value
 	}
-	if value, ok := ac.mutation.Path(); ok {
+	if value, ok := _c.mutation.Path(); ok {
 		_spec.SetField(agent.FieldPath, field.TypeString, value)
 		_node.Path = value
 	}
-	if value, ok := ac.mutation.URL(); ok {
+	if value, ok := _c.mutation.URL(); ok {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 		_node.URL = value
 	}
-	if value, ok := ac.mutation.Hosted(); ok {
+	if value, ok := _c.mutation.Hosted(); ok {
 		_spec.SetField(agent.FieldHosted, field.TypeBool, value)
 		_node.Hosted = value
 	}
-	if value, ok := ac.mutation.Callbacks(); ok {
+	if value, ok := _c.mutation.Callbacks(); ok {
 		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
 		_node.Callbacks = value
 	}
-	if value, ok := ac.mutation.Downloads(); ok {
+	if value, ok := _c.mutation.Downloads(); ok {
 		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
 		_node.Downloads = value
 	}
-	if value, ok := ac.mutation.PublicKey(); ok {
+	if value, ok := _c.mutation.PublicKey(); ok {
 		_spec.SetField(agent.FieldPublicKey, field.TypeBytes, value)
 		_node.PublicKey = value
 	}
@@ -472,16 +472,16 @@ type AgentCreateBulk struct {
 }
 
 // Save creates the Agent entities in the database.
-func (acb *AgentCreateBulk) Save(ctx context.Context) ([]*Agent, error) {
-	if acb.err != nil {
-		return nil, acb.err
+func (_c *AgentCreateBulk) Save(ctx context.Context) ([]*Agent, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(acb.builders))
-	nodes := make([]*Agent, len(acb.builders))
-	mutators := make([]Mutator, len(acb.builders))
-	for i := range acb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Agent, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := acb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AgentMutation)
@@ -495,11 +495,11 @@ func (acb *AgentCreateBulk) Save(ctx context.Context) ([]*Agent, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, acb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, acb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -519,7 +519,7 @@ func (acb *AgentCreateBulk) Save(ctx context.Context) ([]*Agent, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, acb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -527,8 +527,8 @@ func (acb *AgentCreateBulk) Save(ctx context.Context) ([]*Agent, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (acb *AgentCreateBulk) SaveX(ctx context.Context) []*Agent {
-	v, err := acb.Save(ctx)
+func (_c *AgentCreateBulk) SaveX(ctx context.Context) []*Agent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -536,14 +536,14 @@ func (acb *AgentCreateBulk) SaveX(ctx context.Context) []*Agent {
 }
 
 // Exec executes the query.
-func (acb *AgentCreateBulk) Exec(ctx context.Context) error {
-	_, err := acb.Save(ctx)
+func (_c *AgentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (acb *AgentCreateBulk) ExecX(ctx context.Context) {
-	if err := acb.Exec(ctx); err != nil {
+func (_c *AgentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

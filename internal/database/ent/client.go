@@ -11,13 +11,12 @@ import (
 
 	"github.com/nu11zy/rscc/internal/database/ent/migrate"
 
-	"github.com/nu11zy/rscc/internal/database/ent/agent"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
-	"github.com/nu11zy/rscc/internal/database/ent/session"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 )
 
 // Client is the client that holds all ent builders.
@@ -272,8 +271,8 @@ func (c *AgentClient) Update() *AgentUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AgentClient) UpdateOne(a *Agent) *AgentUpdateOne {
-	mutation := newAgentMutation(c.config, OpUpdateOne, withAgent(a))
+func (c *AgentClient) UpdateOne(_m *Agent) *AgentUpdateOne {
+	mutation := newAgentMutation(c.config, OpUpdateOne, withAgent(_m))
 	return &AgentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -290,8 +289,8 @@ func (c *AgentClient) Delete() *AgentDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AgentClient) DeleteOne(a *Agent) *AgentDeleteOne {
-	return c.DeleteOneID(a.ID)
+func (c *AgentClient) DeleteOne(_m *Agent) *AgentDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -405,8 +404,8 @@ func (c *ListenerClient) Update() *ListenerUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ListenerClient) UpdateOne(l *Listener) *ListenerUpdateOne {
-	mutation := newListenerMutation(c.config, OpUpdateOne, withListener(l))
+func (c *ListenerClient) UpdateOne(_m *Listener) *ListenerUpdateOne {
+	mutation := newListenerMutation(c.config, OpUpdateOne, withListener(_m))
 	return &ListenerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -423,8 +422,8 @@ func (c *ListenerClient) Delete() *ListenerDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ListenerClient) DeleteOne(l *Listener) *ListenerDeleteOne {
-	return c.DeleteOneID(l.ID)
+func (c *ListenerClient) DeleteOne(_m *Listener) *ListenerDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
@@ -538,8 +537,8 @@ func (c *SessionClient) Update() *SessionUpdate {
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SessionClient) UpdateOne(s *Session) *SessionUpdateOne {
-	mutation := newSessionMutation(c.config, OpUpdateOne, withSession(s))
+func (c *SessionClient) UpdateOne(_m *Session) *SessionUpdateOne {
+	mutation := newSessionMutation(c.config, OpUpdateOne, withSession(_m))
 	return &SessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -556,8 +555,8 @@ func (c *SessionClient) Delete() *SessionDelete {
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SessionClient) DeleteOne(s *Session) *SessionDeleteOne {
-	return c.DeleteOneID(s.ID)
+func (c *SessionClient) DeleteOne(_m *Session) *SessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.

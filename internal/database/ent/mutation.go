@@ -6,15 +6,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/agent"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
-	"github.com/nu11zy/rscc/internal/database/ent/predicate"
-	"github.com/nu11zy/rscc/internal/database/ent/session"
 	"sync"
 	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
+	"github.com/nu11zy/rscc/internal/database/ent/session"
 )
 
 const (

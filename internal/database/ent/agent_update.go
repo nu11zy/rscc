@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/agent"
-	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/nu11zy/rscc/internal/database/ent/agent"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 )
 
 // AgentUpdate is the builder for updating Agent entities.
@@ -22,120 +22,120 @@ type AgentUpdate struct {
 }
 
 // Where appends a list predicates to the AgentUpdate builder.
-func (au *AgentUpdate) Where(ps ...predicate.Agent) *AgentUpdate {
-	au.mutation.Where(ps...)
-	return au
+func (_u *AgentUpdate) Where(ps ...predicate.Agent) *AgentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetComment sets the "comment" field.
-func (au *AgentUpdate) SetComment(s string) *AgentUpdate {
-	au.mutation.SetComment(s)
-	return au
+func (_u *AgentUpdate) SetComment(v string) *AgentUpdate {
+	_u.mutation.SetComment(v)
+	return _u
 }
 
 // SetNillableComment sets the "comment" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableComment(s *string) *AgentUpdate {
-	if s != nil {
-		au.SetComment(*s)
+func (_u *AgentUpdate) SetNillableComment(v *string) *AgentUpdate {
+	if v != nil {
+		_u.SetComment(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearComment clears the value of the "comment" field.
-func (au *AgentUpdate) ClearComment() *AgentUpdate {
-	au.mutation.ClearComment()
-	return au
+func (_u *AgentUpdate) ClearComment() *AgentUpdate {
+	_u.mutation.ClearComment()
+	return _u
 }
 
 // SetURL sets the "url" field.
-func (au *AgentUpdate) SetURL(s string) *AgentUpdate {
-	au.mutation.SetURL(s)
-	return au
+func (_u *AgentUpdate) SetURL(v string) *AgentUpdate {
+	_u.mutation.SetURL(v)
+	return _u
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableURL(s *string) *AgentUpdate {
-	if s != nil {
-		au.SetURL(*s)
+func (_u *AgentUpdate) SetNillableURL(v *string) *AgentUpdate {
+	if v != nil {
+		_u.SetURL(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearURL clears the value of the "url" field.
-func (au *AgentUpdate) ClearURL() *AgentUpdate {
-	au.mutation.ClearURL()
-	return au
+func (_u *AgentUpdate) ClearURL() *AgentUpdate {
+	_u.mutation.ClearURL()
+	return _u
 }
 
 // SetHosted sets the "hosted" field.
-func (au *AgentUpdate) SetHosted(b bool) *AgentUpdate {
-	au.mutation.SetHosted(b)
-	return au
+func (_u *AgentUpdate) SetHosted(v bool) *AgentUpdate {
+	_u.mutation.SetHosted(v)
+	return _u
 }
 
 // SetNillableHosted sets the "hosted" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableHosted(b *bool) *AgentUpdate {
-	if b != nil {
-		au.SetHosted(*b)
+func (_u *AgentUpdate) SetNillableHosted(v *bool) *AgentUpdate {
+	if v != nil {
+		_u.SetHosted(*v)
 	}
-	return au
+	return _u
 }
 
 // SetCallbacks sets the "callbacks" field.
-func (au *AgentUpdate) SetCallbacks(i int) *AgentUpdate {
-	au.mutation.ResetCallbacks()
-	au.mutation.SetCallbacks(i)
-	return au
+func (_u *AgentUpdate) SetCallbacks(v int) *AgentUpdate {
+	_u.mutation.ResetCallbacks()
+	_u.mutation.SetCallbacks(v)
+	return _u
 }
 
 // SetNillableCallbacks sets the "callbacks" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableCallbacks(i *int) *AgentUpdate {
-	if i != nil {
-		au.SetCallbacks(*i)
+func (_u *AgentUpdate) SetNillableCallbacks(v *int) *AgentUpdate {
+	if v != nil {
+		_u.SetCallbacks(*v)
 	}
-	return au
+	return _u
 }
 
-// AddCallbacks adds i to the "callbacks" field.
-func (au *AgentUpdate) AddCallbacks(i int) *AgentUpdate {
-	au.mutation.AddCallbacks(i)
-	return au
+// AddCallbacks adds value to the "callbacks" field.
+func (_u *AgentUpdate) AddCallbacks(v int) *AgentUpdate {
+	_u.mutation.AddCallbacks(v)
+	return _u
 }
 
 // SetDownloads sets the "downloads" field.
-func (au *AgentUpdate) SetDownloads(i int) *AgentUpdate {
-	au.mutation.ResetDownloads()
-	au.mutation.SetDownloads(i)
-	return au
+func (_u *AgentUpdate) SetDownloads(v int) *AgentUpdate {
+	_u.mutation.ResetDownloads()
+	_u.mutation.SetDownloads(v)
+	return _u
 }
 
 // SetNillableDownloads sets the "downloads" field if the given value is not nil.
-func (au *AgentUpdate) SetNillableDownloads(i *int) *AgentUpdate {
-	if i != nil {
-		au.SetDownloads(*i)
+func (_u *AgentUpdate) SetNillableDownloads(v *int) *AgentUpdate {
+	if v != nil {
+		_u.SetDownloads(*v)
 	}
-	return au
+	return _u
 }
 
-// AddDownloads adds i to the "downloads" field.
-func (au *AgentUpdate) AddDownloads(i int) *AgentUpdate {
-	au.mutation.AddDownloads(i)
-	return au
+// AddDownloads adds value to the "downloads" field.
+func (_u *AgentUpdate) AddDownloads(v int) *AgentUpdate {
+	_u.mutation.AddDownloads(v)
+	return _u
 }
 
 // Mutation returns the AgentMutation object of the builder.
-func (au *AgentUpdate) Mutation() *AgentMutation {
-	return au.mutation
+func (_u *AgentUpdate) Mutation() *AgentMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (au *AgentUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
+func (_u *AgentUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (au *AgentUpdate) SaveX(ctx context.Context) int {
-	affected, err := au.Save(ctx)
+func (_u *AgentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -143,55 +143,55 @@ func (au *AgentUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (au *AgentUpdate) Exec(ctx context.Context) error {
-	_, err := au.Save(ctx)
+func (_u *AgentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (au *AgentUpdate) ExecX(ctx context.Context) {
-	if err := au.Exec(ctx); err != nil {
+func (_u *AgentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
+func (_u *AgentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(agent.Table, agent.Columns, sqlgraph.NewFieldSpec(agent.FieldID, field.TypeString))
-	if ps := au.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := au.mutation.Comment(); ok {
+	if value, ok := _u.mutation.Comment(); ok {
 		_spec.SetField(agent.FieldComment, field.TypeString, value)
 	}
-	if au.mutation.CommentCleared() {
+	if _u.mutation.CommentCleared() {
 		_spec.ClearField(agent.FieldComment, field.TypeString)
 	}
-	if value, ok := au.mutation.URL(); ok {
+	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 	}
-	if au.mutation.URLCleared() {
+	if _u.mutation.URLCleared() {
 		_spec.ClearField(agent.FieldURL, field.TypeString)
 	}
-	if value, ok := au.mutation.Hosted(); ok {
+	if value, ok := _u.mutation.Hosted(); ok {
 		_spec.SetField(agent.FieldHosted, field.TypeBool, value)
 	}
-	if value, ok := au.mutation.Callbacks(); ok {
+	if value, ok := _u.mutation.Callbacks(); ok {
 		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
 	}
-	if value, ok := au.mutation.AddedCallbacks(); ok {
+	if value, ok := _u.mutation.AddedCallbacks(); ok {
 		_spec.AddField(agent.FieldCallbacks, field.TypeInt, value)
 	}
-	if value, ok := au.mutation.Downloads(); ok {
+	if value, ok := _u.mutation.Downloads(); ok {
 		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
 	}
-	if value, ok := au.mutation.AddedDownloads(); ok {
+	if value, ok := _u.mutation.AddedDownloads(); ok {
 		_spec.AddField(agent.FieldDownloads, field.TypeInt, value)
 	}
-	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -199,8 +199,8 @@ func (au *AgentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	au.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // AgentUpdateOne is the builder for updating a single Agent entity.
@@ -212,127 +212,127 @@ type AgentUpdateOne struct {
 }
 
 // SetComment sets the "comment" field.
-func (auo *AgentUpdateOne) SetComment(s string) *AgentUpdateOne {
-	auo.mutation.SetComment(s)
-	return auo
+func (_u *AgentUpdateOne) SetComment(v string) *AgentUpdateOne {
+	_u.mutation.SetComment(v)
+	return _u
 }
 
 // SetNillableComment sets the "comment" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableComment(s *string) *AgentUpdateOne {
-	if s != nil {
-		auo.SetComment(*s)
+func (_u *AgentUpdateOne) SetNillableComment(v *string) *AgentUpdateOne {
+	if v != nil {
+		_u.SetComment(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearComment clears the value of the "comment" field.
-func (auo *AgentUpdateOne) ClearComment() *AgentUpdateOne {
-	auo.mutation.ClearComment()
-	return auo
+func (_u *AgentUpdateOne) ClearComment() *AgentUpdateOne {
+	_u.mutation.ClearComment()
+	return _u
 }
 
 // SetURL sets the "url" field.
-func (auo *AgentUpdateOne) SetURL(s string) *AgentUpdateOne {
-	auo.mutation.SetURL(s)
-	return auo
+func (_u *AgentUpdateOne) SetURL(v string) *AgentUpdateOne {
+	_u.mutation.SetURL(v)
+	return _u
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableURL(s *string) *AgentUpdateOne {
-	if s != nil {
-		auo.SetURL(*s)
+func (_u *AgentUpdateOne) SetNillableURL(v *string) *AgentUpdateOne {
+	if v != nil {
+		_u.SetURL(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearURL clears the value of the "url" field.
-func (auo *AgentUpdateOne) ClearURL() *AgentUpdateOne {
-	auo.mutation.ClearURL()
-	return auo
+func (_u *AgentUpdateOne) ClearURL() *AgentUpdateOne {
+	_u.mutation.ClearURL()
+	return _u
 }
 
 // SetHosted sets the "hosted" field.
-func (auo *AgentUpdateOne) SetHosted(b bool) *AgentUpdateOne {
-	auo.mutation.SetHosted(b)
-	return auo
+func (_u *AgentUpdateOne) SetHosted(v bool) *AgentUpdateOne {
+	_u.mutation.SetHosted(v)
+	return _u
 }
 
 // SetNillableHosted sets the "hosted" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableHosted(b *bool) *AgentUpdateOne {
-	if b != nil {
-		auo.SetHosted(*b)
+func (_u *AgentUpdateOne) SetNillableHosted(v *bool) *AgentUpdateOne {
+	if v != nil {
+		_u.SetHosted(*v)
 	}
-	return auo
+	return _u
 }
 
 // SetCallbacks sets the "callbacks" field.
-func (auo *AgentUpdateOne) SetCallbacks(i int) *AgentUpdateOne {
-	auo.mutation.ResetCallbacks()
-	auo.mutation.SetCallbacks(i)
-	return auo
+func (_u *AgentUpdateOne) SetCallbacks(v int) *AgentUpdateOne {
+	_u.mutation.ResetCallbacks()
+	_u.mutation.SetCallbacks(v)
+	return _u
 }
 
 // SetNillableCallbacks sets the "callbacks" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableCallbacks(i *int) *AgentUpdateOne {
-	if i != nil {
-		auo.SetCallbacks(*i)
+func (_u *AgentUpdateOne) SetNillableCallbacks(v *int) *AgentUpdateOne {
+	if v != nil {
+		_u.SetCallbacks(*v)
 	}
-	return auo
+	return _u
 }
 
-// AddCallbacks adds i to the "callbacks" field.
-func (auo *AgentUpdateOne) AddCallbacks(i int) *AgentUpdateOne {
-	auo.mutation.AddCallbacks(i)
-	return auo
+// AddCallbacks adds value to the "callbacks" field.
+func (_u *AgentUpdateOne) AddCallbacks(v int) *AgentUpdateOne {
+	_u.mutation.AddCallbacks(v)
+	return _u
 }
 
 // SetDownloads sets the "downloads" field.
-func (auo *AgentUpdateOne) SetDownloads(i int) *AgentUpdateOne {
-	auo.mutation.ResetDownloads()
-	auo.mutation.SetDownloads(i)
-	return auo
+func (_u *AgentUpdateOne) SetDownloads(v int) *AgentUpdateOne {
+	_u.mutation.ResetDownloads()
+	_u.mutation.SetDownloads(v)
+	return _u
 }
 
 // SetNillableDownloads sets the "downloads" field if the given value is not nil.
-func (auo *AgentUpdateOne) SetNillableDownloads(i *int) *AgentUpdateOne {
-	if i != nil {
-		auo.SetDownloads(*i)
+func (_u *AgentUpdateOne) SetNillableDownloads(v *int) *AgentUpdateOne {
+	if v != nil {
+		_u.SetDownloads(*v)
 	}
-	return auo
+	return _u
 }
 
-// AddDownloads adds i to the "downloads" field.
-func (auo *AgentUpdateOne) AddDownloads(i int) *AgentUpdateOne {
-	auo.mutation.AddDownloads(i)
-	return auo
+// AddDownloads adds value to the "downloads" field.
+func (_u *AgentUpdateOne) AddDownloads(v int) *AgentUpdateOne {
+	_u.mutation.AddDownloads(v)
+	return _u
 }
 
 // Mutation returns the AgentMutation object of the builder.
-func (auo *AgentUpdateOne) Mutation() *AgentMutation {
-	return auo.mutation
+func (_u *AgentUpdateOne) Mutation() *AgentMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the AgentUpdate builder.
-func (auo *AgentUpdateOne) Where(ps ...predicate.Agent) *AgentUpdateOne {
-	auo.mutation.Where(ps...)
-	return auo
+func (_u *AgentUpdateOne) Where(ps ...predicate.Agent) *AgentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (auo *AgentUpdateOne) Select(field string, fields ...string) *AgentUpdateOne {
-	auo.fields = append([]string{field}, fields...)
-	return auo
+func (_u *AgentUpdateOne) Select(field string, fields ...string) *AgentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Agent entity.
-func (auo *AgentUpdateOne) Save(ctx context.Context) (*Agent, error) {
-	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
+func (_u *AgentUpdateOne) Save(ctx context.Context) (*Agent, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (auo *AgentUpdateOne) SaveX(ctx context.Context) *Agent {
-	node, err := auo.Save(ctx)
+func (_u *AgentUpdateOne) SaveX(ctx context.Context) *Agent {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -340,26 +340,26 @@ func (auo *AgentUpdateOne) SaveX(ctx context.Context) *Agent {
 }
 
 // Exec executes the query on the entity.
-func (auo *AgentUpdateOne) Exec(ctx context.Context) error {
-	_, err := auo.Save(ctx)
+func (_u *AgentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (auo *AgentUpdateOne) ExecX(ctx context.Context) {
-	if err := auo.Exec(ctx); err != nil {
+func (_u *AgentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error) {
+func (_u *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error) {
 	_spec := sqlgraph.NewUpdateSpec(agent.Table, agent.Columns, sqlgraph.NewFieldSpec(agent.FieldID, field.TypeString))
-	id, ok := auo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Agent.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := auo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, agent.FieldID)
 		for _, f := range fields {
@@ -371,44 +371,44 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 			}
 		}
 	}
-	if ps := auo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := auo.mutation.Comment(); ok {
+	if value, ok := _u.mutation.Comment(); ok {
 		_spec.SetField(agent.FieldComment, field.TypeString, value)
 	}
-	if auo.mutation.CommentCleared() {
+	if _u.mutation.CommentCleared() {
 		_spec.ClearField(agent.FieldComment, field.TypeString)
 	}
-	if value, ok := auo.mutation.URL(); ok {
+	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(agent.FieldURL, field.TypeString, value)
 	}
-	if auo.mutation.URLCleared() {
+	if _u.mutation.URLCleared() {
 		_spec.ClearField(agent.FieldURL, field.TypeString)
 	}
-	if value, ok := auo.mutation.Hosted(); ok {
+	if value, ok := _u.mutation.Hosted(); ok {
 		_spec.SetField(agent.FieldHosted, field.TypeBool, value)
 	}
-	if value, ok := auo.mutation.Callbacks(); ok {
+	if value, ok := _u.mutation.Callbacks(); ok {
 		_spec.SetField(agent.FieldCallbacks, field.TypeInt, value)
 	}
-	if value, ok := auo.mutation.AddedCallbacks(); ok {
+	if value, ok := _u.mutation.AddedCallbacks(); ok {
 		_spec.AddField(agent.FieldCallbacks, field.TypeInt, value)
 	}
-	if value, ok := auo.mutation.Downloads(); ok {
+	if value, ok := _u.mutation.Downloads(); ok {
 		_spec.SetField(agent.FieldDownloads, field.TypeInt, value)
 	}
-	if value, ok := auo.mutation.AddedDownloads(); ok {
+	if value, ok := _u.mutation.AddedDownloads(); ok {
 		_spec.AddField(agent.FieldDownloads, field.TypeInt, value)
 	}
-	_node = &Agent{config: auo.config}
+	_node = &Agent{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, auo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -416,6 +416,6 @@ func (auo *AgentUpdateOne) sqlSave(ctx context.Context) (_node *Agent, err error
 		}
 		return nil, err
 	}
-	auo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -6,13 +6,13 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
-	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
+	"github.com/nu11zy/rscc/internal/database/ent/predicate"
 )
 
 // ListenerQuery is the builder for querying Listener entities.
@@ -28,40 +28,40 @@ type ListenerQuery struct {
 }
 
 // Where adds a new predicate for the ListenerQuery builder.
-func (lq *ListenerQuery) Where(ps ...predicate.Listener) *ListenerQuery {
-	lq.predicates = append(lq.predicates, ps...)
-	return lq
+func (_q *ListenerQuery) Where(ps ...predicate.Listener) *ListenerQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (lq *ListenerQuery) Limit(limit int) *ListenerQuery {
-	lq.ctx.Limit = &limit
-	return lq
+func (_q *ListenerQuery) Limit(limit int) *ListenerQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (lq *ListenerQuery) Offset(offset int) *ListenerQuery {
-	lq.ctx.Offset = &offset
-	return lq
+func (_q *ListenerQuery) Offset(offset int) *ListenerQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (lq *ListenerQuery) Unique(unique bool) *ListenerQuery {
-	lq.ctx.Unique = &unique
-	return lq
+func (_q *ListenerQuery) Unique(unique bool) *ListenerQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (lq *ListenerQuery) Order(o ...listener.OrderOption) *ListenerQuery {
-	lq.order = append(lq.order, o...)
-	return lq
+func (_q *ListenerQuery) Order(o ...listener.OrderOption) *ListenerQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first Listener entity from the query.
 // Returns a *NotFoundError when no Listener was found.
-func (lq *ListenerQuery) First(ctx context.Context) (*Listener, error) {
-	nodes, err := lq.Limit(1).All(setContextOp(ctx, lq.ctx, ent.OpQueryFirst))
+func (_q *ListenerQuery) First(ctx context.Context) (*Listener, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func (lq *ListenerQuery) First(ctx context.Context) (*Listener, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (lq *ListenerQuery) FirstX(ctx context.Context) *Listener {
-	node, err := lq.First(ctx)
+func (_q *ListenerQuery) FirstX(ctx context.Context) *Listener {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -82,9 +82,9 @@ func (lq *ListenerQuery) FirstX(ctx context.Context) *Listener {
 
 // FirstID returns the first Listener ID from the query.
 // Returns a *NotFoundError when no Listener ID was found.
-func (lq *ListenerQuery) FirstID(ctx context.Context) (id string, err error) {
+func (_q *ListenerQuery) FirstID(ctx context.Context) (id string, err error) {
 	var ids []string
-	if ids, err = lq.Limit(1).IDs(setContextOp(ctx, lq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -95,8 +95,8 @@ func (lq *ListenerQuery) FirstID(ctx context.Context) (id string, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (lq *ListenerQuery) FirstIDX(ctx context.Context) string {
-	id, err := lq.FirstID(ctx)
+func (_q *ListenerQuery) FirstIDX(ctx context.Context) string {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -106,8 +106,8 @@ func (lq *ListenerQuery) FirstIDX(ctx context.Context) string {
 // Only returns a single Listener entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Listener entity is found.
 // Returns a *NotFoundError when no Listener entities are found.
-func (lq *ListenerQuery) Only(ctx context.Context) (*Listener, error) {
-	nodes, err := lq.Limit(2).All(setContextOp(ctx, lq.ctx, ent.OpQueryOnly))
+func (_q *ListenerQuery) Only(ctx context.Context) (*Listener, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +122,8 @@ func (lq *ListenerQuery) Only(ctx context.Context) (*Listener, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (lq *ListenerQuery) OnlyX(ctx context.Context) *Listener {
-	node, err := lq.Only(ctx)
+func (_q *ListenerQuery) OnlyX(ctx context.Context) *Listener {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (lq *ListenerQuery) OnlyX(ctx context.Context) *Listener {
 // OnlyID is like Only, but returns the only Listener ID in the query.
 // Returns a *NotSingularError when more than one Listener ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (lq *ListenerQuery) OnlyID(ctx context.Context) (id string, err error) {
+func (_q *ListenerQuery) OnlyID(ctx context.Context) (id string, err error) {
 	var ids []string
-	if ids, err = lq.Limit(2).IDs(setContextOp(ctx, lq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -150,8 +150,8 @@ func (lq *ListenerQuery) OnlyID(ctx context.Context) (id string, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (lq *ListenerQuery) OnlyIDX(ctx context.Context) string {
-	id, err := lq.OnlyID(ctx)
+func (_q *ListenerQuery) OnlyIDX(ctx context.Context) string {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,18 +159,18 @@ func (lq *ListenerQuery) OnlyIDX(ctx context.Context) string {
 }
 
 // All executes the query and returns a list of Listeners.
-func (lq *ListenerQuery) All(ctx context.Context) ([]*Listener, error) {
-	ctx = setContextOp(ctx, lq.ctx, ent.OpQueryAll)
-	if err := lq.prepareQuery(ctx); err != nil {
+func (_q *ListenerQuery) All(ctx context.Context) ([]*Listener, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Listener, *ListenerQuery]()
-	return withInterceptors[[]*Listener](ctx, lq, qr, lq.inters)
+	return withInterceptors[[]*Listener](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (lq *ListenerQuery) AllX(ctx context.Context) []*Listener {
-	nodes, err := lq.All(ctx)
+func (_q *ListenerQuery) AllX(ctx context.Context) []*Listener {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -178,20 +178,20 @@ func (lq *ListenerQuery) AllX(ctx context.Context) []*Listener {
 }
 
 // IDs executes the query and returns a list of Listener IDs.
-func (lq *ListenerQuery) IDs(ctx context.Context) (ids []string, err error) {
-	if lq.ctx.Unique == nil && lq.path != nil {
-		lq.Unique(true)
+func (_q *ListenerQuery) IDs(ctx context.Context) (ids []string, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, lq.ctx, ent.OpQueryIDs)
-	if err = lq.Select(listener.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(listener.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (lq *ListenerQuery) IDsX(ctx context.Context) []string {
-	ids, err := lq.IDs(ctx)
+func (_q *ListenerQuery) IDsX(ctx context.Context) []string {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -199,17 +199,17 @@ func (lq *ListenerQuery) IDsX(ctx context.Context) []string {
 }
 
 // Count returns the count of the given query.
-func (lq *ListenerQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, lq.ctx, ent.OpQueryCount)
-	if err := lq.prepareQuery(ctx); err != nil {
+func (_q *ListenerQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, lq, querierCount[*ListenerQuery](), lq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ListenerQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (lq *ListenerQuery) CountX(ctx context.Context) int {
-	count, err := lq.Count(ctx)
+func (_q *ListenerQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -217,9 +217,9 @@ func (lq *ListenerQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (lq *ListenerQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, lq.ctx, ent.OpQueryExist)
-	switch _, err := lq.FirstID(ctx); {
+func (_q *ListenerQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -230,8 +230,8 @@ func (lq *ListenerQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (lq *ListenerQuery) ExistX(ctx context.Context) bool {
-	exist, err := lq.Exist(ctx)
+func (_q *ListenerQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -240,19 +240,19 @@ func (lq *ListenerQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ListenerQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (lq *ListenerQuery) Clone() *ListenerQuery {
-	if lq == nil {
+func (_q *ListenerQuery) Clone() *ListenerQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ListenerQuery{
-		config:     lq.config,
-		ctx:        lq.ctx.Clone(),
-		order:      append([]listener.OrderOption{}, lq.order...),
-		inters:     append([]Interceptor{}, lq.inters...),
-		predicates: append([]predicate.Listener{}, lq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]listener.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.Listener{}, _q.predicates...),
 		// clone intermediate query.
-		sql:  lq.sql.Clone(),
-		path: lq.path,
+		sql:  _q.sql.Clone(),
+		path: _q.path,
 	}
 }
 
@@ -270,10 +270,10 @@ func (lq *ListenerQuery) Clone() *ListenerQuery {
 //		GroupBy(listener.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (lq *ListenerQuery) GroupBy(field string, fields ...string) *ListenerGroupBy {
-	lq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ListenerGroupBy{build: lq}
-	grbuild.flds = &lq.ctx.Fields
+func (_q *ListenerQuery) GroupBy(field string, fields ...string) *ListenerGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ListenerGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = listener.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -291,62 +291,62 @@ func (lq *ListenerQuery) GroupBy(field string, fields ...string) *ListenerGroupB
 //	client.Listener.Query().
 //		Select(listener.FieldName).
 //		Scan(ctx, &v)
-func (lq *ListenerQuery) Select(fields ...string) *ListenerSelect {
-	lq.ctx.Fields = append(lq.ctx.Fields, fields...)
-	sbuild := &ListenerSelect{ListenerQuery: lq}
+func (_q *ListenerQuery) Select(fields ...string) *ListenerSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ListenerSelect{ListenerQuery: _q}
 	sbuild.label = listener.Label
-	sbuild.flds, sbuild.scan = &lq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ListenerSelect configured with the given aggregations.
-func (lq *ListenerQuery) Aggregate(fns ...AggregateFunc) *ListenerSelect {
-	return lq.Select().Aggregate(fns...)
+func (_q *ListenerQuery) Aggregate(fns ...AggregateFunc) *ListenerSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (lq *ListenerQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range lq.inters {
+func (_q *ListenerQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, lq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range lq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !listener.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if lq.path != nil {
-		prev, err := lq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		lq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (lq *ListenerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Listener, error) {
+func (_q *ListenerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Listener, error) {
 	var (
 		nodes = []*Listener{}
-		_spec = lq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Listener).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Listener{config: lq.config}
+		node := &Listener{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, lq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -355,24 +355,24 @@ func (lq *ListenerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Lis
 	return nodes, nil
 }
 
-func (lq *ListenerQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := lq.querySpec()
-	_spec.Node.Columns = lq.ctx.Fields
-	if len(lq.ctx.Fields) > 0 {
-		_spec.Unique = lq.ctx.Unique != nil && *lq.ctx.Unique
+func (_q *ListenerQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, lq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (lq *ListenerQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ListenerQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(listener.Table, listener.Columns, sqlgraph.NewFieldSpec(listener.FieldID, field.TypeString))
-	_spec.From = lq.sql
-	if unique := lq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if lq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := lq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, listener.FieldID)
 		for i := range fields {
@@ -381,20 +381,20 @@ func (lq *ListenerQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if ps := lq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := lq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := lq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := lq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -404,33 +404,33 @@ func (lq *ListenerQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (lq *ListenerQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(lq.driver.Dialect())
+func (_q *ListenerQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(listener.Table)
-	columns := lq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = listener.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if lq.sql != nil {
-		selector = lq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if lq.ctx.Unique != nil && *lq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, p := range lq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range lq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := lq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := lq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -443,41 +443,41 @@ type ListenerGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (lgb *ListenerGroupBy) Aggregate(fns ...AggregateFunc) *ListenerGroupBy {
-	lgb.fns = append(lgb.fns, fns...)
-	return lgb
+func (_g *ListenerGroupBy) Aggregate(fns ...AggregateFunc) *ListenerGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (lgb *ListenerGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, lgb.build.ctx, ent.OpQueryGroupBy)
-	if err := lgb.build.prepareQuery(ctx); err != nil {
+func (_g *ListenerGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ListenerQuery, *ListenerGroupBy](ctx, lgb.build, lgb, lgb.build.inters, v)
+	return scanWithInterceptors[*ListenerQuery, *ListenerGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (lgb *ListenerGroupBy) sqlScan(ctx context.Context, root *ListenerQuery, v any) error {
+func (_g *ListenerGroupBy) sqlScan(ctx context.Context, root *ListenerQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(lgb.fns))
-	for _, fn := range lgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*lgb.flds)+len(lgb.fns))
-		for _, f := range *lgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*lgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := lgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -491,27 +491,27 @@ type ListenerSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ls *ListenerSelect) Aggregate(fns ...AggregateFunc) *ListenerSelect {
-	ls.fns = append(ls.fns, fns...)
-	return ls
+func (_s *ListenerSelect) Aggregate(fns ...AggregateFunc) *ListenerSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ls *ListenerSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ls.ctx, ent.OpQuerySelect)
-	if err := ls.prepareQuery(ctx); err != nil {
+func (_s *ListenerSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ListenerQuery, *ListenerSelect](ctx, ls.ListenerQuery, ls, ls.inters, v)
+	return scanWithInterceptors[*ListenerQuery, *ListenerSelect](ctx, _s.ListenerQuery, _s, _s.inters, v)
 }
 
-func (ls *ListenerSelect) sqlScan(ctx context.Context, root *ListenerQuery, v any) error {
+func (_s *ListenerSelect) sqlScan(ctx context.Context, root *ListenerQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ls.fns))
-	for _, fn := range ls.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ls.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -519,7 +519,7 @@ func (ls *ListenerSelect) sqlScan(ctx context.Context, root *ListenerQuery, v an
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ls.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()

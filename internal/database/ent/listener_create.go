@@ -6,10 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/nu11zy/rscc/internal/database/ent/listener"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/nu11zy/rscc/internal/database/ent/listener"
 )
 
 // ListenerCreate is the builder for creating a Listener entity.
@@ -20,51 +20,51 @@ type ListenerCreate struct {
 }
 
 // SetName sets the "name" field.
-func (lc *ListenerCreate) SetName(s string) *ListenerCreate {
-	lc.mutation.SetName(s)
-	return lc
+func (_c *ListenerCreate) SetName(v string) *ListenerCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetPrivateKey sets the "private_key" field.
-func (lc *ListenerCreate) SetPrivateKey(b []byte) *ListenerCreate {
-	lc.mutation.SetPrivateKey(b)
-	return lc
+func (_c *ListenerCreate) SetPrivateKey(v []byte) *ListenerCreate {
+	_c.mutation.SetPrivateKey(v)
+	return _c
 }
 
 // SetFingerprint sets the "fingerprint" field.
-func (lc *ListenerCreate) SetFingerprint(s string) *ListenerCreate {
-	lc.mutation.SetFingerprint(s)
-	return lc
+func (_c *ListenerCreate) SetFingerprint(v string) *ListenerCreate {
+	_c.mutation.SetFingerprint(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (lc *ListenerCreate) SetID(s string) *ListenerCreate {
-	lc.mutation.SetID(s)
-	return lc
+func (_c *ListenerCreate) SetID(v string) *ListenerCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (lc *ListenerCreate) SetNillableID(s *string) *ListenerCreate {
-	if s != nil {
-		lc.SetID(*s)
+func (_c *ListenerCreate) SetNillableID(v *string) *ListenerCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return lc
+	return _c
 }
 
 // Mutation returns the ListenerMutation object of the builder.
-func (lc *ListenerCreate) Mutation() *ListenerMutation {
-	return lc.mutation
+func (_c *ListenerCreate) Mutation() *ListenerMutation {
+	return _c.mutation
 }
 
 // Save creates the Listener in the database.
-func (lc *ListenerCreate) Save(ctx context.Context) (*Listener, error) {
-	lc.defaults()
-	return withHooks(ctx, lc.sqlSave, lc.mutation, lc.hooks)
+func (_c *ListenerCreate) Save(ctx context.Context) (*Listener, error) {
+	_c.defaults()
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (lc *ListenerCreate) SaveX(ctx context.Context) *Listener {
-	v, err := lc.Save(ctx)
+func (_c *ListenerCreate) SaveX(ctx context.Context) *Listener {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -72,48 +72,48 @@ func (lc *ListenerCreate) SaveX(ctx context.Context) *Listener {
 }
 
 // Exec executes the query.
-func (lc *ListenerCreate) Exec(ctx context.Context) error {
-	_, err := lc.Save(ctx)
+func (_c *ListenerCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (lc *ListenerCreate) ExecX(ctx context.Context) {
-	if err := lc.Exec(ctx); err != nil {
+func (_c *ListenerCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (lc *ListenerCreate) defaults() {
-	if _, ok := lc.mutation.ID(); !ok {
+func (_c *ListenerCreate) defaults() {
+	if _, ok := _c.mutation.ID(); !ok {
 		v := listener.DefaultID()
-		lc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (lc *ListenerCreate) check() error {
-	if _, ok := lc.mutation.Name(); !ok {
+func (_c *ListenerCreate) check() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Listener.name"`)}
 	}
-	if v, ok := lc.mutation.Name(); ok {
+	if v, ok := _c.mutation.Name(); ok {
 		if err := listener.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Listener.name": %w`, err)}
 		}
 	}
-	if _, ok := lc.mutation.PrivateKey(); !ok {
+	if _, ok := _c.mutation.PrivateKey(); !ok {
 		return &ValidationError{Name: "private_key", err: errors.New(`ent: missing required field "Listener.private_key"`)}
 	}
-	if v, ok := lc.mutation.PrivateKey(); ok {
+	if v, ok := _c.mutation.PrivateKey(); ok {
 		if err := listener.PrivateKeyValidator(v); err != nil {
 			return &ValidationError{Name: "private_key", err: fmt.Errorf(`ent: validator failed for field "Listener.private_key": %w`, err)}
 		}
 	}
-	if _, ok := lc.mutation.Fingerprint(); !ok {
+	if _, ok := _c.mutation.Fingerprint(); !ok {
 		return &ValidationError{Name: "fingerprint", err: errors.New(`ent: missing required field "Listener.fingerprint"`)}
 	}
-	if v, ok := lc.mutation.Fingerprint(); ok {
+	if v, ok := _c.mutation.Fingerprint(); ok {
 		if err := listener.FingerprintValidator(v); err != nil {
 			return &ValidationError{Name: "fingerprint", err: fmt.Errorf(`ent: validator failed for field "Listener.fingerprint": %w`, err)}
 		}
@@ -121,12 +121,12 @@ func (lc *ListenerCreate) check() error {
 	return nil
 }
 
-func (lc *ListenerCreate) sqlSave(ctx context.Context) (*Listener, error) {
-	if err := lc.check(); err != nil {
+func (_c *ListenerCreate) sqlSave(ctx context.Context) (*Listener, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := lc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, lc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -139,29 +139,29 @@ func (lc *ListenerCreate) sqlSave(ctx context.Context) (*Listener, error) {
 			return nil, fmt.Errorf("unexpected Listener.ID type: %T", _spec.ID.Value)
 		}
 	}
-	lc.mutation.id = &_node.ID
-	lc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (lc *ListenerCreate) createSpec() (*Listener, *sqlgraph.CreateSpec) {
+func (_c *ListenerCreate) createSpec() (*Listener, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Listener{config: lc.config}
+		_node = &Listener{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(listener.Table, sqlgraph.NewFieldSpec(listener.FieldID, field.TypeString))
 	)
-	if id, ok := lc.mutation.ID(); ok {
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := lc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(listener.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := lc.mutation.PrivateKey(); ok {
+	if value, ok := _c.mutation.PrivateKey(); ok {
 		_spec.SetField(listener.FieldPrivateKey, field.TypeBytes, value)
 		_node.PrivateKey = value
 	}
-	if value, ok := lc.mutation.Fingerprint(); ok {
+	if value, ok := _c.mutation.Fingerprint(); ok {
 		_spec.SetField(listener.FieldFingerprint, field.TypeString, value)
 		_node.Fingerprint = value
 	}
@@ -176,16 +176,16 @@ type ListenerCreateBulk struct {
 }
 
 // Save creates the Listener entities in the database.
-func (lcb *ListenerCreateBulk) Save(ctx context.Context) ([]*Listener, error) {
-	if lcb.err != nil {
-		return nil, lcb.err
+func (_c *ListenerCreateBulk) Save(ctx context.Context) ([]*Listener, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(lcb.builders))
-	nodes := make([]*Listener, len(lcb.builders))
-	mutators := make([]Mutator, len(lcb.builders))
-	for i := range lcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Listener, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := lcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ListenerMutation)
@@ -199,11 +199,11 @@ func (lcb *ListenerCreateBulk) Save(ctx context.Context) ([]*Listener, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, lcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, lcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -223,7 +223,7 @@ func (lcb *ListenerCreateBulk) Save(ctx context.Context) ([]*Listener, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, lcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -231,8 +231,8 @@ func (lcb *ListenerCreateBulk) Save(ctx context.Context) ([]*Listener, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (lcb *ListenerCreateBulk) SaveX(ctx context.Context) []*Listener {
-	v, err := lcb.Save(ctx)
+func (_c *ListenerCreateBulk) SaveX(ctx context.Context) []*Listener {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -240,14 +240,14 @@ func (lcb *ListenerCreateBulk) SaveX(ctx context.Context) []*Listener {
 }
 
 // Exec executes the query.
-func (lcb *ListenerCreateBulk) Exec(ctx context.Context) error {
-	_, err := lcb.Save(ctx)
+func (_c *ListenerCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (lcb *ListenerCreateBulk) ExecX(ctx context.Context) {
-	if err := lcb.Exec(ctx); err != nil {
+func (_c *ListenerCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
