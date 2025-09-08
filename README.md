@@ -136,7 +136,7 @@ ssh rscc+session_id
 
 if you forget which subsystems the agent is built with:
 ```sh
-ssh rscc+agent_id
+ssh rscc+agent_id -s list
 - sftp
 - kill
 - pscan
