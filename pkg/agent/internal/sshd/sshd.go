@@ -234,6 +234,11 @@ func (ac *AgentConfig) handleSession(channel ssh.Channel, chanReqs <-chan *ssh.R
 				channel.Write([]byte(fmt.Sprintf("Subsystem not supported: %s\n", subsystem)))
 				req.Reply(false, nil)
 			}
+		case "exec":
+			if err := handleExec(channel, req); err != nil {
+				lg.Error("Exec error: %v", err)
+			}
+			return
 		default:
 			lg.Warn("Unknown request: %s", req.Type)
 			req.Reply(false, nil)
