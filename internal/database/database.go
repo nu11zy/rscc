@@ -136,6 +136,9 @@ func (db *Database) GetAgentByURL(ctx context.Context, url string) (*ent.Agent, 
 }
 
 func (db *Database) UpdateAgentURL(ctx context.Context, id, url string) error {
+	if url == "" {
+		return db.client.Agent.UpdateOneID(id).ClearURL().Exec(ctx)
+	}
 	return db.client.Agent.UpdateOneID(id).SetURL(url).SetHosted(true).Exec(ctx)
 }
 
